@@ -108,7 +108,7 @@ void event_base_free (struct event_base *base)
   dLOOPbase;
 
 #if EV_MULTIPLICITY
-  if (ev_default_loop (EVMETHOD_AUTO) != loop)
+  if (ev_default_loop (EVFLAG_AUTO) != loop)
     ev_loop_destroy (loop);
 #endif
 }
@@ -347,7 +347,7 @@ x_loopexit_cb (int revents, void *base)
 {
   dLOOPbase;
 
-  ev_unloop (EV_A_ EVUNLOOP_ONCE);
+  ev_unloop (EV_A_ EVUNLOOP_ONE);
 }
 
 int event_base_loopexit (struct event_base *base, struct timeval *tv)
