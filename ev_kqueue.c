@@ -196,3 +196,6 @@ kqueue_fork (EV_P)
   fd_rearm_all (EV_A);
 }
 
+/* sys/event.h defines EV_ERROR */
+#undef EV_ERROR
+
