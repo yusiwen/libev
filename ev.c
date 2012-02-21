@@ -1873,6 +1873,8 @@ evpipe_write (EV_P_ EV_ATOMIC_T *flag)
           /* so when you think this write should be a send instead, please find out */
           /* where your send() is from - it's definitely not the microsoft send, and */
           /* tell me. thank you. */
+          /* it might be that your problem is that your environment needs EV_USE_WSASOCKET */
+          /* check the ev documentation on how to use this flag */
           write (evpipe [1], &(evpipe [1]), 1);
         }
 
