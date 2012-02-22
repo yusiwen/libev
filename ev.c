@@ -579,6 +579,8 @@ struct signalfd_siginfo
       #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("membar #LoadStore |             #StoreStore")
     #elif defined(__s390__) || defined(__s390x__)
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("bcr 15,0" : : : "memory")
+    #elif defined(__mips__)
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync" : : : "memory")
     #endif
   #endif
 #endif
