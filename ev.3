@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2012-02-04" "libev-4.11" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2012-03-23" "libev-4.11" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -4057,6 +4057,10 @@ with \f(CW\*(C`operator ()\*(C'\fR can be used as callbacks. Other types should 
 to add as long as they only need one additional pointer for context. If
 you need support for other types of functors please contact the author
 (preferably after implementing it).
+.PP
+For all this to work, your \*(C+ compiler either has to use the same calling
+conventions as your C compiler (for static member functions), or you have
+to embed libev and compile libev itself as \*(C+.
 .PP
 Here is a list of things available in the \f(CW\*(C`ev\*(C'\fR namespace:
 .ie n .IP """ev::READ"", ""ev::WRITE"" etc." 4
