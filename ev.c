@@ -61,7 +61,7 @@
 #    define EV_USE_MONOTONIC 1
 #   endif
 #  endif
-# elif !defined(EV_USE_CLOCK_SYSCALL)
+# elif !defined EV_USE_CLOCK_SYSCALL
 #  define EV_USE_CLOCK_SYSCALL 0
 # endif
 
@@ -221,25 +221,25 @@
 /* this block tries to deduce configuration from header-defined symbols and defaults */
 
 /* try to deduce the maximum number of signals on this platform */
-#if defined (EV_NSIG)
+#if defined EV_NSIG
 /* use what's provided */
-#elif defined (NSIG)
+#elif defined NSIG
 # define EV_NSIG (NSIG)
-#elif defined(_NSIG)
+#elif defined _NSIG
 # define EV_NSIG (_NSIG)
-#elif defined (SIGMAX)
+#elif defined SIGMAX
 # define EV_NSIG (SIGMAX+1)
-#elif defined (SIG_MAX)
+#elif defined SIG_MAX
 # define EV_NSIG (SIG_MAX+1)
-#elif defined (_SIG_MAX)
+#elif defined _SIG_MAX
 # define EV_NSIG (_SIG_MAX+1)
-#elif defined (MAXSIG)
+#elif defined MAXSIG
 # define EV_NSIG (MAXSIG+1)
-#elif defined (MAX_SIG)
+#elif defined MAX_SIG
 # define EV_NSIG (MAX_SIG+1)
-#elif defined (SIGARRAYSIZE)
+#elif defined SIGARRAYSIZE
 # define EV_NSIG (SIGARRAYSIZE) /* Assume ary[SIGARRAYSIZE] */
-#elif defined (_sys_nsig)
+#elif defined _sys_nsig
 # define EV_NSIG (_sys_nsig) /* Solaris 2.5 */
 #else
 # error "unable to find value for NSIG, please report"
@@ -261,7 +261,7 @@
 #endif
 
 #ifndef EV_USE_MONOTONIC
-# if defined (_POSIX_MONOTONIC_CLOCK) && _POSIX_MONOTONIC_CLOCK >= 0
+# if defined _POSIX_MONOTONIC_CLOCK && _POSIX_MONOTONIC_CLOCK >= 0
 #  define EV_USE_MONOTONIC EV_FEATURE_OS
 # else
 #  define EV_USE_MONOTONIC 0
@@ -397,7 +397,7 @@
 
 #if !EV_USE_NANOSLEEP
 /* hp-ux has it in sys/time.h, which we unconditionally include above */
-# if !defined(_WIN32) && !defined(__hpux)
+# if !defined _WIN32 && !defined __hpux
 #  include <sys/select.h>
 # endif
 #endif
@@ -1334,7 +1334,7 @@ ev_sleep (ev_tstamp delay)
 
       EV_TS_SET (ts, delay);
       nanosleep (&ts, 0);
-#elif defined(_WIN32)
+#elif defined _WIN32
       Sleep ((unsigned long)(delay * 1e3));
 #else
       struct timeval tv;
@@ -3743,7 +3743,7 @@ ev_check_2625 (EV_P)
 inline_size int
 infy_newfd (void)
 {
-#if defined (IN_CLOEXEC) && defined (IN_NONBLOCK)
+#if defined IN_CLOEXEC && defined IN_NONBLOCK
   int fd = inotify_init1 (IN_CLOEXEC | IN_NONBLOCK);
   if (fd >= 0)
     return fd;
