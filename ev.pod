@@ -4622,7 +4622,7 @@ backend, use this:
    #define EV_ASYNC_ENABLE 1
 
 The actual value is a bitset, it can be a combination of the following
-values:
+values (by default, all of these are enabled):
 
 =over 4
 
@@ -4637,12 +4637,18 @@ When optimising for size, use of compiler flags such as C<-Os> with
 gcc is recommended, as well as C<-DNDEBUG>, as libev contains a number of
 assertions.
 
+The default is off when C<__OPTIMIZE_SIZE__> is defined by your compiler
+(e.g. gcc with C<-Os>).
+
 =item C<2> - faster/larger data structures
 
 Replaces the small 2-heap for timer management by a faster 4-heap, larger
 hash table sizes and so on. This will usually further increase code size
 and can additionally have an effect on the size of data structures at
 runtime.
+
+The default is off when C<__OPTIMIZE_SIZE__> is defined by your compiler
+(e.g. gcc with C<-Os>).
 
 =item C<4> - full API configuration
 

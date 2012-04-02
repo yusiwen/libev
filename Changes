@@ -5,7 +5,6 @@ TODO: EV_STANDALONE == NO_HASSEL (do not use clock_gettime in ev_standalone)
 
 TODO: document WSA_EV_USE_SOCKET in win32 part
 TODO: ^ OR use WSASend/WSARecv on the handle, which always works
-TODO: use __OPTIMIZE__ or __OPTIMIZE_SIZE__?
 
 	- fix event_base_loop return code, add event_get_callback, event_base_new,
           event_base_get_method calls to improve libevent 1.x emulation and add
