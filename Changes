@@ -6,10 +6,10 @@ TODO: EV_STANDALONE == NO_HASSEL (do not use clock_gettime in ev_standalone)
 TODO: document WSA_EV_USE_SOCKET in win32 part
 TODO: ^ OR use WSASend/WSARecv on the handle, which always works
 TODO: use __OPTIMIZE__ or __OPTIMIZE_SIZE__?
-	- ev_once: undef EV_ERROR in ev_kqueue.c, to avoid clashing with
-          libev's EV_ERROR (reported by 191919).
 
 TODO: Jeff Davey libev patch
+	- ev_once: undef EV_ERROR in ev_kqueue.c, to avoid clashing with
+          libev's EV_ERROR (reported by 191919).
 	- (ecb) add memory fence support for xlC (Darin McBride).
 	- (ecb) add memory fence support for gcc-mips (Anton Kirilov).
         - work around some kernels losing file descriptors by leaking
