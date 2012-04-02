@@ -1,7 +1,7 @@
 /*
  * libev event processing core, watcher management
  *
- * Copyright (c) 2007,2008,2009,2010,2011 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007,2008,2009,2010,2011,2012 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -2932,7 +2932,7 @@ time_update (EV_P_ ev_tstamp max_block)
     }
 }
 
-void
+int
 ev_run (EV_P_ int flags)
 {
 #if EV_FEATURE_API
@@ -3099,6 +3099,8 @@ ev_run (EV_P_ int flags)
 #if EV_FEATURE_API
   --loop_depth;
 #endif
+
+  return activecnt;
 }
 
 void
