@@ -535,7 +535,7 @@ struct signalfd_siginfo
  * an issue with that they should have done it right in the first place.
  */
 #ifndef ECB_GCC_VERSION
-  #if !defined(__GNUC_MINOR__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_C) || defined(__SUNPRO_CC) || defined(__llvm__) || defined(__clang__)
+  #if !defined __GNUC_MINOR__ || defined __INTEL_COMPILER || defined __SUNPRO_C || defined __SUNPRO_CC || defined __llvm__ || defined __clang__
     #define ECB_GCC_VERSION(major,minor) 0
   #else
     #define ECB_GCC_VERSION(major,minor) (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
@@ -556,7 +556,7 @@ struct signalfd_siginfo
 #endif
 
 #ifndef ECB_MEMORY_FENCE
-  #if ECB_GCC_VERSION(2,5) || defined(__INTEL_COMPILER) || (__llvm__ && __GNUC__) || __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
+  #if ECB_GCC_VERSION(2,5) || defined __INTEL_COMPILER || (__llvm__ && __GNUC__) || __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
     #if __i386 || __i386__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("lock; orb $0, -1(%%esp)" : : : "memory")
       #define ECB_MEMORY_FENCE_ACQUIRE ECB_MEMORY_FENCE /* non-lock xchg might be enough */
@@ -567,26 +567,26 @@ struct signalfd_siginfo
       #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("sfence") /* play safe - not needed in any current cpu */
     #elif __powerpc__ || __ppc__ || __powerpc64__ || __ppc64__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync" : : : "memory")
-    #elif defined(__ARM_ARCH_6__ ) || defined(__ARM_ARCH_6J__ ) \
-       || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6ZK__)
+    #elif defined __ARM_ARCH_6__  || defined __ARM_ARCH_6J__  \
+       || defined __ARM_ARCH_6K__ || defined __ARM_ARCH_6ZK__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mcr p15,0,%0,c7,c10,5" : : "r" (0) : "memory")
-    #elif defined(__ARM_ARCH_7__ ) || defined(__ARM_ARCH_7A__ ) \
-       || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7R__ )
+    #elif defined __ARM_ARCH_7__  || defined __ARM_ARCH_7A__  \
+       || defined __ARM_ARCH_7M__ || defined __ARM_ARCH_7R__ 
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("dmb" : : : "memory")
     #elif __sparc || __sparc__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("membar #LoadStore | #LoadLoad | #StoreStore | #StoreLoad | " : : : "memory")
       #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ ("membar #LoadStore | #LoadLoad"                               : : : "memory")
       #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("membar #LoadStore |             #StoreStore")
-    #elif defined(__s390__) || defined(__s390x__)
+    #elif defined __s390__ || defined __s390x__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("bcr 15,0" : : : "memory")
-    #elif defined(__mips__)
+    #elif defined __mips__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync" : : : "memory")
     #endif
   #endif
 #endif
 
 #ifndef ECB_MEMORY_FENCE
-  #if ECB_GCC_VERSION(4,4) || defined(__INTEL_COMPILER) || defined(__clang__)
+  #if ECB_GCC_VERSION(4,4) || defined __INTEL_COMPILER || defined __clang__
     #define ECB_MEMORY_FENCE         __sync_synchronize ()
     /*#define ECB_MEMORY_FENCE_ACQUIRE ({ char dummy = 0; __sync_lock_test_and_set (&dummy, 1); }) */
     /*#define ECB_MEMORY_FENCE_RELEASE ({ char dummy = 1; __sync_lock_release      (&dummy   ); }) */
@@ -595,7 +595,7 @@ struct signalfd_siginfo
     #define ECB_MEMORY_FENCE         _ReadWriteBarrier ()
     #define ECB_MEMORY_FENCE_ACQUIRE _ReadWriteBarrier () /* according to msdn, _ReadBarrier is not a load fence */
     #define ECB_MEMORY_FENCE_RELEASE _WriteBarrier ()
-  #elif defined(_WIN32)
+  #elif defined _WIN32
     #include <WinNT.h>
     #define ECB_MEMORY_FENCE         MemoryBarrier () /* actually just xchg on x86... scary */
   #elif __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
@@ -626,11 +626,11 @@ struct signalfd_siginfo
   #endif
 #endif
 
-#if !defined(ECB_MEMORY_FENCE_ACQUIRE) && defined(ECB_MEMORY_FENCE)
+#if !defined ECB_MEMORY_FENCE_ACQUIRE && defined ECB_MEMORY_FENCE
   #define ECB_MEMORY_FENCE_ACQUIRE ECB_MEMORY_FENCE
 #endif
 
-#if !defined(ECB_MEMORY_FENCE_RELEASE) && defined(ECB_MEMORY_FENCE)
+#if !defined ECB_MEMORY_FENCE_RELEASE && defined ECB_MEMORY_FENCE
   #define ECB_MEMORY_FENCE_RELEASE ECB_MEMORY_FENCE
 #endif
 
