@@ -12,6 +12,8 @@ TODO: use __OPTIMIZE__ or __OPTIMIZE_SIZE__?
 TODO: Jeff Davey libev patch
 	- (ecb) add memory fence support for xlC (Darin McBride).
 	- (ecb) add memory fence support for gcc-mips (Anton Kirilov).
+        - work around some kernels losing file descriptors by leaking
+          the kqueue descriptor in the child.
 
 4.11 Sat Feb  4 19:52:39 CET 2012
 	- INCOMPATIBLE CHANGE: ev_timer_again now clears the pending status, as
