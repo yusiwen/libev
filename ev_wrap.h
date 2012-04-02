@@ -45,6 +45,7 @@
 #define epoll_eperms ((loop)->epoll_eperms)
 #define epoll_epermcnt ((loop)->epoll_epermcnt)
 #define epoll_epermmax ((loop)->epoll_epermmax)
+#define kqueue_fd_pid ((loop)->kqueue_fd_pid)
 #define kqueue_changes ((loop)->kqueue_changes)
 #define kqueue_changemax ((loop)->kqueue_changemax)
 #define kqueue_changecnt ((loop)->kqueue_changecnt)
@@ -143,6 +144,7 @@
 #undef epoll_eperms
 #undef epoll_epermcnt
 #undef epoll_epermmax
+#undef kqueue_fd_pid
 #undef kqueue_changes
 #undef kqueue_changemax
 #undef kqueue_changecnt

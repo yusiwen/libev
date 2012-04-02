@@ -1,7 +1,7 @@
 /*
  * loop member variable declarations
  *
- * Copyright (c) 2007,2008,2009,2010,2011 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007,2008,2009,2010,2011,2012 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -110,6 +110,7 @@ VARx(int, epoll_epermmax)
 #endif
 
 #if EV_USE_KQUEUE || EV_GENWRAP
+VARx(pid_t, kqueue_fd_pid)
 VARx(struct kevent *, kqueue_changes)
 VARx(int, kqueue_changemax)
 VARx(int, kqueue_changecnt)
