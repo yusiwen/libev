@@ -624,7 +624,7 @@ enum {
 };
 
 #if EV_PROTOTYPES
-EV_API_DECL void ev_run (EV_P_ int flags EV_CPP (= 0));
+EV_API_DECL int  ev_run (EV_P_ int flags EV_CPP (= 0));
 EV_API_DECL void ev_break (EV_P_ int how EV_CPP (= EVBREAK_ONE)); /* break out of the loop */
 
 /*

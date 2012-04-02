@@ -78,13 +78,15 @@ ev_tv_get (struct timeval *tv)
 #define EVENT_STRINGIFY(s) # s
 #define EVENT_VERSION(a,b) EVENT_STRINGIFY (a) "." EVENT_STRINGIFY (b)
 
-const char *event_get_version (void)
+const char *
+event_get_version (void)
 {
   /* returns ABI, not API or library, version */
   return EVENT_VERSION (EV_VERSION_MAJOR, EV_VERSION_MINOR);
 }
 
-const char *event_get_method (void)
+const char *
+event_get_method (void)
 {
   return "libev";
 }
@@ -103,6 +105,23 @@ void *event_init (void)
 #endif
 
   return ev_x_cur;
+}
+
+const char *
+event_base_get_method (const struct event_base *base)
+{
+  return "libev";
+}
+
+struct event_base *
+event_base_new (void)
+{
+#if EV_MULTIPLICITY
+  return (struct event_base *)ev_loop_new (EVFLAG_AUTO);
+#else
+  assert (("libev: multiple event bases not supported when not compiled with EV_MULTIPLICITY"));
+  return NULL;
+#endif
 }
 
 void event_base_free (struct event_base *base)
@@ -135,6 +154,12 @@ int event_loop (int flags)
 int event_loopexit (struct timeval *tv)
 {
   return event_base_loopexit (ev_x_cur, tv);
+}
+
+event_callback_fn event_get_callback
+(const struct event *ev)
+{
+  return ev->ev_callback;
 }
 
 static void
@@ -332,9 +357,7 @@ int event_base_loop (struct event_base *base, int flags)
 {
   dLOOPbase;
 
-  ev_run (EV_A_ flags);
-
-  return 0;
+  return !ev_run (EV_A_ flags);
 }
 
 int event_base_dispatch (struct event_base *base)

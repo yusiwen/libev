@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2012-03-23" "libev-4.11" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2012-04-03" "libev-4.11" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -687,9 +687,9 @@ It scales in the same way as the epoll backend, but the interface to the
 kernel is more efficient (which says nothing about its actual speed, of
 course). While stopping, setting and starting an I/O watcher does never
 cause an extra system call as with \f(CW\*(C`EVBACKEND_EPOLL\*(C'\fR, it still adds up to
-two event changes per incident. Support for \f(CW\*(C`fork ()\*(C'\fR is very bad (but
-sane, unlike epoll) and it drops fds silently in similarly hard-to-detect
-cases
+two event changes per incident. Support for \f(CW\*(C`fork ()\*(C'\fR is very bad (you
+might have to leak fd's on fork, but it's more sane than epoll) and it
+drops fds silently in similarly hard-to-detect cases
 .Sp
 This backend usually performs well under most conditions.
 .Sp
@@ -911,17 +911,21 @@ without a previous call to \f(CW\*(C`ev_suspend\*(C'\fR.
 .Sp
 Calling \f(CW\*(C`ev_suspend\*(C'\fR/\f(CW\*(C`ev_resume\*(C'\fR has the side effect of updating the
 event loop time (see \f(CW\*(C`ev_now_update\*(C'\fR).
-.IP "ev_run (loop, int flags)" 4
-.IX Item "ev_run (loop, int flags)"
+.IP "bool ev_run (loop, int flags)" 4
+.IX Item "bool ev_run (loop, int flags)"
 Finally, this is it, the event handler. This function usually is called
 after you have initialised all your watchers and you want to start
 handling events. It will ask the operating system for any new events, call
-the watcher callbacks, an then repeat the whole process indefinitely: This
+the watcher callbacks, and then repeat the whole process indefinitely: This
 is why event loops are called \fIloops\fR.
 .Sp
 If the flags argument is specified as \f(CW0\fR, it will keep handling events
 until either no event watchers are active anymore or \f(CW\*(C`ev_break\*(C'\fR was
 called.
+.Sp
+The return value is false if there are no more active watchers (which
+usually means \*(L"all jobs done\*(R" or \*(L"deadlock\*(R"), and true in all other cases
+(which usually means " you should call \f(CW\*(C`ev_run\*(C'\fR again").
 .Sp
 Please note that an explicit \f(CW\*(C`ev_break\*(C'\fR is usually better than
 relying on all watchers to be stopped when deciding when a program has
@@ -930,8 +934,8 @@ that automatically loops as long as it has to and no longer by virtue
 of relying on its watchers stopping correctly, that is truly a thing of
 beauty.
 .Sp
-This function is also \fImostly\fR exception-safe \- you can break out of
-a \f(CW\*(C`ev_run\*(C'\fR call by calling \f(CW\*(C`longjmp\*(C'\fR in a callback, throwing a \*(C+
+This function is \fImostly\fR exception-safe \- you can break out of a
+\&\f(CW\*(C`ev_run\*(C'\fR call by calling \f(CW\*(C`longjmp\*(C'\fR in a callback, throwing a \*(C+
 exception and so on. This does not decrement the \f(CW\*(C`ev_depth\*(C'\fR value, nor
 will it clear any outstanding \f(CW\*(C`EVBREAK_ONE\*(C'\fR breaks.
 .Sp

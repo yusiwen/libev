@@ -794,17 +794,21 @@ without a previous call to C<ev_suspend>.
 Calling C<ev_suspend>/C<ev_resume> has the side effect of updating the
 event loop time (see C<ev_now_update>).
 
-=item ev_run (loop, int flags)
+=item bool ev_run (loop, int flags)
 
 Finally, this is it, the event handler. This function usually is called
 after you have initialised all your watchers and you want to start
 handling events. It will ask the operating system for any new events, call
-the watcher callbacks, an then repeat the whole process indefinitely: This
+the watcher callbacks, and then repeat the whole process indefinitely: This
 is why event loops are called I<loops>.
 
 If the flags argument is specified as C<0>, it will keep handling events
 until either no event watchers are active anymore or C<ev_break> was
 called.
+
+The return value is false if there are no more active watchers (which
+usually means "all jobs done" or "deadlock"), and true in all other cases
+(which usually means " you should call C<ev_run> again").
 
 Please note that an explicit C<ev_break> is usually better than
 relying on all watchers to be stopped when deciding when a program has
@@ -813,8 +817,8 @@ that automatically loops as long as it has to and no longer by virtue
 of relying on its watchers stopping correctly, that is truly a thing of
 beauty.
 
-This function is also I<mostly> exception-safe - you can break out of
-a C<ev_run> call by calling C<longjmp> in a callback, throwing a C++
+This function is I<mostly> exception-safe - you can break out of a
+C<ev_run> call by calling C<longjmp> in a callback, throwing a C++
 exception and so on. This does not decrement the C<ev_depth> value, nor
 will it clear any outstanding C<EVBREAK_ONE> breaks.
 
