@@ -4728,7 +4728,7 @@ backend, use this:
 .Ve
 .Sp
 The actual value is a bitset, it can be a combination of the following
-values:
+values (by default, all of these are enabled):
 .RS 4
 .ie n .IP "1 \- faster/larger code" 4
 .el .IP "\f(CW1\fR \- faster/larger code" 4
@@ -4741,6 +4741,9 @@ code size by roughly 30% on amd64).
 When optimising for size, use of compiler flags such as \f(CW\*(C`\-Os\*(C'\fR with
 gcc is recommended, as well as \f(CW\*(C`\-DNDEBUG\*(C'\fR, as libev contains a number of
 assertions.
+.Sp
+The default is off when \f(CW\*(C`_\|_OPTIMIZE_SIZE_\|_\*(C'\fR is defined by your compiler
+(e.g. gcc with \f(CW\*(C`\-Os\*(C'\fR).
 .ie n .IP "2 \- faster/larger data structures" 4
 .el .IP "\f(CW2\fR \- faster/larger data structures" 4
 .IX Item "2 - faster/larger data structures"
@@ -4748,6 +4751,9 @@ Replaces the small 2\-heap for timer management by a faster 4\-heap, larger
 hash table sizes and so on. This will usually further increase code size
 and can additionally have an effect on the size of data structures at
 runtime.
+.Sp
+The default is off when \f(CW\*(C`_\|_OPTIMIZE_SIZE_\|_\*(C'\fR is defined by your compiler
+(e.g. gcc with \f(CW\*(C`\-Os\*(C'\fR).
 .ie n .IP "4 \- full \s-1API\s0 configuration" 4
 .el .IP "\f(CW4\fR \- full \s-1API\s0 configuration" 4
 .IX Item "4 - full API configuration"
