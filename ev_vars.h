@@ -196,8 +196,8 @@ VARx(unsigned int, loop_count) /* total number of loop iterations/blocks */
 VARx(unsigned int, loop_depth) /* #ev_run enters - #ev_run leaves */
 
 VARx(void *, userdata)
-VAR (release_cb, void (*release_cb)(EV_P))
-VAR (acquire_cb, void (*acquire_cb)(EV_P))
+VAR (release_cb, void (*release_cb)(EV_P) EV_THROW)
+VAR (acquire_cb, void (*acquire_cb)(EV_P) EV_THROW)
 VAR (invoke_cb , void (*invoke_cb) (EV_P))
 #endif
 

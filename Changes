@@ -5,8 +5,11 @@ TODO: EV_STANDALONE == NO_HASSEL (do not use clock_gettime in ev_standalone)
 
 TODO: document WSA_EV_USE_SOCKET in win32 part
 TODO: ^ OR use WSASend/WSARecv on the handle, which always works
-TODO: throw() for most ev.h functions
-TODO: assert on fd watcher linked list pointint to itself
+TODO: assert on fd watcher linked list pointing to itself
+	- add throw() to all libev functions that cannot throw exceptions, for
+          further code size decrease when compiling for C++.
+        - add throw () to callbacks that must not throw exceptions (allocator,
+          syserr, loop acquire/release, periodic reschedule cbs).
 	- fix event_base_loop return code, add event_get_callback, event_base_new,
           event_base_get_method calls to improve libevent 1.x emulation and add
           some libevent 2.x funcitonality (based on a patch by Jeff Davey).

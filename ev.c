@@ -2321,7 +2321,7 @@ loop_init (EV_P_ unsigned int flags) EV_THROW
 
 /* free up a loop structure */
 void ecb_cold
-ev_loop_destroy (EV_P) EV_THROW
+ev_loop_destroy (EV_P)
 {
   int i;
 

@@ -3923,7 +3923,8 @@ and C++ you can use the C<EV_THROW> macro for this:
    ev_set_syserr_cb (fatal_error);
 
 The only API functions that can currently throw exceptions are C<ev_run>,
-C<ev_inoke> and C<ev_invoke_pending>.
+C<ev_inoke>, C<ev_invoke_pending> and C<ev_loop_destroy> (the latter
+because it runs cleanup watchers).
 
 Throwing exceptions in watcher callbacks is only supported if libev itself
 is compiled with a C++ compiler or your C and C++ environments allow
