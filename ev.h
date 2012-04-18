@@ -595,7 +595,7 @@ ev_is_default_loop (void) EV_THROW
 #endif /* multiplicity */
 
 /* destroy event loops, also works for the default loop */
-EV_API_DECL void ev_loop_destroy (EV_P) EV_THROW;
+EV_API_DECL void ev_loop_destroy (EV_P);
 
 /* this needs to be called after fork, to duplicate the loop */
 /* when you want to re-use it in the child */
