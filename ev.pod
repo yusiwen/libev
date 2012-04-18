@@ -249,7 +249,7 @@ the current system, you would need to look at C<ev_embeddable_backends ()
 
 See the description of C<ev_embed> watchers for more info.
 
-=item ev_set_allocator (void *(*cb)(void *ptr, long size))
+=item ev_set_allocator (void *(*cb)(void *ptr, long size) throw ())
 
 Sets the allocation function to use (the prototype is similar - the
 semantics are identical to the C<realloc> C89/SuS/POSIX function). It is
@@ -285,7 +285,7 @@ retries (example requires a standards-compliant C<realloc>).
    ...
    ev_set_allocator (persistent_realloc);
 
-=item ev_set_syserr_cb (void (*cb)(const char *msg))
+=item ev_set_syserr_cb (void (*cb)(const char *msg) throw ())
 
 Set the callback function to call on a retryable system call error (such
 as failed select, poll, epoll_wait). The message is a printable string
@@ -1018,7 +1018,7 @@ invoke the actual watchers inside another context (another thread etc.).
 If you want to reset the callback, use C<ev_invoke_pending> as new
 callback.
 
-=item ev_set_loop_release_cb (loop, void (*release)(EV_P), void (*acquire)(EV_P))
+=item ev_set_loop_release_cb (loop, void (*release)(EV_P) throw (), void (*acquire)(EV_P) throw ())
 
 Sometimes you want to share the same loop between multiple threads. This
 can be done relatively simply by putting mutex_lock/unlock calls around
@@ -3898,6 +3898,38 @@ to use the libev header file and library.
 =back
 
 =head1 C++ SUPPORT
+
+=head2 C API
+
+The normal C API should work fine when used from C++: both ev.h and the
+libev sources can be compiled as C++. Therefore, code that uses the C API
+will work fine.
+
+Proper exception specifications might have to be added to callbacks passed
+to libev: exceptions may be thrown only from watcher callbacks, all
+other callbacks (allocator, syserr, loop acquire/release and periodioc
+reschedule callbacks) must not throw exceptions, and might need a C<throw
+()> specification. If you have code that needs to be compiled as both C
+and C++ you can use the C<EV_THROW> macro for this:
+
+   static void
+   fatal_error (const char *msg) EV_THROW
+   {
+     perror (msg);
+     abort ();
+   }
+
+   ...
+   ev_set_syserr_cb (fatal_error);
+
+The only API functions that can currently throw exceptions are C<ev_run>,
+C<ev_inoke> and C<ev_invoke_pending>.
+
+Throwing exceptions in watcher callbacks is only supported if libev itself
+is compiled with a C++ compiler or your C and C++ environments allow
+throwing exceptions through C libraries (most do).
+
+=head2 C++ API
 
 Libev comes with some simplistic wrapper classes for C++ that mainly allow
 you to use some convenience methods to start/stop watchers and also change
