@@ -1876,7 +1876,7 @@ within the callback:
      // calculate when the timeout would happen
      ev_tstamp after = last_activity - ev_now (EV_A) + timeout;
 
-     // if negative, it means we the timeout already occured
+     // if negative, it means we the timeout already occurred
      if (after < 0.)
        {
          // timeout occurred, take action
@@ -1904,7 +1904,7 @@ Otherwise, we now the earliest time at which the timeout would trigger,
 and simply start the timer with this timeout value.
 
 In other words, each time the callback is invoked it will check whether
-the timeout cocured. If not, it will simply reschedule itself to check
+the timeout occurred. If not, it will simply reschedule itself to check
 again at the earliest time it could time out. Rinse. Repeat.
 
 This scheme causes more callback invocations (about one every 60 seconds
@@ -1928,7 +1928,7 @@ C<last_activity>, no libev calls at all:
 
 When your timeout value changes, then the timeout can be changed by simply
 providing a new value, stopping the timer and calling the callback, which
-will agaion do the right thing (for example, time out immediately :).
+will again do the right thing (for example, time out immediately :).
 
    timeout = new_value;
    ev_timer_stop (EV_A_ &timer);
@@ -3923,7 +3923,7 @@ and C++ you can use the C<EV_THROW> macro for this:
    ev_set_syserr_cb (fatal_error);
 
 The only API functions that can currently throw exceptions are C<ev_run>,
-C<ev_inoke>, C<ev_invoke_pending> and C<ev_loop_destroy> (the latter
+C<ev_invoke>, C<ev_invoke_pending> and C<ev_loop_destroy> (the latter
 because it runs cleanup watchers).
 
 Throwing exceptions in watcher callbacks is only supported if libev itself
