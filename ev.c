@@ -1107,10 +1107,10 @@ ev_printerr (const char *msg)
 }
 #endif
 
-static void (*syserr_cb)(const char *msg);
+static void (*syserr_cb)(const char *msg) EV_THROW;
 
 void ecb_cold
-ev_set_syserr_cb (void (*cb)(const char *msg))
+ev_set_syserr_cb (void (*cb)(const char *msg)) EV_THROW
 {
   syserr_cb = cb;
 }
@@ -1156,10 +1156,10 @@ ev_realloc_emul (void *ptr, long size)
 #endif
 }
 
-static void *(*alloc)(void *ptr, long size) = ev_realloc_emul;
+static void *(*alloc)(void *ptr, long size) EV_THROW = ev_realloc_emul;
 
 void ecb_cold
-ev_set_allocator (void *(*cb)(void *ptr, long size))
+ev_set_allocator (void *(*cb)(void *ptr, long size)) EV_THROW
 {
   alloc = cb;
 }
@@ -1286,7 +1286,7 @@ typedef struct
 
 #ifndef EV_HAVE_EV_TIME
 ev_tstamp
-ev_time (void)
+ev_time (void) EV_THROW
 {
 #if EV_USE_REALTIME
   if (expect_true (have_realtime))
@@ -1320,14 +1320,14 @@ get_clock (void)
 
 #if EV_MULTIPLICITY
 ev_tstamp
-ev_now (EV_P)
+ev_now (EV_P) EV_THROW
 {
   return ev_rt_now;
 }
 #endif
 
 void
-ev_sleep (ev_tstamp delay)
+ev_sleep (ev_tstamp delay) EV_THROW
 {
   if (delay > 0.)
     {
@@ -1418,7 +1418,7 @@ pendingcb (EV_P_ ev_prepare *w, int revents)
 }
 
 void noinline
-ev_feed_event (EV_P_ void *w, int revents)
+ev_feed_event (EV_P_ void *w, int revents) EV_THROW
 {
   W w_ = (W)w;
   int pri = ABSPRI (w_);
@@ -1487,7 +1487,7 @@ fd_event (EV_P_ int fd, int revents)
 }
 
 void
-ev_feed_fd_event (EV_P_ int fd, int revents)
+ev_feed_fd_event (EV_P_ int fd, int revents) EV_THROW
 {
   if (fd >= 0 && fd < anfdmax)
     fd_event_nocheck (EV_A_ fd, revents);
@@ -1943,7 +1943,7 @@ pipecb (EV_P_ ev_io *iow, int revents)
 /*****************************************************************************/
 
 void
-ev_feed_signal (int signum)
+ev_feed_signal (int signum) EV_THROW
 {
 #if EV_MULTIPLICITY
   EV_P = signals [signum - 1].loop;
@@ -1970,7 +1970,7 @@ ev_sighandler (int signum)
 }
 
 void noinline
-ev_feed_signal_event (EV_P_ int signum)
+ev_feed_signal_event (EV_P_ int signum) EV_THROW
 {
   WL w;
 
@@ -2096,13 +2096,13 @@ childcb (EV_P_ ev_signal *sw, int revents)
 #endif
 
 int ecb_cold
-ev_version_major (void)
+ev_version_major (void) EV_THROW
 {
   return EV_VERSION_MAJOR;
 }
 
 int ecb_cold
-ev_version_minor (void)
+ev_version_minor (void) EV_THROW
 {
   return EV_VERSION_MINOR;
 }
@@ -2120,7 +2120,7 @@ enable_secure (void)
 }
 
 unsigned int ecb_cold
-ev_supported_backends (void)
+ev_supported_backends (void) EV_THROW
 {
   unsigned int flags = 0;
 
@@ -2134,7 +2134,7 @@ ev_supported_backends (void)
 }
 
 unsigned int ecb_cold
-ev_recommended_backends (void)
+ev_recommended_backends (void) EV_THROW
 {
   unsigned int flags = ev_supported_backends ();
 
@@ -2156,7 +2156,7 @@ ev_recommended_backends (void)
 }
 
 unsigned int ecb_cold
-ev_embeddable_backends (void)
+ev_embeddable_backends (void) EV_THROW
 {
   int flags = EVBACKEND_EPOLL | EVBACKEND_KQUEUE | EVBACKEND_PORT;
 
@@ -2168,56 +2168,56 @@ ev_embeddable_backends (void)
 }
 
 unsigned int
-ev_backend (EV_P)
+ev_backend (EV_P) EV_THROW
 {
   return backend;
 }
 
 #if EV_FEATURE_API
 unsigned int
-ev_iteration (EV_P)
+ev_iteration (EV_P) EV_THROW
 {
   return loop_count;
 }
 
 unsigned int
-ev_depth (EV_P)
+ev_depth (EV_P) EV_THROW
 {
   return loop_depth;
 }
 
 void
-ev_set_io_collect_interval (EV_P_ ev_tstamp interval)
+ev_set_io_collect_interval (EV_P_ ev_tstamp interval) EV_THROW
 {
   io_blocktime = interval;
 }
 
 void
-ev_set_timeout_collect_interval (EV_P_ ev_tstamp interval)
+ev_set_timeout_collect_interval (EV_P_ ev_tstamp interval) EV_THROW
 {
   timeout_blocktime = interval;
 }
 
 void
-ev_set_userdata (EV_P_ void *data)
+ev_set_userdata (EV_P_ void *data) EV_THROW
 {
   userdata = data;
 }
 
 void *
-ev_userdata (EV_P)
+ev_userdata (EV_P) EV_THROW
 {
   return userdata;
 }
 
 void
-ev_set_invoke_pending_cb (EV_P_ void (*invoke_pending_cb)(EV_P))
+ev_set_invoke_pending_cb (EV_P_ void (*invoke_pending_cb)(EV_P)) EV_THROW
 {
   invoke_cb = invoke_pending_cb;
 }
 
 void
-ev_set_loop_release_cb (EV_P_ void (*release)(EV_P), void (*acquire)(EV_P))
+ev_set_loop_release_cb (EV_P_ void (*release)(EV_P), void (*acquire)(EV_P)) EV_THROW
 {
   release_cb = release;
   acquire_cb = acquire;
@@ -2226,7 +2226,7 @@ ev_set_loop_release_cb (EV_P_ void (*release)(EV_P), void (*acquire)(EV_P))
 
 /* initialise a loop structure, must be zero-initialised */
 static void noinline ecb_cold
-loop_init (EV_P_ unsigned int flags)
+loop_init (EV_P_ unsigned int flags) EV_THROW
 {
   if (!backend)
     {
@@ -2321,7 +2321,7 @@ loop_init (EV_P_ unsigned int flags)
 
 /* free up a loop structure */
 void ecb_cold
-ev_loop_destroy (EV_P)
+ev_loop_destroy (EV_P) EV_THROW
 {
   int i;
 
@@ -2489,7 +2489,7 @@ loop_fork (EV_P)
 #if EV_MULTIPLICITY
 
 struct ev_loop * ecb_cold
-ev_loop_new (unsigned int flags)
+ev_loop_new (unsigned int flags) EV_THROW
 {
   EV_P = (struct ev_loop *)ev_malloc (sizeof (struct ev_loop));
 
@@ -2543,7 +2543,7 @@ array_verify (EV_P_ W *ws, int cnt)
 
 #if EV_FEATURE_API
 void ecb_cold
-ev_verify (EV_P)
+ev_verify (EV_P) EV_THROW
 {
 #if EV_VERIFY
   int i;
@@ -2622,7 +2622,7 @@ struct ev_loop * ecb_cold
 #else
 int
 #endif
-ev_default_loop (unsigned int flags)
+ev_default_loop (unsigned int flags) EV_THROW
 {
   if (!ev_default_loop_ptr)
     {
@@ -2651,7 +2651,7 @@ ev_default_loop (unsigned int flags)
 }
 
 void
-ev_loop_fork (EV_P)
+ev_loop_fork (EV_P) EV_THROW
 {
   postfork = 1; /* must be in line with ev_default_fork */
 }
@@ -2665,7 +2665,7 @@ ev_invoke (EV_P_ void *w, int revents)
 }
 
 unsigned int
-ev_pending_count (EV_P)
+ev_pending_count (EV_P) EV_THROW
 {
   int pri;
   unsigned int count = 0;
@@ -3106,37 +3106,37 @@ ev_run (EV_P_ int flags)
 }
 
 void
-ev_break (EV_P_ int how)
+ev_break (EV_P_ int how) EV_THROW
 {
   loop_done = how;
 }
 
 void
-ev_ref (EV_P)
+ev_ref (EV_P) EV_THROW
 {
   ++activecnt;
 }
 
 void
-ev_unref (EV_P)
+ev_unref (EV_P) EV_THROW
 {
   --activecnt;
 }
 
 void
-ev_now_update (EV_P)
+ev_now_update (EV_P) EV_THROW
 {
   time_update (EV_A_ 1e100);
 }
 
 void
-ev_suspend (EV_P)
+ev_suspend (EV_P) EV_THROW
 {
   ev_now_update (EV_A);
 }
 
 void
-ev_resume (EV_P)
+ev_resume (EV_P) EV_THROW
 {
   ev_tstamp mn_prev = mn_now;
 
@@ -3185,7 +3185,7 @@ clear_pending (EV_P_ W w)
 }
 
 int
-ev_clear_pending (EV_P_ void *w)
+ev_clear_pending (EV_P_ void *w) EV_THROW
 {
   W w_ = (W)w;
   int pending = w_->pending;
@@ -3228,7 +3228,7 @@ ev_stop (EV_P_ W w)
 /*****************************************************************************/
 
 void noinline
-ev_io_start (EV_P_ ev_io *w)
+ev_io_start (EV_P_ ev_io *w) EV_THROW
 {
   int fd = w->fd;
 
@@ -3251,7 +3251,7 @@ ev_io_start (EV_P_ ev_io *w)
 }
 
 void noinline
-ev_io_stop (EV_P_ ev_io *w)
+ev_io_stop (EV_P_ ev_io *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3270,7 +3270,7 @@ ev_io_stop (EV_P_ ev_io *w)
 }
 
 void noinline
-ev_timer_start (EV_P_ ev_timer *w)
+ev_timer_start (EV_P_ ev_timer *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -3294,7 +3294,7 @@ ev_timer_start (EV_P_ ev_timer *w)
 }
 
 void noinline
-ev_timer_stop (EV_P_ ev_timer *w)
+ev_timer_stop (EV_P_ ev_timer *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3324,7 +3324,7 @@ ev_timer_stop (EV_P_ ev_timer *w)
 }
 
 void noinline
-ev_timer_again (EV_P_ ev_timer *w)
+ev_timer_again (EV_P_ ev_timer *w) EV_THROW
 {
   EV_FREQUENT_CHECK;
 
@@ -3351,14 +3351,14 @@ ev_timer_again (EV_P_ ev_timer *w)
 }
 
 ev_tstamp
-ev_timer_remaining (EV_P_ ev_timer *w)
+ev_timer_remaining (EV_P_ ev_timer *w) EV_THROW
 {
   return ev_at (w) - (ev_is_active (w) ? mn_now : 0.);
 }
 
 #if EV_PERIODIC_ENABLE
 void noinline
-ev_periodic_start (EV_P_ ev_periodic *w)
+ev_periodic_start (EV_P_ ev_periodic *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -3388,7 +3388,7 @@ ev_periodic_start (EV_P_ ev_periodic *w)
 }
 
 void noinline
-ev_periodic_stop (EV_P_ ev_periodic *w)
+ev_periodic_stop (EV_P_ ev_periodic *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3416,7 +3416,7 @@ ev_periodic_stop (EV_P_ ev_periodic *w)
 }
 
 void noinline
-ev_periodic_again (EV_P_ ev_periodic *w)
+ev_periodic_again (EV_P_ ev_periodic *w) EV_THROW
 {
   /* TODO: use adjustheap and recalculation */
   ev_periodic_stop (EV_A_ w);
@@ -3431,7 +3431,7 @@ ev_periodic_again (EV_P_ ev_periodic *w)
 #if EV_SIGNAL_ENABLE
 
 void noinline
-ev_signal_start (EV_P_ ev_signal *w)
+ev_signal_start (EV_P_ ev_signal *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -3512,7 +3512,7 @@ ev_signal_start (EV_P_ ev_signal *w)
 }
 
 void noinline
-ev_signal_stop (EV_P_ ev_signal *w)
+ev_signal_stop (EV_P_ ev_signal *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3553,7 +3553,7 @@ ev_signal_stop (EV_P_ ev_signal *w)
 #if EV_CHILD_ENABLE
 
 void
-ev_child_start (EV_P_ ev_child *w)
+ev_child_start (EV_P_ ev_child *w) EV_THROW
 {
 #if EV_MULTIPLICITY
   assert (("libev: child watchers are only supported in the default loop", loop == ev_default_loop_ptr));
@@ -3570,7 +3570,7 @@ ev_child_start (EV_P_ ev_child *w)
 }
 
 void
-ev_child_stop (EV_P_ ev_child *w)
+ev_child_stop (EV_P_ ev_child *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3832,7 +3832,7 @@ infy_fork (EV_P)
 #endif
 
 void
-ev_stat_stat (EV_P_ ev_stat *w)
+ev_stat_stat (EV_P_ ev_stat *w) EV_THROW
 {
   if (lstat (w->path, &w->attr) < 0)
     w->attr.st_nlink = 0;
@@ -3881,7 +3881,7 @@ stat_timer_cb (EV_P_ ev_timer *w_, int revents)
 }
 
 void
-ev_stat_start (EV_P_ ev_stat *w)
+ev_stat_start (EV_P_ ev_stat *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -3912,7 +3912,7 @@ ev_stat_start (EV_P_ ev_stat *w)
 }
 
 void
-ev_stat_stop (EV_P_ ev_stat *w)
+ev_stat_stop (EV_P_ ev_stat *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3938,7 +3938,7 @@ ev_stat_stop (EV_P_ ev_stat *w)
 
 #if EV_IDLE_ENABLE
 void
-ev_idle_start (EV_P_ ev_idle *w)
+ev_idle_start (EV_P_ ev_idle *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -3961,7 +3961,7 @@ ev_idle_start (EV_P_ ev_idle *w)
 }
 
 void
-ev_idle_stop (EV_P_ ev_idle *w)
+ev_idle_stop (EV_P_ ev_idle *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -3985,7 +3985,7 @@ ev_idle_stop (EV_P_ ev_idle *w)
 
 #if EV_PREPARE_ENABLE
 void
-ev_prepare_start (EV_P_ ev_prepare *w)
+ev_prepare_start (EV_P_ ev_prepare *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -4000,7 +4000,7 @@ ev_prepare_start (EV_P_ ev_prepare *w)
 }
 
 void
-ev_prepare_stop (EV_P_ ev_prepare *w)
+ev_prepare_stop (EV_P_ ev_prepare *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -4023,7 +4023,7 @@ ev_prepare_stop (EV_P_ ev_prepare *w)
 
 #if EV_CHECK_ENABLE
 void
-ev_check_start (EV_P_ ev_check *w)
+ev_check_start (EV_P_ ev_check *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -4038,7 +4038,7 @@ ev_check_start (EV_P_ ev_check *w)
 }
 
 void
-ev_check_stop (EV_P_ ev_check *w)
+ev_check_stop (EV_P_ ev_check *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -4061,7 +4061,7 @@ ev_check_stop (EV_P_ ev_check *w)
 
 #if EV_EMBED_ENABLE
 void noinline
-ev_embed_sweep (EV_P_ ev_embed *w)
+ev_embed_sweep (EV_P_ ev_embed *w) EV_THROW
 {
   ev_run (w->other, EVRUN_NOWAIT);
 }
@@ -4119,7 +4119,7 @@ embed_idle_cb (EV_P_ ev_idle *idle, int revents)
 #endif
 
 void
-ev_embed_start (EV_P_ ev_embed *w)
+ev_embed_start (EV_P_ ev_embed *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -4150,7 +4150,7 @@ ev_embed_start (EV_P_ ev_embed *w)
 }
 
 void
-ev_embed_stop (EV_P_ ev_embed *w)
+ev_embed_stop (EV_P_ ev_embed *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -4170,7 +4170,7 @@ ev_embed_stop (EV_P_ ev_embed *w)
 
 #if EV_FORK_ENABLE
 void
-ev_fork_start (EV_P_ ev_fork *w)
+ev_fork_start (EV_P_ ev_fork *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -4185,7 +4185,7 @@ ev_fork_start (EV_P_ ev_fork *w)
 }
 
 void
-ev_fork_stop (EV_P_ ev_fork *w)
+ev_fork_stop (EV_P_ ev_fork *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -4208,7 +4208,7 @@ ev_fork_stop (EV_P_ ev_fork *w)
 
 #if EV_CLEANUP_ENABLE
 void
-ev_cleanup_start (EV_P_ ev_cleanup *w)
+ev_cleanup_start (EV_P_ ev_cleanup *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -4225,7 +4225,7 @@ ev_cleanup_start (EV_P_ ev_cleanup *w)
 }
 
 void
-ev_cleanup_stop (EV_P_ ev_cleanup *w)
+ev_cleanup_stop (EV_P_ ev_cleanup *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -4249,7 +4249,7 @@ ev_cleanup_stop (EV_P_ ev_cleanup *w)
 
 #if EV_ASYNC_ENABLE
 void
-ev_async_start (EV_P_ ev_async *w)
+ev_async_start (EV_P_ ev_async *w) EV_THROW
 {
   if (expect_false (ev_is_active (w)))
     return;
@@ -4268,7 +4268,7 @@ ev_async_start (EV_P_ ev_async *w)
 }
 
 void
-ev_async_stop (EV_P_ ev_async *w)
+ev_async_stop (EV_P_ ev_async *w) EV_THROW
 {
   clear_pending (EV_A_ (W)w);
   if (expect_false (!ev_is_active (w)))
@@ -4289,7 +4289,7 @@ ev_async_stop (EV_P_ ev_async *w)
 }
 
 void
-ev_async_send (EV_P_ ev_async *w)
+ev_async_send (EV_P_ ev_async *w) EV_THROW
 {
   w->sent = 1;
   evpipe_write (EV_A_ &async_pending);
@@ -4336,7 +4336,7 @@ once_cb_to (EV_P_ ev_timer *w, int revents)
 }
 
 void
-ev_once (EV_P_ int fd, int events, ev_tstamp timeout, void (*cb)(int revents, void *arg), void *arg)
+ev_once (EV_P_ int fd, int events, ev_tstamp timeout, void (*cb)(int revents, void *arg), void *arg) EV_THROW
 {
   struct ev_once *once = (struct ev_once *)ev_malloc (sizeof (struct ev_once));
 
@@ -4368,7 +4368,7 @@ ev_once (EV_P_ int fd, int events, ev_tstamp timeout, void (*cb)(int revents, vo
 
 #if EV_WALK_ENABLE
 void ecb_cold
-ev_walk (EV_P_ int types, void (*cb)(EV_P_ int type, void *w))
+ev_walk (EV_P_ int types, void (*cb)(EV_P_ int type, void *w)) EV_THROW
 {
   int i, j;
   ev_watcher_list *wl, *wn;
