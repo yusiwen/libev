@@ -2217,7 +2217,7 @@ ev_set_invoke_pending_cb (EV_P_ void (*invoke_pending_cb)(EV_P)) EV_THROW
 }
 
 void
-ev_set_loop_release_cb (EV_P_ void (*release)(EV_P), void (*acquire)(EV_P)) EV_THROW
+ev_set_loop_release_cb (EV_P_ void (*release)(EV_P) EV_THROW, void (*acquire)(EV_P) EV_THROW) EV_THROW
 {
   release_cb = release;
   acquire_cb = acquire;
