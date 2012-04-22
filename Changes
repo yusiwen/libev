@@ -22,6 +22,7 @@ TODO: assert on fd watcher linked list pointing to itself
 	- (ecb) add memory fence support for gcc-alpha (Christian Weisgerber).
         - work around some kernels losing file descriptors by leaking
           the kqueue descriptor in the child.
+        - include sys/syscall.h instead of plain syscall.h.
 
 4.11 Sat Feb  4 19:52:39 CET 2012
 	- INCOMPATIBLE CHANGE: ev_timer_again now clears the pending status, as

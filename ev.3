@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2012-04-03" "libev-4.11" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2012-04-19" "libev-4.11" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -369,8 +369,8 @@ the current system, you would need to look at \f(CW\*(C`ev_embeddable_backends (
 & ev_supported_backends ()\*(C'\fR, likewise for recommended ones.
 .Sp
 See the description of \f(CW\*(C`ev_embed\*(C'\fR watchers for more info.
-.IP "ev_set_allocator (void *(*cb)(void *ptr, long size))" 4
-.IX Item "ev_set_allocator (void *(*cb)(void *ptr, long size))"
+.IP "ev_set_allocator (void *(*cb)(void *ptr, long size) throw ())" 4
+.IX Item "ev_set_allocator (void *(*cb)(void *ptr, long size) throw ())"
 Sets the allocation function to use (the prototype is similar \- the
 semantics are identical to the \f(CW\*(C`realloc\*(C'\fR C89/SuS/POSIX function). It is
 used to allocate and free memory (no surprises here). If it returns zero
@@ -406,8 +406,8 @@ retries (example requires a standards-compliant \f(CW\*(C`realloc\*(C'\fR).
 \&   ...
 \&   ev_set_allocator (persistent_realloc);
 .Ve
-.IP "ev_set_syserr_cb (void (*cb)(const char *msg))" 4
-.IX Item "ev_set_syserr_cb (void (*cb)(const char *msg))"
+.IP "ev_set_syserr_cb (void (*cb)(const char *msg) throw ())" 4
+.IX Item "ev_set_syserr_cb (void (*cb)(const char *msg) throw ())"
 Set the callback function to call on a retryable system call error (such
 as failed select, poll, epoll_wait). The message is a printable string
 indicating the system call or subsystem causing the problem. If this
@@ -1142,8 +1142,8 @@ invoke the actual watchers inside another context (another thread etc.).
 .Sp
 If you want to reset the callback, use \f(CW\*(C`ev_invoke_pending\*(C'\fR as new
 callback.
-.IP "ev_set_loop_release_cb (loop, void (*release)(\s-1EV_P\s0), void (*acquire)(\s-1EV_P\s0))" 4
-.IX Item "ev_set_loop_release_cb (loop, void (*release)(EV_P), void (*acquire)(EV_P))"
+.IP "ev_set_loop_release_cb (loop, void (*release)(\s-1EV_P\s0) throw (), void (*acquire)(\s-1EV_P\s0) throw ())" 4
+.IX Item "ev_set_loop_release_cb (loop, void (*release)(EV_P) throw (), void (*acquire)(EV_P) throw ())"
 Sometimes you want to share the same loop between multiple threads. This
 can be done relatively simply by putting mutex_lock/unlock calls around
 each call to a libev function.
@@ -4036,6 +4036,40 @@ The libev emulation is \fInot\fR \s-1ABI\s0 compatible to libevent, you need
 to use the libev header file and library.
 .SH "\*(C+ SUPPORT"
 .IX Header " SUPPORT"
+.SS "C \s-1API\s0"
+.IX Subsection "C API"
+The normal C \s-1API\s0 should work fine when used from \*(C+: both ev.h and the
+libev sources can be compiled as \*(C+. Therefore, code that uses the C \s-1API\s0
+will work fine.
+.PP
+Proper exception specifications might have to be added to callbacks passed
+to libev: exceptions may be thrown only from watcher callbacks, all
+other callbacks (allocator, syserr, loop acquire/release and periodioc
+reschedule callbacks) must not throw exceptions, and might need a \f(CW\*(C`throw
+()\*(C'\fR specification. If you have code that needs to be compiled as both C
+and \*(C+ you can use the \f(CW\*(C`EV_THROW\*(C'\fR macro for this:
+.PP
+.Vb 6
+\&   static void
+\&   fatal_error (const char *msg) EV_THROW
+\&   {
+\&     perror (msg);
+\&     abort ();
+\&   }
+\&
+\&   ...
+\&   ev_set_syserr_cb (fatal_error);
+.Ve
+.PP
+The only \s-1API\s0 functions that can currently throw exceptions are \f(CW\*(C`ev_run\*(C'\fR,
+\&\f(CW\*(C`ev_inoke\*(C'\fR, \f(CW\*(C`ev_invoke_pending\*(C'\fR and \f(CW\*(C`ev_loop_destroy\*(C'\fR (the latter
+because it runs cleanup watchers).
+.PP
+Throwing exceptions in watcher callbacks is only supported if libev itself
+is compiled with a \*(C+ compiler or your C and \*(C+ environments allow
+throwing exceptions through C libraries (most do).
+.SS "\*(C+ \s-1API\s0"
+.IX Subsection " API"
 Libev comes with some simplistic wrapper classes for \*(C+ that mainly allow
 you to use some convenience methods to start/stop watchers and also change
 the callback model to a model using method callbacks on objects.
