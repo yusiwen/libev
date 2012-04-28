@@ -3315,7 +3315,7 @@ it by calling C<ev_async_send>, which is thread- and signal safe.
 This functionality is very similar to C<ev_signal> watchers, as signals,
 too, are asynchronous in nature, and signals, too, will be compressed
 (i.e. the number of callback invocations may be less than the number of
-C<ev_async_sent> calls). In fact, you could use signal watchers as a kind
+C<ev_async_send> calls). In fact, you could use signal watchers as a kind
 of "global async watchers" by using a watcher on an otherwise unused
 signal, and C<ev_feed_signal> to signal this watcher from another thread,
 even without knowing which loop owns the signal.
