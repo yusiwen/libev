@@ -1846,6 +1846,8 @@ evpipe_init (EV_P)
 inline_speed void
 evpipe_write (EV_P_ EV_ATOMIC_T *flag)
 {
+  ECB_MEMORY_FENCE; /* push out the write before this function was called, acquire flag */
+
   if (expect_true (*flag))
     return;
 
@@ -1914,10 +1916,14 @@ pipecb (EV_P_ ev_io *iow, int revents)
 
   pipe_write_skipped = 0;
 
+  ECB_MEMORY_FENCE; /* push out skipped, acquire flags */
+
 #if EV_SIGNAL_ENABLE
   if (sig_pending)
     {
       sig_pending = 0;
+
+      ECB_MEMORY_FENCE_RELEASE;
 
       for (i = EV_NSIG - 1; i--; )
         if (expect_false (signals [i].pending))
@@ -1929,6 +1935,8 @@ pipecb (EV_P_ ev_io *iow, int revents)
   if (async_pending)
     {
       async_pending = 0;
+
+      ECB_MEMORY_FENCE_RELEASE;
 
       for (i = asynccnt; i--; )
         if (asyncs [i]->sent)
