@@ -13,6 +13,8 @@ TODO: assert on fd watcher linked list pointing to itself
 	- fix event_base_loop return code, add event_get_callback, event_base_new,
           event_base_get_method calls to improve libevent 1.x emulation and add
           some libevent 2.x funcitonality (based on a patch by Jeff Davey).
+        - add more memory fences to fix a bug reported by Jeff Davey. Better
+          be overfenced than underprotected.
 	- ev_run now returns a boolean status (true meaning watchers are
           still active).
 	- ev_once: undef EV_ERROR in ev_kqueue.c, to avoid clashing with
