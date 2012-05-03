@@ -2883,7 +2883,12 @@ callback, free it. Also, use no error checking, as usual.
    static void
    idle_cb (struct ev_loop *loop, ev_idle *w, int revents)
    {
+     // stop the watcher
+     ev_idle_stop (loop, w);
+
+     // now we can free it
      free (w);
+
      // now do something you wanted to do when the program has
      // no longer anything immediate to do.
    }

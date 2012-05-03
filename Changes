@@ -8,6 +8,7 @@ TODO: ^ OR use WSASend/WSARecv on the handle, which always works
 TODO: assert on fd watcher linked list pointing to itself
 TODO: faq, process a thing in each iteration
 TODO: abuse idle watchers for their side effect
+TODO: abuse check watchers for their side effect
 	- add throw() to all libev functions that cannot throw exceptions, for
           further code size decrease when compiling for C++.
         - add throw () to callbacks that must not throw exceptions (allocator,
