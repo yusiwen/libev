@@ -1176,13 +1176,18 @@ The C<ev_idle> watcher has determined that you have nothing better to do.
 
 =item C<EV_CHECK>
 
-All C<ev_prepare> watchers are invoked just I<before> C<ev_run> starts
-to gather new events, and all C<ev_check> watchers are invoked just after
-C<ev_run> has gathered them, but before it invokes any callbacks for any
-received events. Callbacks of both watcher types can start and stop as
-many watchers as they want, and all of them will be taken into account
-(for example, a C<ev_prepare> watcher might start an idle watcher to keep
-C<ev_run> from blocking).
+All C<ev_prepare> watchers are invoked just I<before> C<ev_run> starts to
+gather new events, and all C<ev_check> watchers are queued (not invoked)
+just after C<ev_run> has gathered them, but before it queues any callbacks
+for any received events. That means C<ev_prepare> watchers are the last
+watchers invoked before the event loop sleeps or polls for new events, and
+C<ev_check> watchers will be invoked before any other watchers of the same
+or lower priority within an event loop iteration.
+
+Callbacks of both watcher types can start and stop as many watchers as
+they want, and all of them will be taken into account (for example, a
+C<ev_prepare> watcher might start an idle watcher to keep C<ev_run> from
+blocking).
 
 =item C<EV_EMBED>
 
