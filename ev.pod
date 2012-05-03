@@ -2849,6 +2849,20 @@ effect on its own sometimes), idle watchers are a good place to do
 "pseudo-background processing", or delay processing stuff to after the
 event loop has handled all outstanding events.
 
+=head3 Abusing an C<ev_idle> watcher for its side-effect
+
+As long as there is at least one active idle watcher, libev will never
+sleep unnecessarily. Or in other words, it will loop as fast as possible.
+For this to work, the idle watcher doesn't need to be invoked at all - the
+lowest priority will do.
+
+This mode of operation can be useful together with an C<ev_check> watcher,
+to do something on each event loop iteration - for example to balance load
+between different connections.
+
+See L<Abusing an C<ev_check> watcher for its side-effect> for a longer
+example.
+
 =head3 Watcher-Specific Functions and Data Members
 
 =over 4
@@ -2881,7 +2895,7 @@ callback, free it. Also, use no error checking, as usual.
 
 =head2 C<ev_prepare> and C<ev_check> - customise your event loop!
 
-Prepare and check watchers are usually (but not always) used in pairs:
+Prepare and check watchers are often (but not always) used in pairs:
 prepare watchers get invoked before the process blocks and check watchers
 afterwards.
 
@@ -2919,9 +2933,10 @@ of lower priority, but only once, using idle watchers to keep the event
 loop from blocking if lower-priority coroutines are active, thus mapping
 low-priority coroutines to idle/background tasks).
 
-It is recommended to give C<ev_check> watchers highest (C<EV_MAXPRI>)
-priority, to ensure that they are being run before any other watchers
-after the poll (this doesn't matter for C<ev_prepare> watchers).
+When used for this purpose, it is recommended to give C<ev_check> watchers
+highest (C<EV_MAXPRI>) priority, to ensure that they are being run before
+any other watchers after the poll (this doesn't matter for C<ev_prepare>
+watchers).
 
 Also, C<ev_check> watchers (and C<ev_prepare> watchers, too) should not
 activate ("feed") events into libev. While libev fully supports this, they
@@ -2930,6 +2945,26 @@ C<ev_check> watchers are often used to embed other (non-libev) event
 loops those other event loops might be in an unusable state until their
 C<ev_check> watcher ran (always remind yourself to coexist peacefully with
 others).
+
+=head3 Abusing an C<ev_check> watcher for its side-effect
+
+C<ev_check> (and less often also C<ev_prepare>) watchers can also be
+useful because they are called once per event loop iteration. For
+example, if you want to handle a large number of connections fairly, you
+normally only do a bit of work for each active connection, and if there
+is more work to do, you wait for the next event loop iteration, so other
+connections have a chance of making progress.
+
+Using an C<ev_check> watcher is almost enough: it will be called on the
+next event loop iteration. However, that isn't as soon as possible -
+without external events, your C<ev_check> watcher will not be invoked.
+
+
+This is where C<ev_idle> watchers come in handy - all you need is a
+single global idle watcher that is active as long as you have one active
+C<ev_check> watcher. The C<ev_idle> watcher makes sure the event loop
+will not sleep, and the C<ev_check> watcher makes sure a callback gets
+invoked. Neither watcher alone can do that.
 
 =head3 Watcher-Specific Functions and Data Members
 
