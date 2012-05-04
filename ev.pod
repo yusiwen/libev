@@ -1320,7 +1320,7 @@ it).
 
 Returns the callback currently set on the watcher.
 
-=item ev_cb_set (ev_TYPE *watcher, callback)
+=item ev_set_cb (ev_TYPE *watcher, callback)
 
 Change the callback. You can change the callback at virtually any time
 (modulo threads).
@@ -3877,7 +3877,7 @@ called):
    void
    wait_for_event (ev_watcher *w)
    {
-     ev_cb_set (w) = current_coro;
+     ev_set_cb (w) = current_coro;
      switch_to (libev_coro);
    }
 
