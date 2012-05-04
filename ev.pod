@@ -2860,7 +2860,7 @@ This mode of operation can be useful together with an C<ev_check> watcher,
 to do something on each event loop iteration - for example to balance load
 between different connections.
 
-See L<Abusing an C<ev_check> watcher for its side-effect> for a longer
+See L<< Abusing an C<ev_check> watcher for its side-effect >> for a longer
 example.
 
 =head3 Watcher-Specific Functions and Data Members
