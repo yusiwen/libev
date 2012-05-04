@@ -3877,7 +3877,7 @@ called):
    void
    wait_for_event (ev_watcher *w)
    {
-     ev_set_cb (w) = current_coro;
+     ev_set_cb (w, current_coro);
      switch_to (libev_coro);
    }
 
