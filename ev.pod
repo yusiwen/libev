@@ -84,9 +84,9 @@ throughout this document.
 
 This manual tries to be very detailed, but unfortunately, this also makes
 it very long. If you just want to know the basics of libev, I suggest
-reading L<ANATOMY OF A WATCHER>, then the L<EXAMPLE PROGRAM> above and
-look up the missing functions in L<GLOBAL FUNCTIONS> and the C<ev_io> and
-C<ev_timer> sections in L<WATCHER TYPES>.
+reading L</ANATOMY OF A WATCHER>, then the L<E/XAMPLE PROGRAM> above and
+look up the missing functions in L</GLOBAL FUNCTIONS> and the C<ev_io> and
+C<ev_timer> sections in L</WATCHER TYPES>.
 
 =head1 ABOUT LIBEV
 
@@ -766,7 +766,7 @@ This function is rarely useful, but when some event callback runs for a
 very long time without entering the event loop, updating libev's idea of
 the current time is a good idea.
 
-See also L<The special problem of time updates> in the C<ev_timer> section.
+See also L</The special problem of time updates> in the C<ev_timer> section.
 
 =item ev_suspend (loop)
 
@@ -1348,7 +1348,7 @@ or might not have been clamped to the valid range.
 The default priority used by watchers when no priority has been set is
 always C<0>, which is supposed to not be too high and not be too low :).
 
-See L<WATCHER PRIORITY MODELS>, below, for a more thorough treatment of
+See L</WATCHER PRIORITY MODELS>, below, for a more thorough treatment of
 priorities.
 
 =item ev_invoke (loop, ev_TYPE *watcher, int revents)
@@ -1383,7 +1383,7 @@ functions that do not need a watcher.
 
 =back
 
-See also the L<ASSOCIATING CUSTOM DATA WITH A WATCHER> and L<BUILDING YOUR
+See also the L</ASSOCIATING CUSTOM DATA WITH A WATCHER> and L</BUILDING YOUR
 OWN COMPOSITE WATCHERS> idioms.
 
 =head2 WATCHER STATES
@@ -2138,7 +2138,7 @@ and start the timer, if necessary.
 
 =back
 
-This sounds a bit complicated, see L<Be smart about timeouts>, above, for a
+This sounds a bit complicated, see L</Be smart about timeouts>, above, for a
 usage example.
 
 =item ev_tstamp ev_timer_remaining (loop, ev_timer *)
@@ -2860,7 +2860,7 @@ This mode of operation can be useful together with an C<ev_check> watcher,
 to do something on each event loop iteration - for example to balance load
 between different connections.
 
-See L<< Abusing an C<ev_check> watcher for its side-effect >> for a longer
+See L<< /Abusing an C<ev_check> watcher for its side-effect >> for a longer
 example.
 
 =head3 Watcher-Specific Functions and Data Members
@@ -3890,7 +3890,7 @@ instead of storing a coroutine, you store the queue object and instead of
 switching to a coroutine, you push the watcher onto the queue and notify
 any waiters.
 
-To embed libev, see L<EMBEDDING>, but in short, it's easiest to create two
+To embed libev, see L</EMBEDDING>, but in short, it's easiest to create two
 files, F<my_ev.h> and F<my_ev.c> that include the respective libev files:
 
    // my_ev.h
@@ -4995,7 +4995,7 @@ watcher callback into the event loop interested in the signal.
 
 =back
 
-See also L<THREAD LOCKING EXAMPLE>.
+See also L</THREAD LOCKING EXAMPLE>.
 
 =head3 COROUTINES
 
@@ -5411,7 +5411,7 @@ new API early than late.
 =item C<EV_COMPAT3> backwards compatibility mechanism
 
 The backward compatibility mechanism can be controlled by
-C<EV_COMPAT3>. See L<PREPROCESSOR SYMBOLS/MACROS> in the L<EMBEDDING>
+C<EV_COMPAT3>. See L</PREPROCESSOR SYMBOLS/MACROS> in the L</EMBEDDING>
 section.
 
 =item C<ev_default_destroy> and C<ev_default_fork> have been removed
@@ -5464,7 +5464,7 @@ and work, but the library code will of course be larger.
 =item active
 
 A watcher is active as long as it has been started and not yet stopped.
-See L<WATCHER STATES> for details.
+See L</WATCHER STATES> for details.
 
 =item application
 
@@ -5510,7 +5510,7 @@ watchers and events.
 =item pending
 
 A watcher is pending as soon as the corresponding event has been
-detected. See L<WATCHER STATES> for details.
+detected. See L</WATCHER STATES> for details.
 
 =item real time
 
