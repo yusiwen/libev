@@ -4366,6 +4366,12 @@ http://modeemi.cs.tut.fi/~flux/software/ocaml\-ev/ <http://modeemi.cs.tut.fi/~fl
 Brian Maher has written a partial interface to libev for lua (at the
 time of this writing, only \f(CW\*(C`ev_io\*(C'\fR and \f(CW\*(C`ev_timer\*(C'\fR), to be found at
 http://github.com/brimworks/lua\-ev <http://github.com/brimworks/lua-ev>.
+.IP "Javascript" 4
+.IX Item "Javascript"
+Node.js (<http://nodejs.org>) uses libev as the underlying event library.
+.IP "Others" 4
+.IX Item "Others"
+There are others, and I stopped counting.
 .SH "MACRO MAGIC"
 .IX Header "MACRO MAGIC"
 Libev can be compiled with a variety of options, the most fundamental
@@ -4670,6 +4676,12 @@ If programs implement their own fd to handle mapping on win32, then this
 macro can be used to override the \f(CW\*(C`close\*(C'\fR function, useful to unregister
 file descriptors again. Note that the replacement function has to close
 the underlying \s-1OS\s0 handle.
+.IP "\s-1EV_USE_WSASOCKET\s0" 4
+.IX Item "EV_USE_WSASOCKET"
+If defined to be \f(CW1\fR, libev will use \f(CW\*(C`WSASocket\*(C'\fR to create its internal
+communication socket, which works better in some environments. Otherwise,
+the normal \f(CW\*(C`socket\*(C'\fR function will be used, which works better in other
+enviornments.
 .IP "\s-1EV_USE_POLL\s0" 4
 .IX Item "EV_USE_POLL"
 If defined to be \f(CW1\fR, libev will compile in support for the \f(CW\*(C`poll\*(C'\fR(2)
