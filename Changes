@@ -5,7 +5,6 @@ TODO: EV_STANDALONE == NO_HASSEL (do not use clock_gettime in ev_standalone)
 
 TODO: document WSA_EV_USE_SOCKET in win32 part
 TODO: ^ OR use WSASend/WSARecv on the handle, which always works
-TODO: assert on fd watcher linked list pointing to itself
 TODO: faq, process a thing in each iteration
 	- queueing pending watchers of higher priority from a watcher now invokes
           them in a timely fashion (reported by Denis Bilenko).
