@@ -1432,6 +1432,8 @@ ev_feed_event (EV_P_ void *w, int revents) EV_THROW
       pendings [pri][w_->pending - 1].w      = w_;
       pendings [pri][w_->pending - 1].events = revents;
     }
+
+  pendingpri = NUMPRI - 1;
 }
 
 inline_speed void
@@ -2687,12 +2689,10 @@ ev_pending_count (EV_P) EV_THROW
 void noinline
 ev_invoke_pending (EV_P)
 {
-  int pri;
-
-  for (pri = NUMPRI; pri--; )
-    while (pendingcnt [pri])
+  for (pendingpri = NUMPRI; pendingpri--; ) /* pendingpri is modified during the loop */
+    while (pendingcnt [pendingpri])
       {
-        ANPENDING *p = pendings [pri] + --pendingcnt [pri];
+        ANPENDING *p = pendings [pendingpri] + --pendingcnt [pendingpri];
 
         p->w->pending = 0;
         EV_CB_INVOKE (p->w, p->events);
