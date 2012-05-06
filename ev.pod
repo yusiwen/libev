@@ -4556,6 +4556,13 @@ macro can be used to override the C<close> function, useful to unregister
 file descriptors again. Note that the replacement function has to close
 the underlying OS handle.
 
+=item EV_USE_WSASOCKET
+
+If defined to be C<1>, libev will use C<WSASocket> to create its internal
+communication socket, which works better in some environments. Otherwise,
+the normal C<socket> function will be used, which works better in other
+enviornments.
+
 =item EV_USE_POLL
 
 If defined to be C<1>, libev will compile in support for the C<poll>(2)

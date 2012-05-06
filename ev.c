@@ -1878,14 +1878,15 @@ evpipe_write (EV_P_ EV_ATOMIC_T *flag)
       else
 #endif
         {
-          /* win32 people keep sending patches that change this write() to send() */
-          /* and then run away. but send() is wrong, it wants a socket handle on win32 */
-          /* so when you think this write should be a send instead, please find out */
-          /* where your send() is from - it's definitely not the microsoft send, and */
-          /* tell me. thank you. */
-          /* it might be that your problem is that your environment needs EV_USE_WSASOCKET */
-          /* check the ev documentation on how to use this flag */
+#ifdef _WIN32
+          WSABUF buf;
+          DWORD sent;
+          buf.buf = &buf;
+          buf.len = 1;
+          WSASend (EV_FD_TO_WIN32_HANDLE (evpipe [1]), &buf, 1, &sent, 0, 0, 0);
+#else
           write (evpipe [1], &(evpipe [1]), 1);
+#endif
         }
 
       errno = old_errno;
@@ -1910,9 +1911,16 @@ pipecb (EV_P_ ev_io *iow, int revents)
       else
 #endif
         {
-          char dummy;
-          /* see discussion in evpipe_write when you think this read should be recv in win32 */
-          read (evpipe [0], &dummy, 1);
+          char dummy[4];
+#ifdef _WIN32
+          WSABUF buf;
+          DWORD recvd;
+          buf.buf = dummy;
+          buf.len = sizeof (dummy);
+          WSARecv (EV_FD_TO_WIN32_HANDLE (evpipe [0]), &buf, 1, &recvd, 0, 0, 0);
+#else
+          read (evpipe [0], &dummy, sizeof (dummy));
+#endif
         }
     }
 
