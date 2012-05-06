@@ -14,6 +14,6 @@
          (map "#define $_ ((loop)->$_)\n", sort @syms),
          "#else\n",
          "#undef EV_WRAP_H\n",
-         (map "#undef $_\n", sort @syms),
+         (map "#undef $_\n", @syms),
          "#endif\n";
 ' >ev_wrap.h
