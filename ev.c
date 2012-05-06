@@ -2556,8 +2556,8 @@ void ecb_cold
 ev_verify (EV_P) EV_THROW
 {
 #if EV_VERIFY
-  int i;
-  WL w;
+  int i, j;
+  WL w, w2;
 
   assert (activecnt >= -1);
 
@@ -2566,10 +2566,15 @@ ev_verify (EV_P) EV_THROW
     assert (("libev: negative fd in fdchanges", fdchanges [i] >= 0));
 
   assert (anfdmax >= 0);
-  for (i = 0; i < anfdmax; ++i)
-    for (w = anfds [i].head; w; w = w->next)
+  for (i = j = 0; i < anfdmax; ++i)
+    for (w = w2 = anfds [i].head; w; w = w->next)
       {
         verify_watcher (EV_A_ (W)w);
+
+        if (++j & 1)
+          w2 = w2->next;
+
+        assert (("libev: io watcher list contains a loop", w != w2));
         assert (("libev: inactive fd watcher on anfd list", ev_active (w) == 1));
         assert (("libev: fd mismatch between watcher and anfd", ((ev_io *)w)->fd == i));
       }
@@ -3251,6 +3256,9 @@ ev_io_start (EV_P_ ev_io *w) EV_THROW
   ev_start (EV_A_ (W)w, 1);
   array_needsize (ANFD, anfds, anfdmax, fd + 1, array_init_zero);
   wlist_add (&anfds[fd].head, (WL)w);
+
+  /* common bug, apparently */
+  assert (("libev: ev_io_start called with corrupted watcher", ((WL)w)->next != (WL)w));
 
   fd_change (EV_A_ fd, w->events & EV__IOFDSET | EV_ANFD_REIFY);
   w->events &= ~EV__IOFDSET;

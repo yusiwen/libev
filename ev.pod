@@ -4240,6 +4240,14 @@ Brian Maher has written a partial interface to libev for lua (at the
 time of this writing, only C<ev_io> and C<ev_timer>), to be found at
 L<http://github.com/brimworks/lua-ev>.
 
+=item Javascript
+
+Node.js (L<http://nodejs.org>) uses libev as the underlying event library.
+
+=item Others
+
+There are others, and I stopped counting.
+
 =back
 
 
