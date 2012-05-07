@@ -3952,7 +3952,7 @@ will work fine.
 
 Proper exception specifications might have to be added to callbacks passed
 to libev: exceptions may be thrown only from watcher callbacks, all
-other callbacks (allocator, syserr, loop acquire/release and periodioc
+other callbacks (allocator, syserr, loop acquire/release and periodic
 reschedule callbacks) must not throw exceptions, and might need a C<throw
 ()> specification. If you have code that needs to be compiled as both C
 and C++ you can use the C<EV_THROW> macro for this:
@@ -4561,7 +4561,7 @@ the underlying OS handle.
 If defined to be C<1>, libev will use C<WSASocket> to create its internal
 communication socket, which works better in some environments. Otherwise,
 the normal C<socket> function will be used, which works better in other
-enviornments.
+environments.
 
 =item EV_USE_POLL
 
