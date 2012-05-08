@@ -2565,7 +2565,7 @@ void ecb_cold
 ev_verify (EV_P) EV_THROW
 {
 #if EV_VERIFY
-  int i, j;
+  int i;
   WL w, w2;
 
   assert (activecnt >= -1);
@@ -2575,20 +2575,24 @@ ev_verify (EV_P) EV_THROW
     assert (("libev: negative fd in fdchanges", fdchanges [i] >= 0));
 
   assert (anfdmax >= 0);
-  for (i = j = 0; i < anfdmax; ++i)
-    for (w = w2 = anfds [i].head; w; w = w->next)
-      {
-        verify_watcher (EV_A_ (W)w);
+  for (i = 0; i < anfdmax; ++i)
+    {
+      int j = 0;
 
-        if (j++ & 1)
-          {
-            assert (("libev: io watcher list contains a loop", w != w2));
-            w2 = w2->next;
-          }
+      for (w = w2 = anfds [i].head; w; w = w->next)
+        {
+          verify_watcher (EV_A_ (W)w);
 
-        assert (("libev: inactive fd watcher on anfd list", ev_active (w) == 1));
-        assert (("libev: fd mismatch between watcher and anfd", ((ev_io *)w)->fd == i));
-      }
+          if (j++ & 1)
+            {
+              assert (("libev: io watcher list contains a loop", w != w2));
+              w2 = w2->next;
+            }
+
+          assert (("libev: inactive fd watcher on anfd list", ev_active (w) == 1));
+          assert (("libev: fd mismatch between watcher and anfd", ((ev_io *)w)->fd == i));
+        }
+    }
 
   assert (timermax >= timercnt);
   verify_heap (EV_A_ timers, timercnt);
