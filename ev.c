@@ -204,6 +204,7 @@
 # include <io.h>
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
+# include <winsock2.h>
 # ifndef EV_SELECT_IS_WINSOCKET
 #  define EV_SELECT_IS_WINSOCKET 1
 # endif
@@ -2579,10 +2580,12 @@ ev_verify (EV_P) EV_THROW
       {
         verify_watcher (EV_A_ (W)w);
 
-        if (++j & 1)
-          w2 = w2->next;
+        if (j++ & 1)
+          {
+            assert (("libev: io watcher list contains a loop", w != w2));
+            w2 = w2->next;
+          }
 
-        assert (("libev: io watcher list contains a loop", w != w2));
         assert (("libev: inactive fd watcher on anfd list", ev_active (w) == 1));
         assert (("libev: fd mismatch between watcher and anfd", ((ev_io *)w)->fd == i));
       }
