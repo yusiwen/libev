@@ -286,7 +286,7 @@ namespace ev {
     template<class K, void (K::*method)(int)>
     static void method_thunk (int revents, void *arg)
     {
-      static_cast<K *>(arg)->*method
+      (static_cast<K *>(arg)->*method)
         (revents);
     }
 
@@ -300,7 +300,7 @@ namespace ev {
     template<class K, void (K::*method)()>
     static void method_noargs_thunk (int revents, void *arg)
     {
-      static_cast<K *>(arg)->*method
+      (static_cast<K *>(arg)->*method)
         ();
     }
 
@@ -513,7 +513,7 @@ namespace ev {
 
     void feed_event (int revents) throw ()
     {
-      ev_feed_event (EV_A_ static_cast<const ev_watcher *>(this), revents);
+      ev_feed_event (EV_A_ static_cast<ev_watcher *>(this), revents);
     }
   };
 
