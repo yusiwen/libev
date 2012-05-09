@@ -413,10 +413,6 @@
 # endif
 #endif
 
-#if EV_SELECT_IS_WINSOCKET
-# include <winsock.h>
-#endif
-
 #if EV_USE_EVENTFD
 /* our minimum requirement is glibc 2.7 which has the stub, but not the header */
 # include <stdint.h>
