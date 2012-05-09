@@ -203,8 +203,8 @@
 #else
 # include <io.h>
 # define WIN32_LEAN_AND_MEAN
-# include <windows.h>
 # include <winsock2.h>
+# include <windows.h>
 # ifndef EV_SELECT_IS_WINSOCKET
 #  define EV_SELECT_IS_WINSOCKET 1
 # endif
