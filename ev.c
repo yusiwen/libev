@@ -1912,9 +1912,10 @@ pipecb (EV_P_ ev_io *iow, int revents)
 #ifdef _WIN32
           WSABUF buf;
           DWORD recvd;
+          DWORD flags = 0;
           buf.buf = dummy;
           buf.len = sizeof (dummy);
-          WSARecv (EV_FD_TO_WIN32_HANDLE (evpipe [0]), &buf, 1, &recvd, 0, 0, 0);
+          WSARecv (EV_FD_TO_WIN32_HANDLE (evpipe [0]), &buf, 1, &recvd, &flags, 0, 0);
 #else
           read (evpipe [0], &dummy, sizeof (dummy));
 #endif
