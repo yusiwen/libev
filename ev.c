@@ -2357,7 +2357,7 @@ ev_loop_destroy (EV_P)
 #endif
 
 #if EV_CHILD_ENABLE
-  if (ev_is_active (&childev))
+  if (ev_is_default_loop (EV_A) && ev_is_active (&childev))
     {
       ev_ref (EV_A); /* child watcher */
       ev_signal_stop (EV_A_ &childev);
