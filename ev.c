@@ -1107,7 +1107,7 @@ ev_printerr (const char *msg)
 static void (*syserr_cb)(const char *msg) EV_THROW;
 
 void ecb_cold
-ev_set_syserr_cb (void (*cb)(const char *msg)) EV_THROW
+ev_set_syserr_cb (void (*cb)(const char *msg) EV_THROW) EV_THROW
 {
   syserr_cb = cb;
 }
@@ -1135,7 +1135,7 @@ ev_syserr (const char *msg)
 }
 
 static void *
-ev_realloc_emul (void *ptr, long size)
+ev_realloc_emul (void *ptr, long size) EV_THROW
 {
 #if __GLIBC__
   return realloc (ptr, size);
@@ -1156,7 +1156,7 @@ ev_realloc_emul (void *ptr, long size)
 static void *(*alloc)(void *ptr, long size) EV_THROW = ev_realloc_emul;
 
 void ecb_cold
-ev_set_allocator (void *(*cb)(void *ptr, long size)) EV_THROW
+ev_set_allocator (void *(*cb)(void *ptr, long size) EV_THROW) EV_THROW
 {
   alloc = cb;
 }
