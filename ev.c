@@ -2814,8 +2814,6 @@ periodics_reify (EV_P)
 
   while (periodiccnt && ANHE_at (periodics [HEAP0]) < ev_rt_now)
     {
-      int feed_count = 0;
-
       do
         {
           ev_periodic *w = (ev_periodic *)ANHE_w (periodics [HEAP0]);
