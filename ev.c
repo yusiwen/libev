@@ -570,7 +570,7 @@ struct signalfd_siginfo
 /* ECB_NO_SMP     - ecb might be used in multiple threads, but only on a single cpu */
 
 #if ECB_NO_THREADS
-# define ECB_NO_SMP 1
+  #define ECB_NO_SMP 1
 #endif
 
 #if ECB_NO_SMP
@@ -623,8 +623,6 @@ struct signalfd_siginfo
     #define ECB_MEMORY_FENCE         __c11_atomic_thread_fence (__ATOMIC_SEQ_CST)
   #elif ECB_GCC_VERSION(4,4) || defined __INTEL_COMPILER || defined __clang__
     #define ECB_MEMORY_FENCE         __sync_synchronize ()
-    /*#define ECB_MEMORY_FENCE_ACQUIRE ({ char dummy = 0; __sync_lock_test_and_set (&dummy, 1); }) */
-    /*#define ECB_MEMORY_FENCE_RELEASE ({ char dummy = 1; __sync_lock_release      (&dummy   ); }) */
   #elif _MSC_VER >= 1400 /* VC++ 2005 */
     #pragma intrinsic(_ReadBarrier,_WriteBarrier,_ReadWriteBarrier)
     #define ECB_MEMORY_FENCE         _ReadWriteBarrier ()
@@ -651,7 +649,6 @@ struct signalfd_siginfo
     /* unfortunately, the C11 memory model seems to be very limited, and unable to express */
     /* simple barrier semantics. That means we need to take out thor's hammer. */
     #define ECB_MEMORY_FENCE         atomic_thread_fence (memory_order_seq_cst)
-    #endif
   #endif
 #endif
 
