@@ -2061,7 +2061,7 @@ ev_feed_signal_event (EV_P_ int signum) EV_THROW
 #endif
 
   signals [signum].pending = 0;
-  MEMORY_FENCE_RELEASE;
+  ECB_MEMORY_FENCE_RELEASE;
 
   for (w = signals [signum].head; w; w = w->next)
     ev_feed_event (EV_A_ (W)w, EV_SIGNAL);
