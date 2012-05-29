@@ -2735,7 +2735,7 @@ ev_default_loop (unsigned int flags) EV_THROW
 void
 ev_loop_fork (EV_P) EV_THROW
 {
-  postfork = 1; /* must be in line with ev_default_fork */
+  postfork = 1;
 }
 
 /*****************************************************************************/
