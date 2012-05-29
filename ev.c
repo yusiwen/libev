@@ -1851,7 +1851,6 @@ evpipe_write (EV_P_ EV_ATOMIC_T *flag)
     return;
 
   *flag = 1;
-
   ECB_MEMORY_FENCE_RELEASE; /* make sure flag is visible before the wakeup */
 
   pipe_write_skipped = 1;
@@ -1862,7 +1861,8 @@ evpipe_write (EV_P_ EV_ATOMIC_T *flag)
     {
       int old_errno;
 
-      pipe_write_skipped = 0; /* just an optimisation, no fence needed */
+      pipe_write_skipped = 0;
+      ECB_MEMORY_FENCE_RELEASE;
 
       old_errno = errno; /* save errno because write will clobber it */
 
@@ -1931,7 +1931,7 @@ pipecb (EV_P_ ev_io *iow, int revents)
     {
       sig_pending = 0;
 
-      ECB_MEMORY_FENCE_RELEASE;
+      ECB_MEMORY_FENCE;
 
       for (i = EV_NSIG - 1; i--; )
         if (expect_false (signals [i].pending))
@@ -1944,12 +1944,13 @@ pipecb (EV_P_ ev_io *iow, int revents)
     {
       async_pending = 0;
 
-      ECB_MEMORY_FENCE_RELEASE;
+      ECB_MEMORY_FENCE;
 
       for (i = asynccnt; i--; )
         if (asyncs [i]->sent)
           {
             asyncs [i]->sent = 0;
+            ECB_MEMORY_FENCE_RELEASE;
             ev_feed_event (EV_A_ asyncs [i], EV_ASYNC);
           }
     }
@@ -2004,6 +2005,7 @@ ev_feed_signal_event (EV_P_ int signum) EV_THROW
 #endif
 
   signals [signum].pending = 0;
+  MEMORY_FENCE_RELEASE;
 
   for (w = signals [signum].head; w; w = w->next)
     ev_feed_event (EV_A_ (W)w, EV_SIGNAL);
