@@ -506,6 +506,9 @@ struct signalfd_siginfo
 #ifndef ECB_H
 #define ECB_H
 
+/* 16 bits major, 16 bits minor */
+#define ECB_VERSION 0x00010001
+
 #ifdef _WIN32
   typedef   signed char   int8_t;
   typedef unsigned char  uint8_t;
@@ -520,8 +523,23 @@ struct signalfd_siginfo
     typedef   signed __int64   int64_t;
     typedef unsigned __int64   uint64_t;
   #endif
+  #ifdef _WIN64
+    #define ECB_PTRSIZE 8
+    typedef uint64_t uintptr_t;
+    typedef  int64_t  intptr_t;
+  #else
+    #define ECB_PTRSIZE 4
+    typedef uint32_t uintptr_t;
+    typedef  int32_t  intptr_t;
+  #endif
+ typedef intptr_t ptrdiff_t;
 #else
   #include <inttypes.h>
+  #if UINTMAX_MAX > 0xffffffffU
+    #define ECB_PTRSIZE 8
+  #else
+    #define ECB_PTRSIZE 4
+  #endif
 #endif
 
 /* many compilers define _GNUC_ to some versions but then only implement
@@ -539,6 +557,13 @@ struct signalfd_siginfo
   #endif
 #endif
 
+#define ECB_C     (__STDC__+0) /* this assumes that __STDC__ is either empty or a number */
+#define ECB_C99   (__STDC_VERSION__ >= 199901L)
+#define ECB_C11   (__STDC_VERSION__ >= 201112L)
+#define ECB_CPP   (__cplusplus+0)
+#define ECB_CPP98 (__cplusplus >= 199711L)
+#define ECB_CPP11 (__cplusplus >= 201103L)
+
 /*****************************************************************************/
 
 /* ECB_NO_THREADS - ecb is not used by multiple threads, ever */
@@ -548,7 +573,7 @@ struct signalfd_siginfo
 # define ECB_NO_SMP 1
 #endif
 
-#if ECB_NO_THREADS || ECB_NO_SMP
+#if ECB_NO_SMP
   #define ECB_MEMORY_FENCE do { } while (0)
 #endif
 
@@ -556,36 +581,47 @@ struct signalfd_siginfo
   #if ECB_GCC_VERSION(2,5) || defined __INTEL_COMPILER || (__llvm__ && __GNUC__) || __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
     #if __i386 || __i386__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("lock; orb $0, -1(%%esp)" : : : "memory")
-      #define ECB_MEMORY_FENCE_ACQUIRE ECB_MEMORY_FENCE /* non-lock xchg might be enough */
-      #define ECB_MEMORY_FENCE_RELEASE do { } while (0) /* unlikely to change in future cpus */
+      #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ (""                        : : : "memory")
+      #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("")
     #elif __amd64 || __amd64__ || __x86_64 || __x86_64__
-      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mfence" : : : "memory")
-      #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ ("lfence" : : : "memory")
-      #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("sfence") /* play safe - not needed in any current cpu */
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mfence"   : : : "memory")
+      #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ (""         : : : "memory")
+      #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("")
     #elif __powerpc__ || __ppc__ || __powerpc64__ || __ppc64__
-      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync" : : : "memory")
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync"     : : : "memory")
     #elif defined __ARM_ARCH_6__  || defined __ARM_ARCH_6J__  \
        || defined __ARM_ARCH_6K__ || defined __ARM_ARCH_6ZK__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mcr p15,0,%0,c7,c10,5" : : "r" (0) : "memory")
     #elif defined __ARM_ARCH_7__  || defined __ARM_ARCH_7A__  \
-       || defined __ARM_ARCH_7M__ || defined __ARM_ARCH_7R__ 
-      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("dmb" : : : "memory")
+       || defined __ARM_ARCH_7M__ || defined __ARM_ARCH_7R__
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("dmb"      : : : "memory")
     #elif __sparc || __sparc__
-      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("membar #LoadStore | #LoadLoad | #StoreStore | #StoreLoad | " : : : "memory")
-      #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ ("membar #LoadStore | #LoadLoad"                               : : : "memory")
-      #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("membar #LoadStore |             #StoreStore")
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("membar #LoadStore | #LoadLoad | #StoreStore | #StoreLoad" : : : "memory")
+      #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ ("membar #LoadStore | #LoadLoad"                            : : : "memory")
+      #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("membar #LoadStore             | #StoreStore")
     #elif defined __s390__ || defined __s390x__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("bcr 15,0" : : : "memory")
     #elif defined __mips__
-      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync" : : : "memory")
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("sync"     : : : "memory")
     #elif defined __alpha__
-      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mb" : : : "memory")
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mb"       : : : "memory")
+    #elif defined __hppa__
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ (""         : : : "memory")
+      #define ECB_MEMORY_FENCE_RELEASE __asm__ __volatile__ ("")
+    #elif defined __ia64__
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("mf"       : : : "memory")
     #endif
   #endif
 #endif
 
 #ifndef ECB_MEMORY_FENCE
-  #if ECB_GCC_VERSION(4,4) || defined __INTEL_COMPILER || defined __clang__
+  #if ECB_GCC_VERSION(4,7)
+    /* see comment below about the C11 memory model. in short - avoid */
+    #define ECB_MEMORY_FENCE         __atomic_thread_fence (__ATOMIC_SEQ_CST)
+  #elif defined __clang && __has_feature (cxx_atomic)
+    /* see above */
+    #define ECB_MEMORY_FENCE         __c11_atomic_thread_fence (__ATOMIC_SEQ_CST)
+  #elif ECB_GCC_VERSION(4,4) || defined __INTEL_COMPILER || defined __clang__
     #define ECB_MEMORY_FENCE         __sync_synchronize ()
     /*#define ECB_MEMORY_FENCE_ACQUIRE ({ char dummy = 0; __sync_lock_test_and_set (&dummy, 1); }) */
     /*#define ECB_MEMORY_FENCE_RELEASE ({ char dummy = 1; __sync_lock_release      (&dummy   ); }) */
@@ -604,6 +640,18 @@ struct signalfd_siginfo
     #define ECB_MEMORY_FENCE_RELEASE __machine_w_barrier  ()
   #elif __xlC__
     #define ECB_MEMORY_FENCE         __sync ()
+  #endif
+#endif
+
+#ifndef ECB_MEMORY_FENCE
+  #if ECB_C11 && !defined __STDC_NO_ATOMICS__
+    /* we assume that these memory fences work on all variables/all memory accesses, */
+    /* not just C11 atomics and atomic accesses */
+    #include <stdatomic.h>
+    /* unfortunately, the C11 memory model seems to be very limited, and unable to express */
+    /* simple barrier semantics. That means we need to take out thor's hammer. */
+    #define ECB_MEMORY_FENCE         atomic_thread_fence (memory_order_seq_cst)
+    #endif
   #endif
 #endif
 
@@ -634,8 +682,6 @@ struct signalfd_siginfo
 #endif
 
 /*****************************************************************************/
-
-#define ECB_C99 (__STDC_VERSION__ >= 199901L)
 
 #if __cplusplus
   #define ecb_inline static inline
@@ -684,10 +730,15 @@ typedef int ecb_bool;
 #endif
 
 #define ecb_noinline   ecb_attribute ((__noinline__))
-#define ecb_noreturn   ecb_attribute ((__noreturn__))
 #define ecb_unused     ecb_attribute ((__unused__))
 #define ecb_const      ecb_attribute ((__const__))
 #define ecb_pure       ecb_attribute ((__pure__))
+
+#if ECB_C11
+  #define ecb_noreturn   _Noreturn
+#else
+  #define ecb_noreturn   ecb_attribute ((__noreturn__))
+#endif
 
 #if ECB_GCC_VERSION(4,3)
   #define ecb_artificial ecb_attribute ((__artificial__))
@@ -787,6 +838,11 @@ typedef int ecb_bool;
     return r + ecb_ld32 (x);
   }
 #endif
+
+ecb_function_ ecb_bool ecb_is_pot32 (uint32_t x) ecb_const;
+ecb_function_ ecb_bool ecb_is_pot32 (uint32_t x) { return !(x & (x - 1)); }
+ecb_function_ ecb_bool ecb_is_pot64 (uint64_t x) ecb_const;
+ecb_function_ ecb_bool ecb_is_pot64 (uint64_t x) { return !(x & (x - 1)); }
 
 ecb_function_ uint8_t  ecb_bitrev8  (uint8_t  x) ecb_const;
 ecb_function_ uint8_t  ecb_bitrev8  (uint8_t  x)
