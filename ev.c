@@ -3137,6 +3137,7 @@ ev_run (EV_P_ int flags)
 
         pipe_write_wanted = 0; /* just an optimisation, no fence needed */
 
+        MEMORY_FENCE_ACQUIRE;
         if (pipe_write_skipped)
           {
             assert (("libev: pipe_w not active, but pipe not written", ev_is_active (&pipe_w)));
