@@ -5,6 +5,7 @@ TODO: EV_STANDALONE == NO_HASSEL (do not use clock_gettime in ev_standalone)
 TODO: faq, process a thing in each iteration
 TODO: dbeugging tips, ev_verify, ev_init twice
 
+TODO: document the special problem of signals around fork.
 TODO: ev_feed_child_event
         - destroying a non-default loop would stop the global waitpid
           watcher (Denis Bilenko).
@@ -34,6 +35,8 @@ TODO: ev_feed_child_event
         - chose socket vs. WSASocket at compiletime using EV_USE_WSASOCKET.
         - always use WSASend/WSARecv directly on windows, hoping that this
           works in all cases (unlike read/write/send/recv...).
+        - try to detect signals around a fork faster (test program by
+          Denis Bilenko).
 
 4.11 Sat Feb  4 19:52:39 CET 2012
 	- INCOMPATIBLE CHANGE: ev_timer_again now clears the pending status, as

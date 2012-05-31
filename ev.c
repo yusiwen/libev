@@ -2552,8 +2552,8 @@ loop_fork (EV_P)
 
 #if EV_SIGNAL_ENABLE || EV_ASYNC_ENABLE
       evpipe_init (EV_A);
-      /* now iterate over everything, in case we missed something */
-      pipecb (EV_A_ &pipe_w, EV_READ);
+      /* iterate over everything, in case we missed something before */
+      ev_feed_event (EV_A_ &pipe_w, EV_CUSTOM);
 #endif
     }
 
