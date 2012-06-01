@@ -3180,6 +3180,10 @@ ev_run (EV_P_ int flags)
   if (loop_done == EVBREAK_ONE)
     loop_done = EVBREAK_CANCEL;
 
+  /* pendingpri is normally -1 here, which is not a good */
+  /* value when returning to an ev_invoke_pending */
+  pendingpri = NUMPRI - 1;
+
 #if EV_FEATURE_API
   --loop_depth;
 #endif
