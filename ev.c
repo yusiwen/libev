@@ -2047,7 +2047,7 @@ ev_feed_signal_event (EV_P_ int signum) EV_THROW
 {
   WL w;
 
-  if (expect_false (signum <= 0 || signum > EV_NSIG))
+  if (expect_false (signum <= 0 || signum >= EV_NSIG))
     return;
 
   --signum;
