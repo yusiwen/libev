@@ -764,7 +764,7 @@ namespace ev {
 
   #if EV_EMBED_ENABLE
   EV_BEGIN_WATCHER (embed, embed)
-    void set (struct ev_loop *embedded_loop) throw ()
+    void set_embed (struct ev_loop *embedded_loop) throw ()
     {
       int active = is_active ();
       if (active) stop ();

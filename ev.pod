@@ -4123,10 +4123,14 @@ do this when the watcher is inactive (and not pending either).
 
 =item w->set ([arguments])
 
-Basically the same as C<ev_TYPE_set>, with the same arguments. Either this
-method or a suitable start method must be called at least once. Unlike the
-C counterpart, an active watcher gets automatically stopped and restarted
-when reconfiguring it with this method.
+Basically the same as C<ev_TYPE_set> (except for C<ev::embed> watchers>),
+with the same arguments. Either this method or a suitable start method
+must be called at least once. Unlike the C counterpart, an active watcher
+gets automatically stopped and restarted when reconfiguring it with this
+method.
+
+For C<ev::embed> watchers this method is called C<set_embed>, to avoid
+clashing with the C<set (loop)> method.
 
 =item w->start ()
 

@@ -38,6 +38,8 @@ TODO: ev_feed_child_event
         - try to detect signals around a fork faster (test program by
           Denis Bilenko).
         - work around recent glibc versions that leak memory in realloc.
+        - rename ev::embed::set to ev::embed::set_embed to avoid clashing
+          the watcher base set (loop) method.
 
 4.11 Sat Feb  4 19:52:39 CET 2012
 	- INCOMPATIBLE CHANGE: ev_timer_again now clears the pending status, as
