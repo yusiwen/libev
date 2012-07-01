@@ -4627,16 +4627,14 @@ above. This reduces dependencies and makes libev faster.
 =item EV_ATOMIC_T
 
 Libev requires an integer type (suitable for storing C<0> or C<1>) whose
-access is atomic and serialised with respect to other threads or signal
-contexts. No such type is easily found in the C language, so you can
-provide your own type that you know is safe for your purposes. It is used
-both for signal handler "locking" as well as for signal and thread safety
-in C<ev_async> watchers.
+access is atomic with respect to other threads or signal contexts. No
+such type is easily found in the C language, so you can provide your own
+type that you know is safe for your purposes. It is used both for signal
+handler "locking" as well as for signal and thread safety in C<ev_async>
+watchers.
 
 In the absence of this define, libev will use C<sig_atomic_t volatile>
-(from F<signal.h>), which is usually good enough on most platforms,
-although strictly speaking using a type that also implies a memory fence
-is required.
+(from F<signal.h>), which is usually good enough on most platforms.
 
 =item EV_H (h)
 
