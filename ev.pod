@@ -2964,7 +2964,6 @@ Using an C<ev_check> watcher is almost enough: it will be called on the
 next event loop iteration. However, that isn't as soon as possible -
 without external events, your C<ev_check> watcher will not be invoked.
 
-
 This is where C<ev_idle> watchers come in handy - all you need is a
 single global idle watcher that is active as long as you have one active
 C<ev_check> watcher. The C<ev_idle> watcher makes sure the event loop
@@ -3253,11 +3252,11 @@ C<loop_socket>. (One might optionally use C<EVFLAG_NOENV>, too).
 
 Fork watchers are called when a C<fork ()> was detected (usually because
 whoever is a good citizen cared to tell libev about it by calling
-C<ev_default_fork> or C<ev_loop_fork>). The invocation is done before the
-event loop blocks next and before C<ev_check> watchers are being called,
-and only in the child after the fork. If whoever good citizen calling
-C<ev_default_fork> cheats and calls it in the wrong process, the fork
-handlers will be invoked, too, of course.
+C<ev_loop_fork>). The invocation is done before the event loop blocks next
+and before C<ev_check> watchers are being called, and only in the child
+after the fork. If whoever good citizen calling C<ev_default_fork> cheats
+and calls it in the wrong process, the fork handlers will be invoked, too,
+of course.
 
 =head3 The special problem of life after fork - how is it possible?
 
@@ -5313,8 +5312,8 @@ be compatible with libev. Interaction between C<sigprocmask> and
 C<pthread_sigmask> could complicate things, however.
 
 The most portable way to handle signals is to block signals in all threads
-except the initial one, and run the default loop in the initial thread as
-well.
+except the initial one, and run the signal handling loop in the initial
+thread as well.
 
 =item C<long> must be large enough for common memory allocation sizes
 
