@@ -10,6 +10,7 @@ TODO: ev_feed_child_event
 TODO: document the special problem of signals around fork.
 TODO: store pid for each signal
 TODO: document file descriptor usage per loop
+TODO: store loop pid_t and compare isndie signal handler,store 1 for same, 2 for differign pid, clean up in loop_fork
         - destroying a non-default loop would stop the global waitpid
           watcher (Denis Bilenko).
 	- queueing pending watchers of higher priority from a watcher now invokes
