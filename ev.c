@@ -2030,6 +2030,7 @@ void
 ev_feed_signal (int signum) EV_THROW
 {
 #if EV_MULTIPLICITY
+  ECB_MEMORY_FENCE_ACQUIRE;
   EV_P = signals [signum - 1].loop;
 
   if (!EV_A)
@@ -3528,6 +3529,7 @@ ev_signal_start (EV_P_ ev_signal *w) EV_THROW
            !signals [w->signum - 1].loop || signals [w->signum - 1].loop == loop));
 
   signals [w->signum - 1].loop = EV_A;
+  ECB_MEMORY_FENCE_RELEASE;
 #endif
 
   EV_FREQUENT_CHECK;
