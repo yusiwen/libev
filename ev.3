@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2012-05-26" "libev-4.11" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2012-11-13" "libev-4.11" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -3392,11 +3392,11 @@ kqueue implementation). Store the kqueue/socket\-only event loop in
 .IX Subsection "ev_fork - the audacity to resume the event loop after a fork"
 Fork watchers are called when a \f(CW\*(C`fork ()\*(C'\fR was detected (usually because
 whoever is a good citizen cared to tell libev about it by calling
-\&\f(CW\*(C`ev_default_fork\*(C'\fR or \f(CW\*(C`ev_loop_fork\*(C'\fR). The invocation is done before the
-event loop blocks next and before \f(CW\*(C`ev_check\*(C'\fR watchers are being called,
-and only in the child after the fork. If whoever good citizen calling
-\&\f(CW\*(C`ev_default_fork\*(C'\fR cheats and calls it in the wrong process, the fork
-handlers will be invoked, too, of course.
+\&\f(CW\*(C`ev_loop_fork\*(C'\fR). The invocation is done before the event loop blocks next
+and before \f(CW\*(C`ev_check\*(C'\fR watchers are being called, and only in the child
+after the fork. If whoever good citizen calling \f(CW\*(C`ev_default_fork\*(C'\fR cheats
+and calls it in the wrong process, the fork handlers will be invoked, too,
+of course.
 .PP
 \fIThe special problem of life after fork \- how is it possible?\fR
 .IX Subsection "The special problem of life after fork - how is it possible?"
@@ -4263,10 +4263,14 @@ Associates a different \f(CW\*(C`struct ev_loop\*(C'\fR with this watcher. You c
 do this when the watcher is inactive (and not pending either).
 .IP "w\->set ([arguments])" 4
 .IX Item "w->set ([arguments])"
-Basically the same as \f(CW\*(C`ev_TYPE_set\*(C'\fR, with the same arguments. Either this
-method or a suitable start method must be called at least once. Unlike the
-C counterpart, an active watcher gets automatically stopped and restarted
-when reconfiguring it with this method.
+Basically the same as \f(CW\*(C`ev_TYPE_set\*(C'\fR (except for \f(CW\*(C`ev::embed\*(C'\fR watchers>),
+with the same arguments. Either this method or a suitable start method
+must be called at least once. Unlike the C counterpart, an active watcher
+gets automatically stopped and restarted when reconfiguring it with this
+method.
+.Sp
+For \f(CW\*(C`ev::embed\*(C'\fR watchers this method is called \f(CW\*(C`set_embed\*(C'\fR, to avoid
+clashing with the \f(CW\*(C`set (loop)\*(C'\fR method.
 .IP "w\->start ()" 4
 .IX Item "w->start ()"
 Starts the watcher. Note that there is no \f(CW\*(C`loop\*(C'\fR argument, as the
@@ -4734,16 +4738,14 @@ above. This reduces dependencies and makes libev faster.
 .IP "\s-1EV_ATOMIC_T\s0" 4
 .IX Item "EV_ATOMIC_T"
 Libev requires an integer type (suitable for storing \f(CW0\fR or \f(CW1\fR) whose
-access is atomic and serialised with respect to other threads or signal
-contexts. No such type is easily found in the C language, so you can
-provide your own type that you know is safe for your purposes. It is used
-both for signal handler \*(L"locking\*(R" as well as for signal and thread safety
-in \f(CW\*(C`ev_async\*(C'\fR watchers.
+access is atomic with respect to other threads or signal contexts. No
+such type is easily found in the C language, so you can provide your own
+type that you know is safe for your purposes. It is used both for signal
+handler \*(L"locking\*(R" as well as for signal and thread safety in \f(CW\*(C`ev_async\*(C'\fR
+watchers.
 .Sp
 In the absence of this define, libev will use \f(CW\*(C`sig_atomic_t volatile\*(C'\fR
-(from \fIsignal.h\fR), which is usually good enough on most platforms,
-although strictly speaking using a type that also implies a memory fence
-is required.
+(from \fIsignal.h\fR), which is usually good enough on most platforms.
 .IP "\s-1EV_H\s0 (h)" 4
 .IX Item "EV_H (h)"
 The name of the \fIev.h\fR header file used to include it. The default if
@@ -5415,8 +5417,8 @@ be compatible with libev. Interaction between \f(CW\*(C`sigprocmask\*(C'\fR and
 \&\f(CW\*(C`pthread_sigmask\*(C'\fR could complicate things, however.
 .Sp
 The most portable way to handle signals is to block signals in all threads
-except the initial one, and run the default loop in the initial thread as
-well.
+except the initial one, and run the signal handling loop in the initial
+thread as well.
 .ie n .IP """long"" must be large enough for common memory allocation sizes" 4
 .el .IP "\f(CWlong\fR must be large enough for common memory allocation sizes" 4
 .IX Item "long must be large enough for common memory allocation sizes"

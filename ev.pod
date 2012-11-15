@@ -571,7 +571,7 @@ course). While stopping, setting and starting an I/O watcher does never
 cause an extra system call as with C<EVBACKEND_EPOLL>, it still adds up to
 two event changes per incident. Support for C<fork ()> is very bad (you
 might have to leak fd's on fork, but it's more sane than epoll) and it
-drops fds silently in similarly hard-to-detect cases
+drops fds silently in similarly hard-to-detect cases.
 
 This backend usually performs well under most conditions.
 
@@ -1395,7 +1395,7 @@ rules might look complicated, they usually do "the right thing".
 
 =over 4
 
-=item initialiased
+=item initialised
 
 Before a watcher can be registered with the event loop it has to be
 initialised. This can be done with a call to C<ev_TYPE_init>, or calls to
