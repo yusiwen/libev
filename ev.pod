@@ -3179,7 +3179,7 @@ as applicable.
 
 =item ev_embed_init (ev_embed *, callback, struct ev_loop *embedded_loop)
 
-=item ev_embed_set (ev_embed *, callback, struct ev_loop *embedded_loop)
+=item ev_embed_set (ev_embed *, struct ev_loop *embedded_loop)
 
 Configures the watcher to embed the given loop, which must be
 embeddable. If the callback is C<0>, then C<ev_embed_sweep> will be
