@@ -3895,7 +3895,10 @@ static void noinline stat_timer_cb (EV_P_ ev_timer *w_, int revents);
 static void noinline
 infy_add (EV_P_ ev_stat *w)
 {
-  w->wd = inotify_add_watch (fs_fd, w->path, IN_ATTRIB | IN_DELETE_SELF | IN_MOVE_SELF | IN_MODIFY | IN_DONT_FOLLOW | IN_MASK_ADD);
+  w->wd = inotify_add_watch (fs_fd, w->path,
+                             IN_ATTRIB | IN_DELETE_SELF | IN_MOVE_SELF | IN_MODIFY
+                             | IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO
+                             | IN_DONT_FOLLOW | IN_MASK_ADD);
 
   if (w->wd >= 0)
     {
@@ -3909,10 +3912,16 @@ infy_add (EV_P_ ev_stat *w)
         w->timer.repeat = w->interval ? w->interval : DEF_STAT_INTERVAL;
       else if (!statfs (w->path, &sfs)
                && (sfs.f_type == 0x1373 /* devfs */
+                   || sfs.f_type == 0x4006 /* fat */
+                   || sfs.f_type == 0x4d44 /* msdos */
                    || sfs.f_type == 0xEF53 /* ext2/3 */
+                   || sfs.f_type == 0x72b6 /* jffs2 */
+                   || sfs.f_type == 0x858458f6 /* ramfs */
+                   || sfs.f_type == 0x5346544e /* ntfs */
                    || sfs.f_type == 0x3153464a /* jfs */
+                   || sfs.f_type == 0x9123683e /* btrfs */
                    || sfs.f_type == 0x52654973 /* reiser3 */
-                   || sfs.f_type == 0x01021994 /* tempfs */
+                   || sfs.f_type == 0x01021994 /* tmpfs */
                    || sfs.f_type == 0x58465342 /* xfs */))
         w->timer.repeat = 0.; /* filesystem is local, kernel new enough */
       else
