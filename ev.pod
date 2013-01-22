@@ -2608,8 +2608,9 @@ its completion.
 
 This watches a file system path for attribute changes. That is, it calls
 C<stat> on that path in regular intervals (or when the OS says it changed)
-and sees if it changed compared to the last time, invoking the callback if
-it did.
+and sees if it changed compared to the last time, invoking the callback
+if it did. Starting the watcher C<stat>'s the file, so only changes that
+happen after the watcher has been started will be reported.
 
 The path does not need to exist: changing from "path exists" to "path does
 not exist" is a status change like any other. The condition "path does not
