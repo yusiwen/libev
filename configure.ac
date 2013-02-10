@@ -1,6 +1,7 @@
+AC_INIT
+
 orig_CFLAGS="$CFLAGS"
 
-AC_INIT
 AC_CONFIG_SRCDIR([ev_epoll.c])
 
 AM_INIT_AUTOMAKE(libev,4.11) dnl also update ev.h!
