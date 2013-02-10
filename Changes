@@ -53,6 +53,9 @@ TODO: document portbaility requirements for atomic pointer access
           on fork, at the cost of one extra fd.
         - add fat, msdos, jffs2, ramfs, ntfs and btrfs to the list of
           inotify-supporting filesystems.
+        - move orig_CFLAGS assignment to after AC_INIT, as newer autoconf
+          versions ignore it before
+          (https://bugzilla.redhat.com/show_bug.cgi?id=908096).
 
 4.11 Sat Feb  4 19:52:39 CET 2012
 	- INCOMPATIBLE CHANGE: ev_timer_again now clears the pending status, as
