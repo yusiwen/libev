@@ -359,6 +359,22 @@
 # define EV_HEAP_CACHE_AT EV_FEATURE_DATA
 #endif
 
+#ifdef ANDROID
+/* supposedly, android doesn't typedef fd_mask */
+# undef EV_USE_SELECT
+# define EV_USE_SELECT 0
+/* supposedly, we need to include syscall.h, not sys/syscall.h, so just disable */
+# undef EV_USE_CLOCK_SYSCALL
+# define EV_USE_CLOCK_SYSCALL 0
+#endif
+
+/* aix's poll.h seems to cause lots of trouble */
+#ifdef _AIX
+/* AIX has a completely broken poll.h header */
+# undef EV_USE_POLL
+# define EV_USE_POLL 0
+#endif
+
 /* on linux, we can use a (slow) syscall to avoid a dependency on pthread, */
 /* which makes programs even slower. might work on other unices, too. */
 #if EV_USE_CLOCK_SYSCALL
@@ -374,12 +390,6 @@
 #endif
 
 /* this block fixes any misconfiguration where we know we run into trouble otherwise */
-
-#ifdef _AIX
-/* AIX has a completely broken poll.h header */
-# undef EV_USE_POLL
-# define EV_USE_POLL 0
-#endif
 
 #ifndef CLOCK_MONOTONIC
 # undef EV_USE_MONOTONIC
