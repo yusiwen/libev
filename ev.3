@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2012-11-13" "libev-4.11" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2013-02-18" "libev-4.11" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -689,7 +689,7 @@ course). While stopping, setting and starting an I/O watcher does never
 cause an extra system call as with \f(CW\*(C`EVBACKEND_EPOLL\*(C'\fR, it still adds up to
 two event changes per incident. Support for \f(CW\*(C`fork ()\*(C'\fR is very bad (you
 might have to leak fd's on fork, but it's more sane than epoll) and it
-drops fds silently in similarly hard-to-detect cases
+drops fds silently in similarly hard-to-detect cases.
 .Sp
 This backend usually performs well under most conditions.
 .Sp
@@ -1510,8 +1510,8 @@ There are various watcher states mentioned throughout this manual \-
 active, pending and so on. In this section these states and the rules to
 transition between them will be described in more detail \- and while these
 rules might look complicated, they usually do \*(L"the right thing\*(R".
-.IP "initialiased" 4
-.IX Item "initialiased"
+.IP "initialised" 4
+.IX Item "initialised"
 Before a watcher can be registered with the event loop it has to be
 initialised. This can be done with a call to \f(CW\*(C`ev_TYPE_init\*(C'\fR, or calls to
 \&\f(CW\*(C`ev_init\*(C'\fR followed by the watcher-specific \f(CW\*(C`ev_TYPE_set\*(C'\fR function.
@@ -2742,8 +2742,9 @@ its completion.
 .IX Subsection "ev_stat - did the file attributes just change?"
 This watches a file system path for attribute changes. That is, it calls
 \&\f(CW\*(C`stat\*(C'\fR on that path in regular intervals (or when the \s-1OS\s0 says it changed)
-and sees if it changed compared to the last time, invoking the callback if
-it did.
+and sees if it changed compared to the last time, invoking the callback
+if it did. Starting the watcher \f(CW\*(C`stat\*(C'\fR's the file, so only changes that
+happen after the watcher has been started will be reported.
 .PP
 The path does not need to exist: changing from \*(L"path exists\*(R" to \*(L"path does
 not exist\*(R" is a status change like any other. The condition \*(L"path does not
@@ -3318,8 +3319,8 @@ as applicable.
 .IP "ev_embed_init (ev_embed *, callback, struct ev_loop *embedded_loop)" 4
 .IX Item "ev_embed_init (ev_embed *, callback, struct ev_loop *embedded_loop)"
 .PD 0
-.IP "ev_embed_set (ev_embed *, callback, struct ev_loop *embedded_loop)" 4
-.IX Item "ev_embed_set (ev_embed *, callback, struct ev_loop *embedded_loop)"
+.IP "ev_embed_set (ev_embed *, struct ev_loop *embedded_loop)" 4
+.IX Item "ev_embed_set (ev_embed *, struct ev_loop *embedded_loop)"
 .PD
 Configures the watcher to embed the given loop, which must be
 embeddable. If the callback is \f(CW0\fR, then \f(CW\*(C`ev_embed_sweep\*(C'\fR will be
@@ -3783,9 +3784,9 @@ already been invoked.
 A common way around all these issues is to make sure that
 \&\f(CW\*(C`start_new_request\*(C'\fR \fIalways\fR returns before the callback is invoked. If
 \&\f(CW\*(C`start_new_request\*(C'\fR immediately knows the result, it can artificially
-delay invoking the callback by e.g. using a \f(CW\*(C`prepare\*(C'\fR or \f(CW\*(C`idle\*(C'\fR watcher
-for example, or more sneakily, by reusing an existing (stopped) watcher
-and pushing it into the pending queue:
+delay invoking the callback by using a \f(CW\*(C`prepare\*(C'\fR or \f(CW\*(C`idle\*(C'\fR watcher for
+example, or more sneakily, by reusing an existing (stopped) watcher and
+pushing it into the pending queue:
 .PP
 .Vb 2
 \&   ev_set_cb (watcher, callback);
@@ -3804,7 +3805,7 @@ This brings the problem of exiting \- a callback might want to finish the
 main \f(CW\*(C`ev_run\*(C'\fR call, but not the nested one (e.g. user clicked \*(L"Quit\*(R", but
 a modal \*(L"Are you sure?\*(R" dialog is still waiting), or just the nested one
 and not the main one (e.g. user clocked \*(L"Ok\*(R" in a modal dialog), or some
-other combination: In these cases, \f(CW\*(C`ev_break\*(C'\fR will not work alone.
+other combination: In these cases, a simple \f(CW\*(C`ev_break\*(C'\fR will not work.
 .PP
 The solution is to maintain \*(L"break this loop\*(R" variable for each \f(CW\*(C`ev_run\*(C'\fR
 invocation, and use a loop around \f(CW\*(C`ev_run\*(C'\fR until the condition is
