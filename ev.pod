@@ -4620,9 +4620,10 @@ and makes libev faster.
 
 =item EV_NO_THREADS
 
-If defined to be C<1>, libev will assume that it will never be called
-from different threads, which is a stronger assumption than C<EV_NO_SMP>,
-above. This reduces dependencies and makes libev faster.
+If defined to be C<1>, libev will assume that it will never be called from
+different threads (that includes signal handlers), which is a stronger
+assumption than C<EV_NO_SMP>, above. This reduces dependencies and makes
+libev faster.
 
 =item EV_ATOMIC_T
 
