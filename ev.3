@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2013-02-18" "libev-4.11" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2013-02-28" "libev-4.11" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -4733,9 +4733,10 @@ different cpus (or different cpu cores). This reduces dependencies
 and makes libev faster.
 .IP "\s-1EV_NO_THREADS\s0" 4
 .IX Item "EV_NO_THREADS"
-If defined to be \f(CW1\fR, libev will assume that it will never be called
-from different threads, which is a stronger assumption than \f(CW\*(C`EV_NO_SMP\*(C'\fR,
-above. This reduces dependencies and makes libev faster.
+If defined to be \f(CW1\fR, libev will assume that it will never be called from
+different threads (that includes signal handlers), which is a stronger
+assumption than \f(CW\*(C`EV_NO_SMP\*(C'\fR, above. This reduces dependencies and makes
+libev faster.
 .IP "\s-1EV_ATOMIC_T\s0" 4
 .IX Item "EV_ATOMIC_T"
 Libev requires an integer type (suitable for storing \f(CW0\fR or \f(CW1\fR) whose
