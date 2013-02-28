@@ -2241,8 +2241,9 @@ void
 ev_feed_signal (int signum) EV_THROW
 {
 #if EV_MULTIPLICITY
+  EV_P;
   ECB_MEMORY_FENCE_ACQUIRE;
-  EV_P = signals [signum - 1].loop;
+  EV_A = signals [signum - 1].loop;
 
   if (!EV_A)
     return;
