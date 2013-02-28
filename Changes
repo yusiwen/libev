@@ -57,6 +57,7 @@ TODO: document portbaility requirements for atomic pointer access
           versions ignore it before
           (https://bugzilla.redhat.com/show_bug.cgi?id=908096).
         - add some untested android support.
+        - enum expressions must be of type int (reported by Juan Pablo L).
 
 4.11 Sat Feb  4 19:52:39 CET 2012
 	- INCOMPATIBLE CHANGE: ev_timer_again now clears the pending status, as
