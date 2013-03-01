@@ -517,7 +517,7 @@ struct signalfd_siginfo
 #define ECB_H
 
 /* 16 bits major, 16 bits minor */
-#define ECB_VERSION 0x00010002
+#define ECB_VERSION 0x00010003
 
 #ifdef _WIN32
   typedef   signed char   int8_t;
@@ -548,6 +548,15 @@ struct signalfd_siginfo
     #define ECB_PTRSIZE 8
   #else
     #define ECB_PTRSIZE 4
+  #endif
+#endif
+
+/* work around x32 idiocy by defining proper macros */
+#if __x86_64 || _M_AMD64
+  #if __ILP32
+    #define ECB_AMD64_X32 1
+  #else
+    #define ECB_AMD64 1
   #endif
 #endif
 
