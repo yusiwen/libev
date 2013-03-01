@@ -40,7 +40,7 @@ TODO: document portbaility requirements for atomic pointer access
         - include sys/syscall.h instead of plain syscall.h.
         - check for io watcher loops in ev_verify, check for the most
           common reported usage bug in ev_io_start.
-        - chose socket vs. WSASocket at compiletime using EV_USE_WSASOCKET.
+        - choose socket vs. WSASocket at compiletime using EV_USE_WSASOCKET.
         - always use WSASend/WSARecv directly on windows, hoping that this
           works in all cases (unlike read/write/send/recv...).
         - try to detect signals around a fork faster (test program by
@@ -49,7 +49,7 @@ TODO: document portbaility requirements for atomic pointer access
         - rename ev::embed::set to ev::embed::set_embed to avoid clashing
           the watcher base set (loop) method.
         - rewrite the async/signal pipe logic to always keep a valid fd, which
-          simplifies (and hopefuly correctifies :) the race checking
+          simplifies (and hopefully correctifies :) the race checking
           on fork, at the cost of one extra fd.
         - add fat, msdos, jffs2, ramfs, ntfs and btrfs to the list of
           inotify-supporting filesystems.
@@ -251,7 +251,7 @@ TODO: document portbaility requirements for atomic pointer access
         - implement ev_suspend and ev_resume.
         - new EV_CUSTOM revents flag for use by applications.
         - add documentation section about priorities.
-        - add a glossary to the dcoumentation.
+        - add a glossary to the documentation.
         - extend the ev_fork description slightly.
         - optimize a jump out of call_pending.
 
