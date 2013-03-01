@@ -6,13 +6,14 @@ TODO: faq, process a thing in each iteration
 TODO: dbeugging tips, ev_verify, ev_init twice
 TODO: ev_break for immediate exit (EVBREAK_NOW?)
 TODO: ev_feed_child_event
-
 TODO: document the special problem of signals around fork.
 TODO: store pid for each signal
 TODO: document file descriptor usage per loop
 TODO: store loop pid_t and compare isndie signal handler,store 1 for same, 2 for differign pid, clean up in loop_fork
 TODO: embed watchers need updating when fd changes
 TODO: document portbaility requirements for atomic pointer access
+
+4.15 Fri Mar  1 12:04:50 CET 2013
         - destroying a non-default loop would stop the global waitpid
           watcher (Denis Bilenko).
 	- queueing pending watchers of higher priority from a watcher now invokes
