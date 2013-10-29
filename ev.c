@@ -251,7 +251,7 @@
 #endif
 
 #ifndef EV_USE_CLOCK_SYSCALL
-# if __linux && __GLIBC__ >= 2
+# if __linux && __GLIBC__ == 2 && __GLIBC_MINOR__ < 17
 #  define EV_USE_CLOCK_SYSCALL EV_FEATURE_OS
 # else
 #  define EV_USE_CLOCK_SYSCALL 0
