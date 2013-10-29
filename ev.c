@@ -243,10 +243,7 @@
 #elif defined _sys_nsig
 # define EV_NSIG (_sys_nsig) /* Solaris 2.5 */
 #else
-# error "unable to find value for NSIG, please report"
-/* to make it compile regardless, just remove the above line, */
-/* but consider reporting it, too! :) */
-# define EV_NSIG 65
+# define EV_NSIG (8 * sizeof (sigset_t) + 1)
 #endif
 
 #ifndef EV_USE_FLOOR
