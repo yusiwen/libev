@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2013-10-29" "libev-4.15" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2013-12-27" "libev-4.15" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -2555,9 +2555,9 @@ default loop and for \f(CW\*(C`SIGIO\*(C'\fR in another loop, but you cannot wat
 \&\f(CW\*(C`SIGINT\*(C'\fR in both the default loop and another loop at the same time. At
 the moment, \f(CW\*(C`SIGCHLD\*(C'\fR is permanently tied to the default loop.
 .PP
-When the first watcher gets started will libev actually register something
-with the kernel (thus it coexists with your own signal handlers as long as
-you don't register any with libev for the same signal).
+Only after the first watcher for a signal is started will libev actually
+register something with the kernel. It thus coexists with your own signal
+handlers as long as you don't register any with libev for the same signal.
 .PP
 If possible and supported, libev will install its handlers with
 \&\f(CW\*(C`SA_RESTART\*(C'\fR (or equivalent) behaviour enabled, so system calls should

@@ -658,8 +658,10 @@ EV_API_DECL void ev_set_timeout_collect_interval (EV_P_ ev_tstamp interval) EV_T
 /* advanced stuff for threading etc. support, see docs */
 EV_API_DECL void ev_set_userdata (EV_P_ void *data) EV_THROW;
 EV_API_DECL void *ev_userdata (EV_P) EV_THROW;
-EV_API_DECL void ev_set_invoke_pending_cb (EV_P_ void (*invoke_pending_cb)(EV_P)) EV_THROW;
-EV_API_DECL void ev_set_loop_release_cb (EV_P_ void (*release)(EV_P), void (*acquire)(EV_P) EV_THROW) EV_THROW;
+typedef void (*ev_loop_callback)(EV_P);
+EV_API_DECL void ev_set_invoke_pending_cb (EV_P_ ev_loop_callback invoke_pending_cb) EV_THROW;
+typedef void (*ev_loop_callback_nothrow)(EV_P) EV_THROW;
+EV_API_DECL void ev_set_loop_release_cb (EV_P_ ev_loop_callback_nothrow release, ev_loop_callback_nothrow acquire) EV_THROW;
 
 EV_API_DECL unsigned int ev_pending_count (EV_P) EV_THROW; /* number of pending events, if any */
 EV_API_DECL void ev_invoke_pending (EV_P); /* invoke all pending watchers */
@@ -730,7 +732,7 @@ EV_API_DECL void ev_resume  (EV_P) EV_THROW;
 #endif
 
 /* stopping (enabling, adding) a watcher does nothing if it is already running */
-/* stopping (disabling, deleting) a watcher does nothing unless its already running */
+/* stopping (disabling, deleting) a watcher does nothing unless it's already running */
 #if EV_PROTOTYPES
 
 /* feeds an event into a watcher as if the event actually occurred */
