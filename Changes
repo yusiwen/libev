@@ -13,6 +13,7 @@ TODO: store loop pid_t and compare isndie signal handler,store 1 for same, 2 for
 TODO: embed watchers need updating when fd changes
 TODO: document portbaility requirements for atomic pointer access
 TODO: possible cb aliasing?
+TODO: document requirements for function piinters and calling conventions.
 
 	- mark event pipe fd as cloexec after a fork (analyzed by Sami Farin).
         - (ecb) support m68k, m88k and sh (patch by Miod Vallat).
@@ -23,6 +24,8 @@ TODO: possible cb aliasing?
           doing clock_gettime in userspace).
         - ensure extern "C" function pointers are used for externally-visible
           loop callbacks (not watcher callbacks yet).
+        - (ecb) work around memory barriers and volatile apparently both being
+          broken in visual studio 2008 and later (analysed and patch by Nicolas Noble).
 
 4.15 Fri Mar  1 12:04:50 CET 2013
         - destroying a non-default loop would stop the global waitpid
