@@ -484,7 +484,7 @@ struct signalfd_siginfo
 /*
  * libecb - http://software.schmorp.de/pkg/libecb
  *
- * Copyright (©) 2009-2013 Marc Alexander Lehmann <libecb@schmorp.de>
+ * Copyright (©) 2009-2014 Marc Alexander Lehmann <libecb@schmorp.de>
  * Copyright (©) 2011 Emanuele Giaquinta
  * All rights reserved.
  *
@@ -572,11 +572,19 @@ struct signalfd_siginfo
   #endif
 #endif
 
-#define ECB_C     (__STDC__+0) /* this assumes that __STDC__ is either empty or a number */
-#define ECB_C99   (__STDC_VERSION__ >= 199901L)
-#define ECB_C11   (__STDC_VERSION__ >= 201112L)
 #define ECB_CPP   (__cplusplus+0)
 #define ECB_CPP11 (__cplusplus >= 201103L)
+
+#if ECB_CPP
+  #define ECB_C            0
+  #define ECB_STDC_VERSION 0
+#else
+  #define ECB_C            1
+  #define ECB_STDC_VERSION __STDC_VERSION__
+#endif
+
+#define ECB_C99   (ECB_STDC_VERSION >= 199901L)
+#define ECB_C11   (ECB_STDC_VERSION >= 201112L)
 
 #if ECB_CPP
   #define ECB_EXTERN_C extern "C"
@@ -619,6 +627,8 @@ struct signalfd_siginfo
     #elif defined __ARM_ARCH_7__  || defined __ARM_ARCH_7A__  \
        || defined __ARM_ARCH_7M__ || defined __ARM_ARCH_7R__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("dmb"      : : : "memory")
+    #elif __aarch64__
+      #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("dmb ish"  : : : "memory")
     #elif (__sparc || __sparc__) && !__sparcv8
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("membar #LoadStore | #LoadLoad | #StoreStore | #StoreLoad" : : : "memory")
       #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ ("membar #LoadStore | #LoadLoad"                            : : : "memory")
@@ -650,6 +660,8 @@ struct signalfd_siginfo
   #if ECB_GCC_VERSION(4,7)
     /* see comment below (stdatomic.h) about the C11 memory model. */
     #define ECB_MEMORY_FENCE         __atomic_thread_fence (__ATOMIC_SEQ_CST)
+    #define ECB_MEMORY_FENCE_ACQUIRE __atomic_thread_fence (__ATOMIC_ACQUIRE)
+    #define ECB_MEMORY_FENCE_RELEASE __atomic_thread_fence (__ATOMIC_RELEASE)
 
   /* The __has_feature syntax from clang is so misdesigned that we cannot use it
    * without risking compile time errors with other compilers. We *could*
@@ -658,6 +670,8 @@ struct signalfd_siginfo
    * #elif defined __clang && __has_feature (cxx_atomic)
    *   // see comment below (stdatomic.h) about the C11 memory model.
    *   #define ECB_MEMORY_FENCE         __c11_atomic_thread_fence (__ATOMIC_SEQ_CST)
+   *   #define ECB_MEMORY_FENCE_ACQUIRE __c11_atomic_thread_fence (__ATOMIC_ACQUIRE)
+   *   #define ECB_MEMORY_FENCE_RELEASE __c11_atomic_thread_fence (__ATOMIC_RELEASE)
    */
 
   #elif ECB_GCC_VERSION(4,4) || defined __INTEL_COMPILER || defined __clang__
@@ -697,6 +711,8 @@ struct signalfd_siginfo
     /* for most usages, or gcc and clang have a bug */
     /* I *currently* lean towards the latter, and inefficiently implement */
     /* all three of ecb's fences as a seq_cst fence */
+    /* Update, gcc-4.8 generates mfence for all c++ fences, but nothing */
+    /* for all __atomic_thread_fence's except seq_cst */
     #define ECB_MEMORY_FENCE         atomic_thread_fence (memory_order_seq_cst)
   #endif
 #endif
@@ -763,6 +779,11 @@ typedef int ecb_bool;
   #define ecb_prefetch(addr,rw,locality) __builtin_prefetch (addr, rw, locality)
 #else
   #define ecb_attribute(attrlist)
+
+  /* possible C11 impl for integral types
+  typedef struct ecb_is_constant_struct ecb_is_constant_struct;
+  #define ecb_is_constant(expr)          _Generic ((1 ? (struct ecb_is_constant_struct *)0 : (void *)((expr) - (expr)), ecb_is_constant_struct *: 0, default: 1)) */
+
   #define ecb_is_constant(expr)          0
   #define ecb_expect(expr,value)         (expr)
   #define ecb_prefetch(addr,rw,locality)
@@ -1067,7 +1088,8 @@ ecb_inline ecb_bool ecb_little_endian (void) { return ecb_byteorder_helper () ==
     || defined __m68k__ \
     || defined __m88k__ \
     || defined __sh__ \
-    || defined _M_IX86 || defined _M_AMD64 || defined _M_IA64
+    || defined _M_IX86 || defined _M_AMD64 || defined _M_IA64 \
+    || (defined __arm__ && (defined __ARM_EABI__ || defined __EABI__ || defined __VFP_FP__ || defined _WIN32_WCE || defined __ANDROID__))
   #define ECB_STDFP 1
   #include <string.h> /* for memcpy */
 #else
