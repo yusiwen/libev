@@ -1089,7 +1089,7 @@ ecb_inline ecb_bool ecb_little_endian (void) { return ecb_byteorder_helper () ==
     || defined __sh__ \
     || defined _M_IX86 || defined _M_AMD64 || defined _M_IA64 \
     || (defined __arm__ && (defined __ARM_EABI__ || defined __EABI__ || defined __VFP_FP__ || defined _WIN32_WCE || defined __ANDROID__)) \
-    | defined __aarch64__
+    || defined __aarch64__
   #define ECB_STDFP 1
   #include <string.h> /* for memcpy */
 #else
