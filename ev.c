@@ -1079,7 +1079,6 @@ ecb_inline ecb_bool ecb_little_endian (void) { return ecb_byteorder_helper () ==
     || __i386 || __i386__ \
     || __amd64 || __amd64__ || __x86_64 || __x86_64__ \
     || __powerpc__ || __ppc__ || __powerpc64__ || __ppc64__ \
-    || defined __arm__ && defined __ARM_EABI__ \
     || defined __s390__ || defined __s390x__ \
     || defined __mips__ \
     || defined __alpha__ \
@@ -1089,7 +1088,8 @@ ecb_inline ecb_bool ecb_little_endian (void) { return ecb_byteorder_helper () ==
     || defined __m88k__ \
     || defined __sh__ \
     || defined _M_IX86 || defined _M_AMD64 || defined _M_IA64 \
-    || (defined __arm__ && (defined __ARM_EABI__ || defined __EABI__ || defined __VFP_FP__ || defined _WIN32_WCE || defined __ANDROID__))
+    || (defined __arm__ && (defined __ARM_EABI__ || defined __EABI__ || defined __VFP_FP__ || defined _WIN32_WCE || defined __ANDROID__)) \
+    | defined __aarch64__
   #define ECB_STDFP 1
   #include <string.h> /* for memcpy */
 #else
