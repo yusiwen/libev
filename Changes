@@ -15,6 +15,8 @@ TODO: document portbaility requirements for atomic pointer access
 TODO: possible cb aliasing?
 TODO: document requirements for function piinters and calling conventions.
 
+	- events on files were not always generated properly with the
+          epoll backend (testcase by Assaf Inbal).
 	- mark event pipe fd as cloexec after a fork (analyzed by Sami Farin).
         - (ecb) support m68k, m88k and sh (patch by Miod Vallat).
         - use a reasonable fallback for EV_NSIG instead of erroring out
