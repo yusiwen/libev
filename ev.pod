@@ -2395,7 +2395,7 @@ Example: Call a callback every hour, starting now:
    ev_periodic_init (&hourly_tick, clock_cb,
                      fmod (ev_now (loop), 3600.), 3600., 0);
    ev_periodic_start (loop, &hourly_tick);
-  
+
 
 =head2 C<ev_signal> - signal me when a signal gets signalled!
 
@@ -3215,7 +3215,7 @@ used).
    struct ev_loop *loop_hi = ev_default_init (0);
    struct ev_loop *loop_lo = 0;
    ev_embed embed;
-   
+
    // see if there is a chance of getting one that works
    // (remember that a flags value of 0 means autodetection)
    loop_lo = ev_embeddable_backends () & ev_recommended_backends ()
@@ -3239,7 +3239,7 @@ C<loop_socket>. (One might optionally use C<EVFLAG_NOENV>, too).
    struct ev_loop *loop = ev_default_init (0);
    struct ev_loop *loop_socket = 0;
    ev_embed embed;
-   
+
    if (ev_supported_backends () & ~ev_recommended_backends () & EVBACKEND_KQUEUE)
      if ((loop_socket = ev_loop_new (EVBACKEND_KQUEUE))
        {
@@ -4099,7 +4099,7 @@ Example: use a functor object as callback.
        ...
      }
    }
-    
+
    myfunctor f;
 
    ev::io w;
