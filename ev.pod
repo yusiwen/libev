@@ -684,11 +684,12 @@ and C<ev_loop_destroy>.
 
 =item ev_loop_fork (loop)
 
-This function sets a flag that causes subsequent C<ev_run> iterations to
-reinitialise the kernel state for backends that have one. Despite the
-name, you can call it anytime, but it makes most sense after forking, in
-the child process. You I<must> call it (or use C<EVFLAG_FORKCHECK>) in the
-child before resuming or calling C<ev_run>.
+This function sets a flag that causes subsequent C<ev_run> iterations
+to reinitialise the kernel state for backends that have one. Despite
+the name, you can call it anytime you are allowed to start or stop
+watchers (except inside an C<ev_prepare> callback), but it makes most
+sense after forking, in the child process. You I<must> call it (or use
+C<EVFLAG_FORKCHECK>) in the child before resuming or calling C<ev_run>.
 
 Again, you I<have> to call it on I<any> loop that you want to re-use after
 a fork, I<even if you do not plan to use the loop in the parent>. This is
@@ -2909,13 +2910,13 @@ Prepare and check watchers are often (but not always) used in pairs:
 prepare watchers get invoked before the process blocks and check watchers
 afterwards.
 
-You I<must not> call C<ev_run> or similar functions that enter
-the current event loop from either C<ev_prepare> or C<ev_check>
-watchers. Other loops than the current one are fine, however. The
-rationale behind this is that you do not need to check for recursion in
-those watchers, i.e. the sequence will always be C<ev_prepare>, blocking,
-C<ev_check> so if you have one watcher of each kind they will always be
-called in pairs bracketing the blocking call.
+You I<must not> call C<ev_run> (or similar functions that enter the
+current event loop) or C<ev_loop_fork> from either C<ev_prepare> or
+C<ev_check> watchers. Other loops than the current one are fine,
+however. The rationale behind this is that you do not need to check
+for recursion in those watchers, i.e. the sequence will always be
+C<ev_prepare>, blocking, C<ev_check> so if you have one watcher of each
+kind they will always be called in pairs bracketing the blocking call.
 
 Their main purpose is to integrate other event mechanisms into libev and
 their use is somewhat advanced. They could be used, for example, to track
@@ -3265,7 +3266,7 @@ of course.
 
 =head3 The special problem of life after fork - how is it possible?
 
-Most uses of C<fork()> consist of forking, then some simple calls to set
+Most uses of C<fork ()> consist of forking, then some simple calls to set
 up/change the process environment, followed by a call to C<exec()>. This
 sequence should be handled by libev without any problems.
 
