@@ -2031,13 +2031,15 @@ The relative timeouts are calculated relative to the C<ev_now ()>
 time. This is usually the right thing as this timestamp refers to the time
 of the event triggering whatever timeout you are modifying/starting. If
 you suspect event processing to be delayed and you I<need> to base the
-timeout on the current time, use something like this to adjust for this:
+timeout on the current time, use something like the following to adjust
+for it:
 
-   ev_timer_set (&timer, after + ev_now () - ev_time (), 0.);
+   ev_timer_set (&timer, after + (ev_time () - ev_now ()), 0.);
 
 If the event loop is suspended for a long time, you can also force an
 update of the time returned by C<ev_now ()> by calling C<ev_now_update
-()>.
+()>, although that will push the event time of all outstanding events
+further into the future.
 
 =head3 The special problem of unsynchronised clocks
 
