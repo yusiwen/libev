@@ -807,11 +807,18 @@ typedef int ecb_bool;
   #define ecb_decltype(x) __typeof(x)
 #endif
 
+#if _MSC_VER >= 1300
+  #define ecb_deprecated __declspec(deprecated)
+#else
+  #define ecb_deprecated ecb_attribute ((__deprecated__))
+#endif
+
 #define ecb_noinline   ecb_attribute ((__noinline__))
 #define ecb_unused     ecb_attribute ((__unused__))
 #define ecb_const      ecb_attribute ((__const__))
 #define ecb_pure       ecb_attribute ((__pure__))
 
+/* http://msdn.microsoft.com/en-us/library/k6ktzx3s.aspx __declspec(noreturn) */
 #if ECB_C11
   #define ecb_noreturn   _Noreturn
 #else
