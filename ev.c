@@ -45,11 +45,11 @@
 #  include "config.h"
 # endif
 
-#if HAVE_FLOOR
-# ifndef EV_USE_FLOOR
-#  define EV_USE_FLOOR 1
+# if HAVE_FLOOR
+#  ifndef EV_USE_FLOOR
+#   define EV_USE_FLOOR 1
+#  endif
 # endif
-#endif
 
 # if HAVE_CLOCK_SYSCALL
 #  ifndef EV_USE_CLOCK_SYSCALL
