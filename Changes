@@ -11,10 +11,11 @@ TODO: store pid for each signal
 TODO: document file descriptor usage per loop
 TODO: store loop pid_t and compare isndie signal handler,store 1 for same, 2 for differign pid, clean up in loop_fork
 TODO: embed watchers need updating when fd changes
-TODO: document portbaility requirements for atomic pointer access
+TODO: document portability requirements for atomic pointer access
 TODO: possible cb aliasing?
-TODO: document requirements for function piinters and calling conventions.
+TODO: document requirements for function pointers and calling conventions.
 
+4.18 Fri Sep  5 17:55:26 CEST 2014
 	- events on files were not always generated properly with the
           epoll backend (testcase by Assaf Inbal).
 	- mark event pipe fd as cloexec after a fork (analyzed by Sami Farin).
