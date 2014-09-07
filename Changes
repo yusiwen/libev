@@ -15,6 +15,9 @@ TODO: document portability requirements for atomic pointer access
 TODO: possible cb aliasing?
 TODO: document requirements for function pointers and calling conventions.
 
+	- when not using autoconf, tighten the check for clock_gettime and related
+          functionality.
+
 4.18 Fri Sep  5 17:55:26 CEST 2014
 	- events on files were not always generated properly with the
           epoll backend (testcase by Assaf Inbal).

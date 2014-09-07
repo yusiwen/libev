@@ -258,6 +258,15 @@
 # endif
 #endif
 
+#if !(_POSIX_TIMERS > 0)
+# ifndef EV_USE_MONOTONIC
+#  define EV_USE_MONOTONIC 0
+# endif
+# ifndef EV_USE_REALTIME
+#  define EV_USE_REALTIME 0
+# endif
+#endif
+
 #ifndef EV_USE_MONOTONIC
 # if defined _POSIX_MONOTONIC_CLOCK && _POSIX_MONOTONIC_CLOCK >= 0
 #  define EV_USE_MONOTONIC EV_FEATURE_OS
