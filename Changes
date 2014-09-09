@@ -16,7 +16,9 @@ TODO: possible cb aliasing?
 TODO: document requirements for function pointers and calling conventions.
 
 	- ev.h wasn't valid C++ anymore, which tripped compilers other than
-          clang, msvc or gcc (analyzed by Raphael 'kena' Poss).
+          clang, msvc or gcc (analyzed by Raphael 'kena' Poss). Unfortunately,
+          C++ doesn't support typedefs for function pointers fully, so the affected
+          declarations have to spell out the types each time.
 	- when not using autoconf, tighten the check for clock_gettime and related
           functionality.
 

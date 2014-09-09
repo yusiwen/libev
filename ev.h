@@ -48,14 +48,6 @@
 
 #define EV_THROW EV_CPP(throw())
 
-/* apple's proprietary clang fork errors out with exception specifications */
-/* in all sorts of places, so let's not even bother with them */
-/* users are strongly advised to install clang or gcc */
-#if __APPLE__ && __clang__
-# undef EV_THROW
-# define EV_THROW
-#endif
-
 EV_CPP(extern "C" {)
 
 /*****************************************************************************/
@@ -668,7 +660,8 @@ EV_API_DECL void ev_set_userdata (EV_P_ void *data) EV_THROW;
 EV_API_DECL void *ev_userdata (EV_P) EV_THROW;
 typedef void (*ev_loop_callback)(EV_P);
 EV_API_DECL void ev_set_invoke_pending_cb (EV_P_ ev_loop_callback invoke_pending_cb) EV_THROW;
-EV_API_DECL void ev_set_loop_release_cb (EV_P_ ev_loop_callback EV_THROW release, ev_loop_callback EV_THROW acquire) EV_THROW;
+/* C++ doesn't allow the use of the ev_loop_callback typedef here, so we need to spell it out*/
+EV_API_DECL void ev_set_loop_release_cb (EV_P_ void (*release)(EV_P) EV_THROW, void (*acquire)(EV_P) EV_THROW) EV_THROW;
 
 EV_API_DECL unsigned int ev_pending_count (EV_P) EV_THROW; /* number of pending events, if any */
 EV_API_DECL void ev_invoke_pending (EV_P); /* invoke all pending watchers */
