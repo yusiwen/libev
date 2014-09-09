@@ -660,8 +660,7 @@ EV_API_DECL void ev_set_userdata (EV_P_ void *data) EV_THROW;
 EV_API_DECL void *ev_userdata (EV_P) EV_THROW;
 typedef void (*ev_loop_callback)(EV_P);
 EV_API_DECL void ev_set_invoke_pending_cb (EV_P_ ev_loop_callback invoke_pending_cb) EV_THROW;
-typedef void (*ev_loop_callback_nothrow)(EV_P) EV_THROW;
-EV_API_DECL void ev_set_loop_release_cb (EV_P_ ev_loop_callback_nothrow release, ev_loop_callback_nothrow acquire) EV_THROW;
+EV_API_DECL void ev_set_loop_release_cb (EV_P_ ev_loop_callback release EV_THROW, ev_loop_callback acquire EV_THROW) EV_THROW;
 
 EV_API_DECL unsigned int ev_pending_count (EV_P) EV_THROW; /* number of pending events, if any */
 EV_API_DECL void ev_invoke_pending (EV_P); /* invoke all pending watchers */
