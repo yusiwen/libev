@@ -48,6 +48,11 @@
 
 #define EV_THROW EV_CPP(throw())
 
+#if __APPLE__ && __clang__
+# undef EV_THROW
+# define EV_THROW
+#endif
+
 EV_CPP(extern "C" {)
 
 /*****************************************************************************/
