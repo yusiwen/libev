@@ -48,6 +48,9 @@
 
 #define EV_THROW EV_CPP(throw())
 
+/* apple's proprietary clang fork errors out with exception specifications */
+/* in all sorts of places, so let's not even bother with them */
+/* users are strongly advised to install clang or gcc */
 #if __APPLE__ && __clang__
 # undef EV_THROW
 # define EV_THROW
