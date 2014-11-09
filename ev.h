@@ -42,11 +42,15 @@
 
 #ifdef __cplusplus
 # define EV_CPP(x) x
+# if __cplusplus >= 201103L
+#  define EV_THROW noexcept
+# else
+#  define EV_THROW throw ()
+# endif
 #else
 # define EV_CPP(x)
+# define EV_THROW
 #endif
-
-#define EV_THROW EV_CPP(throw())
 
 EV_CPP(extern "C" {)
 
