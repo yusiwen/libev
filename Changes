@@ -15,7 +15,7 @@ TODO: document portability requirements for atomic pointer access
 TODO: possible cb aliasing?
 TODO: document requirements for function pointers and calling conventions.
 
-	- prfer noexcept over throw () with C++ 11.
+	- prefer noexcept over throw () with C++ 11.
 
 4.19 Thu Sep 25 08:18:25 CEST 2014
 	- ev.h wasn't valid C++ anymore, which tripped compilers other than
