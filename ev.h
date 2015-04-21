@@ -1,7 +1,7 @@
 /*
  * libev native API header
  *
- * Copyright (c) 2007,2008,2009,2010,2011,2012 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007,2008,2009,2010,2011,2012,2015 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -151,6 +151,8 @@ EV_CPP(extern "C" {)
 /*****************************************************************************/
 
 typedef double ev_tstamp;
+
+#include <string.h> /* for memmove */
 
 #ifndef EV_ATOMIC_T
 # include <signal.h>
@@ -719,7 +721,8 @@ EV_API_DECL void ev_resume  (EV_P) EV_THROW;
 #define ev_is_pending(ev)                    (0 + ((ev_watcher *)(void *)(ev))->pending) /* ro, true when watcher is waiting for callback invocation */
 #define ev_is_active(ev)                     (0 + ((ev_watcher *)(void *)(ev))->active) /* ro, true when the watcher has been started */
 
-#define ev_cb(ev)                            (ev)->cb /* rw */
+#define ev_cb_(ev)                           (ev)->cb /* rw */
+#define ev_cb(ev)                            (memmove (&ev_cb_ (ev), &((ev_watcher *)(ev))->cb, sizeof (ev_cb_ (ev))), (ev)->cb)
 
 #if EV_MINPRI == EV_MAXPRI
 # define ev_priority(ev)                     ((ev), EV_MINPRI)
@@ -732,7 +735,7 @@ EV_API_DECL void ev_resume  (EV_P) EV_THROW;
 #define ev_periodic_at(ev)                   (+((ev_watcher_time *)(ev))->at)
 
 #ifndef ev_set_cb
-# define ev_set_cb(ev,cb_)                   ev_cb (ev) = (cb_)
+# define ev_set_cb(ev,cb_)                   (ev_cb_ (ev) = (cb_), memmove (&((ev_watcher *)(ev))->cb, &ev_cb_ (ev), sizeof (ev_cb_ (ev))))
 #endif
 
 /* stopping (enabling, adding) a watcher does nothing if it is already running */
