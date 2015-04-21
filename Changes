@@ -17,7 +17,7 @@ TODO: document requirements for function pointers and calling conventions.
 
 	- prefer noexcept over throw () with C++ 11.
         - update ecb.h due to incompatibilities with c11.
-        - fix a potentgial aliasing issue when reading and writing
+        - fix a potential aliasing issue when reading and writing
           watcher callbacks.
 
 4.19 Thu Sep 25 08:18:25 CEST 2014
