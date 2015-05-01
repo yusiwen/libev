@@ -644,6 +644,11 @@ struct signalfd_siginfo
   #define ECB_MEMORY_FENCE do { } while (0)
 #endif
 
+/* http://www-01.ibm.com/support/knowledgecenter/SSGH3R_13.1.0/com.ibm.xlcpp131.aix.doc/compiler_ref/compiler_builtins.html */
+#if __xlC__ && ECB_CPP
+  #include <builtins.h>
+#endif
+
 #ifndef ECB_MEMORY_FENCE
   #if ECB_GCC_VERSION(2,5) || defined __INTEL_COMPILER || (__llvm__ && __GNUC__) || __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
     #if __i386 || __i386__
@@ -846,7 +851,7 @@ typedef int ecb_bool;
   #define ecb_deprecated ecb_attribute ((__deprecated__))
 #endif
 
-#if __MSC_VER >= 1500
+#if _MSC_VER >= 1500
   #define ecb_deprecated_message(msg) __declspec (deprecated (msg))
 #elif ECB_GCC_VERSION(4,5)
   #define ecb_deprecated_message(msg) ecb_attribute ((__deprecated__ (msg))
@@ -865,7 +870,7 @@ typedef int ecb_bool;
 #define ecb_pure       ecb_attribute ((__pure__))
 
 #if ECB_C11 || __IBMC_NORETURN
-  /* http://pic.dhe.ibm.com/infocenter/compbg/v121v141/topic/com.ibm.xlcpp121.bg.doc/language_ref/noreturn.html */
+  /* http://www-01.ibm.com/support/knowledgecenter/SSGH3R_13.1.0/com.ibm.xlcpp131.aix.doc/language_ref/noreturn.html */
   #define ecb_noreturn   _Noreturn
 #elif ECB_CPP11
   #define ecb_noreturn   [[noreturn]]
@@ -1041,9 +1046,18 @@ ecb_inline ecb_const uint64_t ecb_rotl64 (uint64_t x, unsigned int count) { retu
 ecb_inline ecb_const uint64_t ecb_rotr64 (uint64_t x, unsigned int count) { return (x << (64 - count)) | (x >> count); }
 
 #if ECB_GCC_VERSION(4,3) || (ECB_CLANG_BUILTIN(__builtin_bswap32) && ECB_CLANG_BUILTIN(__builtin_bswap64))
+  #if ECB_GCC_VERSION(4,8) || ECB_CLANG_BUILTIN(__builtin_bswap16)
+  #define ecb_bswap16(x)  __builtin_bswap16 (x)
+  #else
   #define ecb_bswap16(x) (__builtin_bswap32 (x) >> 16)
+  #endif
   #define ecb_bswap32(x)  __builtin_bswap32 (x)
   #define ecb_bswap64(x)  __builtin_bswap64 (x)
+#elif _MSC_VER
+  #include <stdlib.h>
+  #define ecb_bswap16(x) ((uint16_t)_byteswap_ushort ((uint16_t)(x)))
+  #define ecb_bswap32(x) ((uint32_t)_byteswap_ulong  ((uint32_t)(x)))
+  #define ecb_bswap64(x) ((uint64_t)_byteswap_uint64 ((uint64_t)(x)))
 #else
   ecb_function_ ecb_const uint16_t ecb_bswap16 (uint16_t x);
   ecb_function_ ecb_const uint16_t
@@ -1187,8 +1201,10 @@ ecb_inline ecb_const ecb_bool ecb_little_endian (void) { return ecb_byteorder_he
 
   #if ECB_C99 || _XOPEN_VERSION >= 600 || _POSIX_VERSION >= 200112L
     #define ecb_ldexpf(x,e) ldexpf ((x), (e))
+    #define ecb_frexpf(x,e) frexpf ((x), (e))
   #else
-    #define ecb_ldexpf(x,e) (float) ldexp ((float) (x), (e))
+    #define ecb_ldexpf(x,e) (float) ldexp ((double) (x), (e))
+    #define ecb_frexpf(x,e) (float) frexp ((double) (x), (e))
   #endif
 
   /* converts an ieee half/binary16 to a float */
@@ -1227,7 +1243,7 @@ ecb_inline ecb_const ecb_bool ecb_little_endian (void) { return ecb_byteorder_he
       if (x < -3.40282346638528860e+38f) return 0xff800000U;
       if (x != x                       ) return 0x7fbfffffU;
 
-      m = frexpf (x, &e) * 0x1000000U;
+      m = ecb_frexpf (x, &e) * 0x1000000U;
 
       r = m & 0x80000000U;
 
