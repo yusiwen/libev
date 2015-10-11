@@ -691,7 +691,7 @@ watchers (except inside an C<ev_prepare> callback), but it makes most
 sense after forking, in the child process. You I<must> call it (or use
 C<EVFLAG_FORKCHECK>) in the child before resuming or calling C<ev_run>.
 
-In addition, if you want to reuse a loop (via this function of
+In addition, if you want to reuse a loop (via this function or
 C<EVFLAG_FORKCHECK>), you I<also> have to ignore C<SIGPIPE>.
 
 Again, you I<have> to call it on I<any> loop that you want to re-use after
