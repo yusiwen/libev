@@ -179,7 +179,7 @@ epoll_poll (EV_P_ ev_tstamp timeout)
       if (expect_false ((uint32_t)anfds [fd].egen != (uint32_t)(ev->data.u64 >> 32)))
         {
           /* recreate kernel state */
-          postfork = 1;
+          postfork |= 2;
           continue;
         }
 
