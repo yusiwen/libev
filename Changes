@@ -14,7 +14,7 @@ TODO: embed watchers need updating when fd changes
 TODO: document portability requirements for atomic pointer access
 TODO: document requirements for function pointers and calling conventions.
 
-4.22
+4.22 Sun Dec 20 22:11:50 CET 2015
 	- when epoll detects unremovable fds in the fd set, rebuild
           only the epoll descriptor, not the signal pipe, to avoid
           SIGPIPE in ev_async_send. This doesn't solve it on fork,
