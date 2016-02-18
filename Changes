@@ -14,6 +14,10 @@ TODO: embed watchers need updating when fd changes
 TODO: document portability requirements for atomic pointer access
 TODO: document requirements for function pointers and calling conventions.
 
+	- move some declarations at the beginning to help certain retarded
+          microsoft compilers, even though their documentation claims
+          otherwise (reported by Ruslan Osmanov).
+
 4.22 Sun Dec 20 22:11:50 CET 2015
 	- when epoll detects unremovable fds in the fd set, rebuild
           only the epoll descriptor, not the signal pipe, to avoid
