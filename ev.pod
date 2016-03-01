@@ -5302,6 +5302,11 @@ assumes that the same (machine) code can be used to call any watcher
 callback: The watcher callbacks have different type signatures, but libev
 calls them using an C<ev_watcher *> internally.
 
+=item null pointers and integer zero are represented by 0 bytes
+
+Libev uses C<memset> to initialise structs and arrays to C<0> bytes, and
+relies on this setting pointers and integers to null.
+
 =item pointer accesses must be thread-atomic
 
 Accessing a pointer value must be atomic, it must both be readable and
