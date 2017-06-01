@@ -1,5 +1,7 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
+	- ANDROID => __ANDROID__ (reported by enh@google.com).
+
 4.24 Wed Dec 28 05:19:55 CET 2016
 	- bump version to 4.24, as the release tarball inexplicably
           didn't have the right version in ev.h, even though the cvs-tagged
