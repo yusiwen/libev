@@ -175,7 +175,7 @@ namespace ev {
 
     bool operator != (const EV_P) const throw ()
     {
-      return (*this == EV_A);
+      return ! (*this == EV_A);
     }
 
     operator struct ev_loop * () const throw ()
