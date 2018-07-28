@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2017-06-21" "libev-4.24" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2017-11-14" "libev-4.24" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -538,9 +538,10 @@ make libev check for a fork in each iteration by enabling this flag.
 This works by calling \f(CW\*(C`getpid ()\*(C'\fR on every iteration of the loop,
 and thus this might slow down your event loop if you do a lot of loop
 iterations and little real work, but is usually not noticeable (on my
-GNU/Linux system for example, \f(CW\*(C`getpid\*(C'\fR is actually a simple 5\-insn sequence
-without a system call and thus \fIvery\fR fast, but my GNU/Linux system also has
-\&\f(CW\*(C`pthread_atfork\*(C'\fR which is even faster).
+GNU/Linux system for example, \f(CW\*(C`getpid\*(C'\fR is actually a simple 5\-insn
+sequence without a system call and thus \fIvery\fR fast, but my GNU/Linux
+system also has \f(CW\*(C`pthread_atfork\*(C'\fR which is even faster). (Update: glibc
+versions 2.25 apparently removed the \f(CW\*(C`getpid\*(C'\fR optimisation again).
 .Sp
 The big advantage of this flag is that you can forget about fork (and
 forget about forgetting to tell libev about forking, although you still

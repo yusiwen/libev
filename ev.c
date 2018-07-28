@@ -1908,6 +1908,8 @@ ev_sleep (ev_tstamp delay) EV_THROW
       EV_TS_SET (ts, delay);
       nanosleep (&ts, 0);
 #elif defined _WIN32
+      /* maybe this should round up, as ms is very low resolution */
+      /* compared to select (µs) or nanosleep (ns) */
       Sleep ((unsigned long)(delay * 1e3));
 #else
       struct timeval tv;
