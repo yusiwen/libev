@@ -3520,7 +3520,7 @@ There are some other functions of possible interest. Described. Here. Now.
 
 =over 4
 
-=item ev_once (loop, int fd, int events, ev_tstamp timeout, callback)
+=item ev_once (loop, int fd, int events, ev_tstamp timeout, callback, arg)
 
 This function combines a simple timer and an I/O watcher, calls your
 callback on whichever event happens first and automatically stops both
