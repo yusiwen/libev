@@ -3306,10 +3306,11 @@ ev_invoke_pending (EV_P)
 {
   pendingpri = NUMPRI;
 
-  while (pendingpri) /* pendingpri possibly gets modified in the inner loop */
+  do
     {
       --pendingpri;
 
+      /* pendingpri possibly gets modified in the inner loop */
       while (pendingcnt [pendingpri])
         {
           ANPENDING *p = pendings [pendingpri] + --pendingcnt [pendingpri];
@@ -3319,6 +3320,7 @@ ev_invoke_pending (EV_P)
           EV_FREQUENT_CHECK;
         }
     }
+  while (pendingpri);
 }
 
 #if EV_IDLE_ENABLE
