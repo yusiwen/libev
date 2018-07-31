@@ -1,5 +1,7 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
+	- move the darwin select workaround highe rin ev.c, as newre versions of
+          darwin managed to break their broken select even more.
 	- ANDROID => __ANDROID__ (reported by enh@google.com).
         - disable epoll_create1 on android because it has broken header files
           and google is unwilling to fix them (reported by enh@google.com).
