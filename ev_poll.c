@@ -1,7 +1,7 @@
 /*
  * libev poll fd activity backend
  *
- * Copyright (c) 2007,2008,2009,2010,2011 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007,2008,2009,2010,2011,2016,2019 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -64,7 +64,7 @@ poll_modify (EV_P_ int fd, int oev, int nev)
   if (idx < 0) /* need to allocate a new pollfd */
     {
       pollidxs [fd] = idx = pollcnt++;
-      array_needsize (struct pollfd, polls, pollmax, pollcnt, EMPTY2);
+      array_needsize (struct pollfd, polls, pollmax, pollcnt, array_needsize_noinit);
       polls [idx].fd = fd;
     }
 

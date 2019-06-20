@@ -1,7 +1,7 @@
 /*
  * libev event processing core, watcher management
  *
- * Copyright (c) 2007-2018 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007-2019 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -317,6 +317,10 @@
 # define EV_USE_PORT 0
 #endif
 
+#ifndef EV_USE_LINUXAIO
+# define EV_USE_LINUXAIO 0
+#endif
+
 #ifndef EV_USE_INOTIFY
 # if __linux && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 4))
 #  define EV_USE_INOTIFY EV_FEATURE_OS
@@ -381,6 +385,10 @@
 /* AIX has a completely broken poll.h header */
 # undef EV_USE_POLL
 # define EV_USE_POLL 0
+#endif
+
+#if EV_USE_LINUXAIO
+# include <linux/aio_abi.h> /* probably only needed for aio_context_t */
 #endif
 
 /* on linux, we can use a (slow) syscall to avoid a dependency on pthread, */
@@ -1545,8 +1553,7 @@ ecb_binary32_to_binary16 (uint32_t x)
 # define ABSPRI(w) (((W)w)->priority - EV_MINPRI)
 #endif
 
-#define EMPTY       /* required for microsofts broken pseudo-c compiler */
-#define EMPTY2(a,b) /* used to suppress some warnings */
+#define EMPTY /* required for microsofts broken pseudo-c compiler */
 
 typedef ev_watcher *W;
 typedef ev_watcher_list *WL;
@@ -1772,7 +1779,7 @@ typedef struct
   WL head;
   unsigned char events; /* the events watched for */
   unsigned char reify;  /* flag set when this ANFD needs reification (EV_ANFD_REIFY, EV__IOFDSET) */
-  unsigned char emask;  /* the epoll backend stores the actual kernel mask in here */
+  unsigned char emask;  /* some backends store the actual kernel mask in here */
   unsigned char unused;
 #if EV_USE_EPOLL
   unsigned int egen;    /* generation counter to counter epoll bugs */
@@ -1963,7 +1970,9 @@ array_realloc (int elem, void *base, int *cur, int cnt)
   return ev_realloc (base, elem * *cur);
 }
 
-#define array_init_zero(base,count)	\
+#define array_needsize_noinit(base,count)
+
+#define array_needsize_zerofill(base,count)	\
   memset ((void *)(base), 0, sizeof (*(base)) * (count))
 
 #define array_needsize(type,base,cur,cnt,init)			\
@@ -2009,7 +2018,7 @@ ev_feed_event (EV_P_ void *w, int revents) EV_NOEXCEPT
   else
     {
       w_->pending = ++pendingcnt [pri];
-      array_needsize (ANPENDING, pendings [pri], pendingmax [pri], w_->pending, EMPTY2);
+      array_needsize (ANPENDING, pendings [pri], pendingmax [pri], w_->pending, array_needsize_noinit);
       pendings [pri][w_->pending - 1].w      = w_;
       pendings [pri][w_->pending - 1].events = revents;
     }
@@ -2020,7 +2029,7 @@ ev_feed_event (EV_P_ void *w, int revents) EV_NOEXCEPT
 inline_speed void
 feed_reverse (EV_P_ W w)
 {
-  array_needsize (W, rfeeds, rfeedmax, rfeedcnt + 1, EMPTY2);
+  array_needsize (W, rfeeds, rfeedmax, rfeedcnt + 1, array_needsize_noinit);
   rfeeds [rfeedcnt++] = w;
 }
 
@@ -2148,7 +2157,7 @@ fd_change (EV_P_ int fd, int flags)
   if (expect_true (!reify))
     {
       ++fdchangecnt;
-      array_needsize (int, fdchanges, fdchangemax, fdchangecnt, EMPTY2);
+      array_needsize (int, fdchanges, fdchangemax, fdchangecnt, array_needsize_noinit);
       fdchanges [fdchangecnt - 1] = fd;
     }
 }
@@ -2705,6 +2714,9 @@ childcb (EV_P_ ev_signal *sw, int revents)
 #if EV_USE_KQUEUE
 # include "ev_kqueue.c"
 #endif
+#if EV_USE_LINUXAIO
+# include "ev_linuxaio.c"
+#endif
 #if EV_USE_EPOLL
 # include "ev_epoll.c"
 #endif
@@ -2745,11 +2757,12 @@ ev_supported_backends (void) EV_NOEXCEPT
 {
   unsigned int flags = 0;
 
-  if (EV_USE_PORT  ) flags |= EVBACKEND_PORT;
-  if (EV_USE_KQUEUE) flags |= EVBACKEND_KQUEUE;
-  if (EV_USE_EPOLL ) flags |= EVBACKEND_EPOLL;
-  if (EV_USE_POLL  ) flags |= EVBACKEND_POLL;
-  if (EV_USE_SELECT) flags |= EVBACKEND_SELECT;
+  if (EV_USE_PORT    ) flags |= EVBACKEND_PORT;
+  if (EV_USE_KQUEUE  ) flags |= EVBACKEND_KQUEUE;
+  if (EV_USE_EPOLL   ) flags |= EVBACKEND_EPOLL;
+  if (EV_USE_LINUXAIO) flags |= EVBACKEND_LINUXAIO;
+  if (EV_USE_POLL    ) flags |= EVBACKEND_POLL;
+  if (EV_USE_SELECT  ) flags |= EVBACKEND_SELECT;
   
   return flags;
 }
@@ -2918,22 +2931,25 @@ loop_init (EV_P_ unsigned int flags) EV_NOEXCEPT
         flags |= ev_recommended_backends ();
 
 #if EV_USE_IOCP
-      if (!backend && (flags & EVBACKEND_IOCP  )) backend = iocp_init   (EV_A_ flags);
+      if (!backend && (flags & EVBACKEND_IOCP    )) backend = iocp_init      (EV_A_ flags);
 #endif
 #if EV_USE_PORT
-      if (!backend && (flags & EVBACKEND_PORT  )) backend = port_init   (EV_A_ flags);
+      if (!backend && (flags & EVBACKEND_PORT    )) backend = port_init      (EV_A_ flags);
 #endif
 #if EV_USE_KQUEUE
-      if (!backend && (flags & EVBACKEND_KQUEUE)) backend = kqueue_init (EV_A_ flags);
+      if (!backend && (flags & EVBACKEND_KQUEUE  )) backend = kqueue_init    (EV_A_ flags);
+#endif
+#if EV_USE_LINUXAIO
+      if (!backend && (flags & EVBACKEND_LINUXAIO)) backend = linuxaio_init  (EV_A_ flags);
 #endif
 #if EV_USE_EPOLL
-      if (!backend && (flags & EVBACKEND_EPOLL )) backend = epoll_init  (EV_A_ flags);
+      if (!backend && (flags & EVBACKEND_EPOLL   )) backend = epoll_init     (EV_A_ flags);
 #endif
 #if EV_USE_POLL
-      if (!backend && (flags & EVBACKEND_POLL  )) backend = poll_init   (EV_A_ flags);
+      if (!backend && (flags & EVBACKEND_POLL    )) backend = poll_init      (EV_A_ flags);
 #endif
 #if EV_USE_SELECT
-      if (!backend && (flags & EVBACKEND_SELECT)) backend = select_init (EV_A_ flags);
+      if (!backend && (flags & EVBACKEND_SELECT  )) backend = select_init    (EV_A_ flags);
 #endif
 
       ev_prepare_init (&pending_w, pendingcb);
@@ -2998,22 +3014,25 @@ ev_loop_destroy (EV_P)
     close (backend_fd);
 
 #if EV_USE_IOCP
-  if (backend == EVBACKEND_IOCP  ) iocp_destroy   (EV_A);
+  if (backend == EVBACKEND_IOCP    ) iocp_destroy     (EV_A);
 #endif
 #if EV_USE_PORT
-  if (backend == EVBACKEND_PORT  ) port_destroy   (EV_A);
+  if (backend == EVBACKEND_PORT    ) port_destroy     (EV_A);
 #endif
 #if EV_USE_KQUEUE
-  if (backend == EVBACKEND_KQUEUE) kqueue_destroy (EV_A);
+  if (backend == EVBACKEND_KQUEUE  ) kqueue_destroy   (EV_A);
+#endif
+#if EV_USE_LINUXAIO
+  if (backend == EVBACKEND_LINUXAIO) linuxaio_destroy (EV_A);
 #endif
 #if EV_USE_EPOLL
-  if (backend == EVBACKEND_EPOLL ) epoll_destroy  (EV_A);
+  if (backend == EVBACKEND_EPOLL   ) epoll_destroy    (EV_A);
 #endif
 #if EV_USE_POLL
-  if (backend == EVBACKEND_POLL  ) poll_destroy   (EV_A);
+  if (backend == EVBACKEND_POLL    ) poll_destroy     (EV_A);
 #endif
 #if EV_USE_SELECT
-  if (backend == EVBACKEND_SELECT) select_destroy (EV_A);
+  if (backend == EVBACKEND_SELECT  ) select_destroy   (EV_A);
 #endif
 
   for (i = NUMPRI; i--; )
@@ -3065,13 +3084,16 @@ inline_size void
 loop_fork (EV_P)
 {
 #if EV_USE_PORT
-  if (backend == EVBACKEND_PORT  ) port_fork   (EV_A);
+  if (backend == EVBACKEND_PORT    ) port_fork     (EV_A);
 #endif
 #if EV_USE_KQUEUE
-  if (backend == EVBACKEND_KQUEUE) kqueue_fork (EV_A);
+  if (backend == EVBACKEND_KQUEUE  ) kqueue_fork   (EV_A);
+#endif
+#if EV_USE_LINUXAIO
+  if (backend == EVBACKEND_LINUXAIO) linuxaio_fork (EV_A);
 #endif
 #if EV_USE_EPOLL
-  if (backend == EVBACKEND_EPOLL ) epoll_fork  (EV_A);
+  if (backend == EVBACKEND_EPOLL   ) epoll_fork    (EV_A);
 #endif
 #if EV_USE_INOTIFY
   infy_fork (EV_A);
@@ -3878,7 +3900,7 @@ ev_io_start (EV_P_ ev_io *w) EV_NOEXCEPT
   EV_FREQUENT_CHECK;
 
   ev_start (EV_A_ (W)w, 1);
-  array_needsize (ANFD, anfds, anfdmax, fd + 1, array_init_zero);
+  array_needsize (ANFD, anfds, anfdmax, fd + 1, array_needsize_zerofill);
   wlist_add (&anfds[fd].head, (WL)w);
 
   /* common bug, apparently */
@@ -3925,7 +3947,7 @@ ev_timer_start (EV_P_ ev_timer *w) EV_NOEXCEPT
 
   ++timercnt;
   ev_start (EV_A_ (W)w, timercnt + HEAP0 - 1);
-  array_needsize (ANHE, timers, timermax, ev_active (w) + 1, EMPTY2);
+  array_needsize (ANHE, timers, timermax, ev_active (w) + 1, array_needsize_noinit);
   ANHE_w (timers [ev_active (w)]) = (WT)w;
   ANHE_at_cache (timers [ev_active (w)]);
   upheap (timers, ev_active (w));
@@ -4022,7 +4044,7 @@ ev_periodic_start (EV_P_ ev_periodic *w) EV_NOEXCEPT
 
   ++periodiccnt;
   ev_start (EV_A_ (W)w, periodiccnt + HEAP0 - 1);
-  array_needsize (ANHE, periodics, periodicmax, ev_active (w) + 1, EMPTY2);
+  array_needsize (ANHE, periodics, periodicmax, ev_active (w) + 1, array_needsize_noinit);
   ANHE_w (periodics [ev_active (w)]) = (WT)w;
   ANHE_at_cache (periodics [ev_active (w)]);
   upheap (periodics, ev_active (w));
@@ -4617,7 +4639,7 @@ ev_idle_start (EV_P_ ev_idle *w) EV_NOEXCEPT
     ++idleall;
     ev_start (EV_A_ (W)w, active);
 
-    array_needsize (ev_idle *, idles [ABSPRI (w)], idlemax [ABSPRI (w)], active, EMPTY2);
+    array_needsize (ev_idle *, idles [ABSPRI (w)], idlemax [ABSPRI (w)], active, array_needsize_noinit);
     idles [ABSPRI (w)][active - 1] = w;
   }
 
@@ -4657,7 +4679,7 @@ ev_prepare_start (EV_P_ ev_prepare *w) EV_NOEXCEPT
   EV_FREQUENT_CHECK;
 
   ev_start (EV_A_ (W)w, ++preparecnt);
-  array_needsize (ev_prepare *, prepares, preparemax, preparecnt, EMPTY2);
+  array_needsize (ev_prepare *, prepares, preparemax, preparecnt, array_needsize_noinit);
   prepares [preparecnt - 1] = w;
 
   EV_FREQUENT_CHECK;
@@ -4695,7 +4717,7 @@ ev_check_start (EV_P_ ev_check *w) EV_NOEXCEPT
   EV_FREQUENT_CHECK;
 
   ev_start (EV_A_ (W)w, ++checkcnt);
-  array_needsize (ev_check *, checks, checkmax, checkcnt, EMPTY2);
+  array_needsize (ev_check *, checks, checkmax, checkcnt, array_needsize_noinit);
   checks [checkcnt - 1] = w;
 
   EV_FREQUENT_CHECK;
@@ -4843,7 +4865,7 @@ ev_fork_start (EV_P_ ev_fork *w) EV_NOEXCEPT
   EV_FREQUENT_CHECK;
 
   ev_start (EV_A_ (W)w, ++forkcnt);
-  array_needsize (ev_fork *, forks, forkmax, forkcnt, EMPTY2);
+  array_needsize (ev_fork *, forks, forkmax, forkcnt, array_needsize_noinit);
   forks [forkcnt - 1] = w;
 
   EV_FREQUENT_CHECK;
@@ -4881,7 +4903,7 @@ ev_cleanup_start (EV_P_ ev_cleanup *w) EV_NOEXCEPT
   EV_FREQUENT_CHECK;
 
   ev_start (EV_A_ (W)w, ++cleanupcnt);
-  array_needsize (ev_cleanup *, cleanups, cleanupmax, cleanupcnt, EMPTY2);
+  array_needsize (ev_cleanup *, cleanups, cleanupmax, cleanupcnt, array_needsize_noinit);
   cleanups [cleanupcnt - 1] = w;
 
   /* cleanup watchers should never keep a refcount on the loop */
@@ -4926,7 +4948,7 @@ ev_async_start (EV_P_ ev_async *w) EV_NOEXCEPT
   EV_FREQUENT_CHECK;
 
   ev_start (EV_A_ (W)w, ++asynccnt);
-  array_needsize (ev_async *, asyncs, asyncmax, asynccnt, EMPTY2);
+  array_needsize (ev_async *, asyncs, asyncmax, asynccnt, array_needsize_noinit);
   asyncs [asynccnt - 1] = w;
 
   EV_FREQUENT_CHECK;
