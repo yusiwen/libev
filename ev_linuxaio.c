@@ -150,7 +150,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   struct aniocb *iocb = linuxaio_iocbps [fd];
 
   if (iocb->io.aio_buf)
-    ev_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0);
+    ev_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0); /* always fails in relevant kernels */
 
   if (nev)
     {
@@ -313,6 +313,7 @@ linuxaio_init (EV_P_ int flags)
   if (ev_linux_version () < 0x041200) /* 4.18 introduced IOCB_CMD_POLL */
     return 0;
 
+  linuxaio_ctx = 0;
   if (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
     return 0;
 
@@ -344,6 +345,7 @@ linuxaio_fork (EV_P)
   /* TODO: verify and test */
   linuxaio_destroy (EV_A);
 
+  linuxaio_ctx = 0;
   while (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
     ev_syserr ("(libev) io_setup");
 
