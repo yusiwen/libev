@@ -1,7 +1,7 @@
 /*
  * libev epoll fd activity backend
  *
- * Copyright (c) 2007,2008,2009,2010,2011 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007,2008,2009,2010,2011,2016,2017,2019 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -124,7 +124,7 @@ epoll_modify (EV_P_ int fd, int oev, int nev)
       /* add fd to epoll_eperms, if not already inside */
       if (!(oldmask & EV_EMASK_EPERM))
         {
-          array_needsize (int, epoll_eperms, epoll_epermmax, epoll_epermcnt + 1, EMPTY2);
+          array_needsize (int, epoll_eperms, epoll_epermmax, epoll_epermcnt + 1, array_needsize_noinit);
           epoll_eperms [epoll_epermcnt++] = fd;
         }
 
