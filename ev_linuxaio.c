@@ -38,6 +38,7 @@
  */
 
 #include <sys/time.h> /* actually linux/time.h, but we must assume they are compatible */
+#include <poll.h>
 #include <linux/aio_abi.h>
 
 /* we try to fill 4kn pages exactly.
@@ -123,6 +124,7 @@ linuxaio_array_needsize_iocbp (ANIOCBP *base, int count)
   while (count--)
     {
       *base = (ANIOCBP)ev_malloc (sizeof (**base));
+      /* TODO: full zero initialize required? */
       memset (*base, 0, sizeof (**base));
       /* would be nice to initialize fd/data as well */
       (*base)->io.aio_lio_opcode = IOCB_CMD_POLL;
@@ -136,18 +138,19 @@ linuxaio_free_iocbp (EV_P)
   while (linuxaio_iocbpmax--)
     ev_free (linuxaio_iocbps [linuxaio_iocbpmax]);
 
+  /* next resize will completely reallocate the array */
   linuxaio_iocbpmax = 0;
+  linuxaio_submitcnt = 0; /* all pointers invalidated */
 }
 
 static void
 linuxaio_modify (EV_P_ int fd, int oev, int nev)
 {
-  /* TODO: full zero initialize required? */
   array_needsize (ANIOCBP, linuxaio_iocbps, linuxaio_iocbpmax, fd + 1, linuxaio_array_needsize_iocbp);
   struct aniocb *iocb = linuxaio_iocbps [fd];
 
   if (iocb->io.aio_buf)
-    ev_io_cancel (linuxaio_ctx, &iocb->io, (void *)0);
+    ev_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0);
 
   if (nev)
     {
@@ -173,7 +176,7 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
       int fd  = ev->data;
       int res = ev->res;
 
-      assert (("libev: iocb fd must be in-bounds", fd >= 0 && fd < anfdxmax));
+      assert (("libev: iocb fd must be in-bounds", fd >= 0 && fd < anfdmax));
 
       /* linux aio is oneshot: rearm fd */
       linuxaio_iocbps [fd]->io.aio_buf = 0;
@@ -306,6 +309,7 @@ int
 linuxaio_init (EV_P_ int flags)
 {
   /* would be great to have a nice test for IOCB_CMD_POLL instead */
+  /* also: test some semi-common fd types, such as files and ttys in recommended_backends */
   if (ev_linux_version () < 0x041200) /* 4.18 introduced IOCB_CMD_POLL */
     return 0;
 
@@ -337,6 +341,12 @@ inline_size
 void
 linuxaio_fork (EV_P)
 {
-  abort ();//D
+  /* TODO: verify and test */
+  linuxaio_destroy (EV_A);
+
+  while (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
+    ev_syserr ("(libev) io_setup");
+
+  fd_rearm_all (EV_A);
 }
 

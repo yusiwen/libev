@@ -117,6 +117,15 @@
 #  define EV_USE_EPOLL 0
 # endif
    
+# if HAVE_LINUX_AIO_ABI_H
+#  ifndef EV_USE_LINUXAIO
+#   define EV_USE_LINUXAIO EV_FEATURE_BACKENDS
+#  endif
+# else
+#  undef EV_USE_LINUXAIO
+#  define EV_USE_LINUXAIO 0
+# endif
+   
 # if HAVE_KQUEUE && HAVE_SYS_EVENT_H
 #  ifndef EV_USE_KQUEUE
 #   define EV_USE_KQUEUE EV_FEATURE_BACKENDS
@@ -426,6 +435,14 @@
 /* hp-ux has it in sys/time.h, which we unconditionally include above */
 # if !defined _WIN32 && !defined __hpux
 #  include <sys/select.h>
+# endif
+#endif
+
+#if EV_USE_LINUXAIO
+# include <sys/syscall.h>
+# if !SYS_io_getevents
+#  undef EV_USE_LINUXAIO
+#  define EV_USE_LINUXAIO 0
 # endif
 #endif
 
@@ -2786,6 +2803,9 @@ ev_recommended_backends (void) EV_NOEXCEPT
 #ifdef __FreeBSD__
   flags &= ~EVBACKEND_POLL;   /* poll return value is unusable (http://forums.freebsd.org/archive/index.php/t-10270.html) */
 #endif
+
+  /* TODO: linuxaio is very experimental */
+  flags &= ~EVBACKEND_LINUXAIO;
 
   return flags;
 }
