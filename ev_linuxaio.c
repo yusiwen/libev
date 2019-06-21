@@ -53,7 +53,7 @@
 
 #include <sys/syscall.h> /* no glibc wrappers */
 
-/* aio_abi.h is not verioned in any way, so we cannot test for its existance */
+/* aio_abi.h is not versioned in any way, so we cannot test for its existance */
 #define IOCB_CMD_POLL 5
 
 /* taken from linux/fs/aio.c */
@@ -284,7 +284,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
              * the buffer overflowd.
              * In this case, we just try next loop iteration.
              */
-            memcpy (linuxaio_submits, linuxaio_submits + submitted, (linuxaio_submitcnt - submitted) * sizeof (*linuxaio_submits));
+            memmove (linuxaio_submits, linuxaio_submits + submitted, (linuxaio_submitcnt - submitted) * sizeof (*linuxaio_submits));
             linuxaio_submitcnt -= submitted;
             timeout = 0;
             break;
