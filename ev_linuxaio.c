@@ -41,10 +41,10 @@
 #include <poll.h>
 #include <linux/aio_abi.h>
 
-/* we try to fill 4kn pages exactly.
+/* we try to fill 4kB pages exactly.
  * the ring buffer header is 32 bytes, every io event is 32 bytes.
- * the kernel takes the io event number, doubles it, adds 2, adds the ring buffer
- * so the calculation below will use "exactly" 8kB for the ring buffer
+ * the kernel takes the io event number, doubles it, adds 2, adds the ring buffer.
+ * therefore the calculation below will use "exactly" 8kB for the ring buffer
  */
 #define EV_LINUXAIO_DEPTH (256 / 2 - 2 - 1) /* max. number of io events per batch */
 
@@ -74,42 +74,44 @@ struct aio_ring
   struct io_event io_events[0];
 };
 
-static int
+inline_size
+int
 ev_io_setup (unsigned nr_events, aio_context_t *ctx_idp)
 {
   return syscall (SYS_io_setup, nr_events, ctx_idp);
 }
 
-static int
+inline_size
+int
 ev_io_destroy (aio_context_t ctx_id)
 {
   return syscall (SYS_io_destroy, ctx_id);
 }
 
-static int
+inline_size
+int
 ev_io_submit (aio_context_t ctx_id, long nr, struct iocb *cbp[])
 {
   return syscall (SYS_io_submit, ctx_id, nr, cbp);
 }
 
-static int
+inline_size
+int
 ev_io_cancel (aio_context_t ctx_id, struct iocb *cbp, struct io_event *result)
 {
   return syscall (SYS_io_cancel, ctx_id, cbp, result);
 }
 
-static int
+inline_size
+int
 ev_io_getevents (aio_context_t ctx_id, long min_nr, long nr, struct io_event *events, struct timespec *timeout)
 {
   return syscall (SYS_io_getevents, ctx_id, min_nr, nr, events, timeout);
 }
 
-typedef void (*ev_io_cb) (long nr, struct io_event *events);
-
 /*****************************************************************************/
 /* actual backed implementation */
 
-/* two iocbs for every fd, one for read, one for write */
 typedef struct aniocb
 {
   struct iocb io;
@@ -132,15 +134,14 @@ linuxaio_array_needsize_iocbp (ANIOCBP *base, int count)
     }
 }
 
+ecb_cold
 static void
 linuxaio_free_iocbp (EV_P)
 {
   while (linuxaio_iocbpmax--)
     ev_free (linuxaio_iocbps [linuxaio_iocbpmax]);
 
-  /* next resize will completely reallocate the array */
-  linuxaio_iocbpmax = 0;
-  linuxaio_submitcnt = 0; /* all pointers invalidated */
+  linuxaio_iocbpmax = 0; /* next resize will completely reallocate the array, at some overhead */
 }
 
 static void
@@ -210,18 +211,19 @@ linuxaio_get_events_from_ring (EV_P)
   unsigned head = ring->head;
   unsigned tail = *(volatile unsigned *)&ring->tail;
 
-  if (ring->magic != AIO_RING_MAGIC
-      || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
-      || ring->header_length != sizeof (struct aio_ring) /* TODO: or use it to find io_event[0]? */
-      || head == tail)
+  if (head == tail)
+    return 0;
+
+  if (ecb_expect_false (ring->magic != AIO_RING_MAGIC)
+                        || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
+                        || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
     return 0;
 
   /* parse all available events, but only once, to avoid starvation */
   if (tail > head) /* normal case around */
     linuxaio_parse_events (EV_A_ ring->io_events + head, tail - head);
-  else
+  else /* wrapped around */
     {
-      /* wrapped around */
       linuxaio_parse_events (EV_A_ ring->io_events + head, ring->nr - head);
       linuxaio_parse_events (EV_A_ ring->io_events, tail);
     }
@@ -276,7 +278,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
     {
       int res = ev_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
 
-      if (res < 0)
+      if (ecb_expect_false (res < 0))
         if (errno == EAGAIN)
           {
             /* This happens when the ring buffer is full, at least. I assume this means
@@ -343,7 +345,10 @@ void
 linuxaio_fork (EV_P)
 {
   /* TODO: verify and test */
+
+  /* this frees all iocbs, which is very heavy-handed */
   linuxaio_destroy (EV_A);
+  linuxaio_submitcnt = 0; /* all pointers were invalidated */
 
   linuxaio_ctx = 0;
   while (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
