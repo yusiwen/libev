@@ -150,7 +150,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   struct aniocb *iocb = linuxaio_iocbps [fd];
 
   if (iocb->io.aio_buf)
-    ev_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0); /* always fails in relevant kernels */
+    ev_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0); /* always returns an error relevant kernels */
 
   if (nev)
     {
