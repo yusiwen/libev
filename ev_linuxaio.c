@@ -44,9 +44,9 @@
 /* we try to fill 4kB pages exactly.
  * the ring buffer header is 32 bytes, every io event is 32 bytes.
  * the kernel takes the io event number, doubles it, adds 2, adds the ring buffer.
- * therefore the calculation below will use "exactly" 8kB for the ring buffer
+ * therefore the calculation below will use "exactly" 4kB for the ring buffer
  */
-#define EV_LINUXAIO_DEPTH (256 / 2 - 2 - 1) /* max. number of io events per batch */
+#define EV_LINUXAIO_DEPTH (128 / 2 - 2 - 1) /* max. number of io events per batch */
 
 /*****************************************************************************/
 /* syscall wrapdadoop */
@@ -207,8 +207,6 @@ linuxaio_get_events_from_ring (EV_P)
 {
   struct aio_ring *ring = (struct aio_ring *)linuxaio_ctx;
 
-  ECB_MEMORY_FENCE_ACQUIRE;
-
   unsigned head = ring->head;
   unsigned tail = *(volatile unsigned *)&ring->tail;
 
@@ -220,6 +218,8 @@ linuxaio_get_events_from_ring (EV_P)
                         || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
                         || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
     return 0;
+
+  ECB_MEMORY_FENCE_ACQUIRE;
 
   /* parse all available events, but only once, to avoid starvation */
   if (tail > head) /* normal case around */
