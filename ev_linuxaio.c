@@ -112,6 +112,7 @@ ev_io_getevents (aio_context_t ctx_id, long min_nr, long nr, struct io_event *ev
 /*****************************************************************************/
 /* actual backed implementation */
 
+/* we use out own wrapper structure in acse we ever want to do something "clever" */
 typedef struct aniocb
 {
   struct iocb io;
@@ -122,13 +123,13 @@ inline_size
 void
 linuxaio_array_needsize_iocbp (ANIOCBP *base, int count)
 {
-  /* TODO: quite the overhead to allocate every iocb separately */
+  /* TODO: quite the overhead to allocate every iocb separately, maybe use our own alocator? */
   while (count--)
     {
       *base = (ANIOCBP)ev_malloc (sizeof (**base));
       /* TODO: full zero initialize required? */
       memset (*base, 0, sizeof (**base));
-      /* would be nice to initialize fd/data as well */
+      /* would be nice to initialize fd/data as well, but array_needsize API doesn't support that */
       (*base)->io.aio_lio_opcode = IOCB_CMD_POLL;
       ++base;
     }
@@ -214,6 +215,7 @@ linuxaio_get_events_from_ring (EV_P)
   if (head == tail)
     return 0;
 
+  /* bail out if the ring buffer doesn't match the expected layout */
   if (ecb_expect_false (ring->magic != AIO_RING_MAGIC)
                         || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
                         || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
@@ -246,7 +248,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
     return;
 
   /* no events, so wait for at least one, then poll ring buffer again */
-  /* this degraded to one event per loop iteration */
+  /* this degrades to one event per loop iteration */
   /* if the ring buffer changes layout, but so be it */
 
   ts.tv_sec  = (long)timeout;
@@ -285,6 +287,8 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
              * that the event was queued synchronously during io_submit, and thus
              * the buffer overflowd.
              * In this case, we just try next loop iteration.
+             * This should not result in a few fds taking priority, as the interface
+             * is one-shot, and we submit iocb's in a round-robin fashion.
              */
             memmove (linuxaio_submits, linuxaio_submits + submitted, (linuxaio_submitcnt - submitted) * sizeof (*linuxaio_submits));
             linuxaio_submitcnt -= submitted;
@@ -292,8 +296,6 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
             break;
           }
         else
-          /* TODO: we get EAGAIN when the ring buffer is full for some reason */
-          /* TODO: should we always just try next time? */
           ev_syserr ("(libev) io_submit");
 
       submitted += res;
@@ -344,8 +346,6 @@ inline_size
 void
 linuxaio_fork (EV_P)
 {
-  /* TODO: verify and test */
-
   /* this frees all iocbs, which is very heavy-handed */
   linuxaio_destroy (EV_A);
   linuxaio_submitcnt = 0; /* all pointers were invalidated */
