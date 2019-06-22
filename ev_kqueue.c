@@ -106,7 +106,7 @@ kqueue_poll (EV_P_ ev_tstamp timeout)
   if (expect_false (res < 0))
     {
       if (errno != EINTR)
-        ev_syserr ("(libev) kevent");
+        ev_syserr ("(libev) kqueue kevent");
 
       return;
     }

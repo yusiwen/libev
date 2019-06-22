@@ -257,7 +257,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
   res = ev_io_getevents (linuxaio_ctx, 1, 1, &ioev, &ts);
 
   if (res < 0)
-    ev_syserr ("(libev) io_getevents");
+    ev_syserr ("(libev) linuxaio io_getevents");
   else if (res)
     {
       /* at least one event received, handle it and any remaining ones in the ring buffer */
@@ -296,7 +296,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
             break;
           }
         else
-          ev_syserr ("(libev) io_submit");
+          ev_syserr ("(libev) linuxaio io_submit");
 
       submitted += res;
     }
@@ -352,7 +352,7 @@ linuxaio_fork (EV_P)
 
   linuxaio_ctx = 0;
   while (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
-    ev_syserr ("(libev) io_setup");
+    ev_syserr ("(libev) linuxaio io_setup");
 
   fd_rearm_all (EV_A);
 }
