@@ -327,7 +327,11 @@
 #endif
 
 #ifndef EV_USE_LINUXAIO
-# define EV_USE_LINUXAIO 0
+# if __linux /* libev currently assumes linux/aio_abi.h is always available on linux */
+#  define EV_USE_LINUXAIO 1
+# else
+#  define EV_USE_LINUXAIO 0
+# endif
 #endif
 
 #ifndef EV_USE_INOTIFY

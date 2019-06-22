@@ -107,10 +107,10 @@ watcher.
 
 =head2 FEATURES
 
-Libev supports C<select>, C<poll>, the Linux-specific C<epoll>, the
-BSD-specific C<kqueue> and the Solaris-specific event port mechanisms
-for file descriptor events (C<ev_io>), the Linux C<inotify> interface
-(for C<ev_stat>), Linux eventfd/signalfd (for faster and cleaner
+Libev supports C<select>, C<poll>, the Linux-specific aio and C<epoll>
+interfaces, the BSD-specific C<kqueue> and the Solaris-specific event port
+mechanisms for file descriptor events (C<ev_io>), the Linux C<inotify>
+interface (for C<ev_stat>), Linux eventfd/signalfd (for faster and cleaner
 inter-thread wakeup (C<ev_async>)/signal handling (C<ev_signal>)) relative
 timers (C<ev_timer>), absolute timers with customised rescheduling
 (C<ev_periodic>), synchronous signals (C<ev_signal>), process status
@@ -569,7 +569,40 @@ faster than epoll for maybe up to a hundred file descriptors, depending on
 the usage. So sad.
 
 While nominally embeddable in other event loops, this feature is broken in
-all kernel versions tested so far.
+a lot of kernel revisions, but probably(!) works in current versions.
+
+This backend maps C<EV_READ> and C<EV_WRITE> in the same way as
+C<EVBACKEND_POLL>.
+
+=item C<EVBACKEND_LINUXAIO>   (value 64, Linux)
+
+Use the linux-specific linux aio (I<not> C<< aio(7) >>) event interface
+available in post-4.18 kernels.
+
+If this backend works for you (as of this writing, it was very
+experimental and only supports a subset of file types), it is the best
+event interface available on linux and might be well worth it enabling it
+- if it isn't available in your kernel this will be detected and another
+backend will be chosen.
+
+This backend can batch oneshot requests and uses a user-space ring buffer
+to receive events. It also doesn't suffer from most of the design problems
+of epoll (such as not being able to remove event sources from the epoll
+set), and generally sounds too good to be true. Because, this being the
+linux kernel, of course it suffers from a whole new set of limitations.
+
+For one, it is not easily embeddable (but probably could be done using
+an event fd at some extra overhead). It also is subject to various
+arbitrary limits that can be configured in F</proc/sys/fs/aio-max-nr>
+and F</proc/sys/fs/aio-nr>), which could lead to it being skipped during
+initialisation.
+
+Most problematic in practise, however, is that, like kqueue, it requires
+special support from drivers, and, not surprisingly, not all drivers
+implement it. For example, in linux 4.19, tcp sockets, pipes, event fds,
+files, F</dev/null> and a few others are supported, but ttys are not, so
+this is not (yet?) a generic event polling interface but is probably still
+be very useful in a web server or similar program.
 
 This backend maps C<EV_READ> and C<EV_WRITE> in the same way as
 C<EVBACKEND_POLL>.
@@ -679,6 +712,12 @@ Example: Use whatever libev has to offer, but make sure that kqueue is
 used if available.
 
    struct ev_loop *loop = ev_loop_new (ev_recommended_backends () | EVBACKEND_KQUEUE);
+
+Example: Similarly, on linux, you mgiht want to take advantage of the
+linux aio backend if possible, but fall back to something else if that
+isn't available.
+
+   struct ev_loop *loop = ev_loop_new (ev_recommended_backends () | EVBACKEND_LINUXAIO);
 
 =item ev_loop_destroy (loop)
 
@@ -1632,13 +1671,13 @@ But really, best use non-blocking mode.
 
 =head3 The special problem of disappearing file descriptors
 
-Some backends (e.g. kqueue, epoll) need to be told about closing a file
-descriptor (either due to calling C<close> explicitly or any other means,
-such as C<dup2>). The reason is that you register interest in some file
-descriptor, but when it goes away, the operating system will silently drop
-this interest. If another file descriptor with the same number then is
-registered with libev, there is no efficient way to see that this is, in
-fact, a different file descriptor.
+Some backends (e.g. kqueue, epoll, linuxaio) need to be told about closing
+a file descriptor (either due to calling C<close> explicitly or any other
+means, such as C<dup2>). The reason is that you register interest in some
+file descriptor, but when it goes away, the operating system will silently
+drop this interest. If another file descriptor with the same number then
+is registered with libev, there is no efficient way to see that this is,
+in fact, a different file descriptor.
 
 To avoid having to explicitly tell libev about such cases, libev follows
 the following policy:  Each time C<ev_io_set> is being called, libev
@@ -1697,9 +1736,10 @@ reuse the same code path.
 
 =head3 The special problem of fork
 
-Some backends (epoll, kqueue) do not support C<fork ()> at all or exhibit
-useless behaviour. Libev fully supports fork, but needs to be told about
-it in the child if you want to continue to use it in the child.
+Some backends (epoll, kqueue, probably linuxaio) do not support C<fork ()>
+at all or exhibit useless behaviour. Libev fully supports fork, but needs
+to be told about it in the child if you want to continue to use it in the
+child.
 
 To support fork in your child processes, you have to call C<ev_loop_fork
 ()> after a fork in the child, enable C<EVFLAG_FORKCHECK>, or resort to
@@ -4430,6 +4470,7 @@ in your include path (e.g. in libev/ when using -Ilibev):
    ev_select.c     only when select backend is enabled
    ev_poll.c       only when poll backend is enabled
    ev_epoll.c      only when the epoll backend is enabled
+   ev_linuxaio.c   only when the linux aio backend is enabled
    ev_kqueue.c     only when the kqueue backend is enabled
    ev_port.c       only when the solaris port backend is enabled
 
@@ -4629,6 +4670,13 @@ C<epoll>(7) backend. Its availability will be detected at runtime,
 otherwise another method will be used as fallback. This is the preferred
 backend for GNU/Linux systems. If undefined, it will be enabled if the
 headers indicate GNU/Linux + Glibc 2.4 or newer, otherwise disabled.
+
+=item EV_USE_LINUXAIO
+
+If defined to be C<1>, libev will compile in support for the Linux
+aio backend. Due to it's currenbt limitations it has to be requested
+explicitly.  If undefined, it will be enabled on linux, otherwise
+disabled.
 
 =item EV_USE_KQUEUE
 
