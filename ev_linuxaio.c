@@ -233,6 +233,7 @@ linuxaio_get_events_from_ring (EV_P)
                         || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
     return 0;
 
+  /* make sure the events up to tail are visible */
   ECB_MEMORY_FENCE_ACQUIRE;
 
   /* parse all available events, but only once, to avoid starvation */
@@ -245,8 +246,7 @@ linuxaio_get_events_from_ring (EV_P)
     }
 
   *(volatile unsigned *)&ring->head = tail;
-
-  /* again, other implementations don't do this, but I think it's required for the kernel to see free slots */
+  /* make sure kernel can see our new head value - probably not required */
   ECB_MEMORY_FENCE_RELEASE;
 
   return 1;
