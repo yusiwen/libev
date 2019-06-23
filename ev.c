@@ -2809,7 +2809,9 @@ ev_recommended_backends (void) EV_NOEXCEPT
 #endif
 
   /* TODO: linuxaio is very experimental */
+#if !EV_RECOMMEND_LINUXAIO
   flags &= ~EVBACKEND_LINUXAIO;
+#endif
 
   return flags;
 }
