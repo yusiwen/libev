@@ -244,7 +244,10 @@ linuxaio_get_events_from_ring (EV_P)
       linuxaio_parse_events (EV_A_ ring->io_events, tail);
     }
 
-  ring->head = tail;
+  *(volatile unsigned *)&ring->head = tail;
+
+  /* again, other implementations don't do this, but I think it's required for the kernel to see free slots */
+  ECB_MEMORY_FENCE_RELEASE;
 
   return 1;
 }
