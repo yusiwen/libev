@@ -423,6 +423,7 @@ linuxaio_init (EV_P_ int flags)
 
   ev_io_init  (EV_A_ &linuxaio_epoll_w, linuxaio_epoll_cb, backend_fd, EV_READ);
   ev_io_start (EV_A_ &linuxaio_epoll_w);
+  ev_unref (EV_A); /* watcher should not keep loop alive */
 #endif
 
   backend_modify  = linuxaio_modify;
@@ -468,7 +469,6 @@ linuxaio_fork (EV_P)
   ev_io_stop  (EV_A_ &linuxaio_epoll_w);
   ev_io_init  (EV_A_ &linuxaio_epoll_w, linuxaio_epoll_cb, backend_fd, EV_READ);
   ev_io_start (EV_A_ &linuxaio_epoll_w);
-  ev_unref (EV_A); /* watcher should not keep loop alive */
 #endif
 
   fd_rearm_all (EV_A);
