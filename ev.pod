@@ -606,7 +606,7 @@ interface.
 To work around this latter problem, the current version of libev uses
 epoll as a fallback for file deescriptor types that do not work. Epoll
 is used in, kind of, slow mode that hopefully avoids most of its design
-problems.
+problems and requires 1-3 extra syscalls per active fd every iteration.
 
 This backend maps C<EV_READ> and C<EV_WRITE> in the same way as
 C<EVBACKEND_POLL>.

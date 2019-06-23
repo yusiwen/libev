@@ -51,6 +51,7 @@
 #define kqueue_events ((loop)->kqueue_events)
 #define kqueue_fd_pid ((loop)->kqueue_fd_pid)
 #define linuxaio_ctx ((loop)->linuxaio_ctx)
+#define linuxaio_epoll_w ((loop)->linuxaio_epoll_w)
 #define linuxaio_iocbpmax ((loop)->linuxaio_iocbpmax)
 #define linuxaio_iocbps ((loop)->linuxaio_iocbps)
 #define linuxaio_submitcnt ((loop)->linuxaio_submitcnt)
@@ -156,6 +157,7 @@
 #undef kqueue_events
 #undef kqueue_fd_pid
 #undef linuxaio_ctx
+#undef linuxaio_epoll_w
 #undef linuxaio_iocbpmax
 #undef linuxaio_iocbps
 #undef linuxaio_submitcnt
