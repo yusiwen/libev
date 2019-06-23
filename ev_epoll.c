@@ -235,21 +235,32 @@ epoll_poll (EV_P_ ev_tstamp timeout)
     }
 }
 
+static int
+ev_epoll_create (void)
+{
+  int fd;
+
+#if defined EPOLL_CLOEXEC && !defined __ANDROID__
+  fd = epoll_create1 (EPOLL_CLOEXEC);
+
+  if (fd < 0 && (errno == EINVAL || errno == ENOSYS))
+#endif
+    {
+      fd = epoll_create (256);
+
+      if (fd >= 0)
+        fcntl (fd, F_SETFD, FD_CLOEXEC);
+    }
+
+  return fd;
+}
+
 inline_size
 int
 epoll_init (EV_P_ int flags)
 {
-#if defined EPOLL_CLOEXEC && !defined __ANDROID__
-  backend_fd = epoll_create1 (EPOLL_CLOEXEC);
-
-  if (backend_fd < 0 && (errno == EINVAL || errno == ENOSYS))
-#endif
-    backend_fd = epoll_create (256);
-
-  if (backend_fd < 0)
+  if ((backend_fd = ev_epoll_create ()) < 0)
     return 0;
-
-  fcntl (backend_fd, F_SETFD, FD_CLOEXEC);
 
   backend_mintime = 1e-3; /* epoll does sometimes return early, this is just to avoid the worst */
   backend_modify  = epoll_modify;
@@ -275,10 +286,8 @@ epoll_fork (EV_P)
 {
   close (backend_fd);
 
-  while ((backend_fd = epoll_create (256)) < 0)
+  while ((backend_fd = ev_epoll_create ()) < 0)
     ev_syserr ("(libev) epoll_create");
-
-  fcntl (backend_fd, F_SETFD, FD_CLOEXEC);
 
   fd_rearm_all (EV_A);
 }
