@@ -221,7 +221,10 @@ linuxaio_get_events_from_ring (EV_P)
 {
   struct aio_ring *ring = (struct aio_ring *)linuxaio_ctx;
 
-  unsigned head = ring->head;
+  /* the kernel reads and writes both of these variables, */
+  /* as a C extension, we assume that volatile use here */
+  /* both makes reads atomic and once-only */
+  unsigned head = *(volatile unsigned *)&ring->head;
   unsigned tail = *(volatile unsigned *)&ring->tail;
 
   if (head == tail)
@@ -245,6 +248,7 @@ linuxaio_get_events_from_ring (EV_P)
       linuxaio_parse_events (EV_A_ ring->io_events, tail);
     }
 
+  /* as an extension to C, we hope that the volatile will makethis atomic and once-only */
   *(volatile unsigned *)&ring->head = tail;
   /* make sure kernel can see our new head value - probably not required */
   ECB_MEMORY_FENCE_RELEASE;
