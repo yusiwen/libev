@@ -114,6 +114,7 @@ VARx(int, linuxaio_iocbpmax)
 VARx(struct iocb **, linuxaio_submits)
 VARx(int, linuxaio_submitcnt)
 VARx(int, linuxaio_submitmax)
+VARx(ev_io, linuxaio_epoll_w)
 #endif
 
 #if EV_USE_KQUEUE || EV_GENWRAP

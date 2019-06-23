@@ -400,10 +400,6 @@
 # define EV_USE_POLL 0
 #endif
 
-#if EV_USE_LINUXAIO
-# include <linux/aio_abi.h> /* probably only needed for aio_context_t */
-#endif
-
 /* on linux, we can use a (slow) syscall to avoid a dependency on pthread, */
 /* which makes programs even slower. might work on other unices, too. */
 #if EV_USE_CLOCK_SYSCALL
@@ -444,7 +440,7 @@
 
 #if EV_USE_LINUXAIO
 # include <sys/syscall.h>
-# if !SYS_io_getevents
+# if !SYS_io_getevents || !EV_USE_EPOLL
 #  undef EV_USE_LINUXAIO
 #  define EV_USE_LINUXAIO 0
 # endif
@@ -1609,6 +1605,10 @@ static EV_ATOMIC_T have_monotonic; /* did clock_gettime (CLOCK_MONOTONIC) work? 
 
 /*****************************************************************************/
 
+#if EV_USE_LINUXAIO
+# include <linux/aio_abi.h> /* probably only needed for aio_context_t */
+#endif
+
 /* define a suitable floor function (only used by periodics atm) */
 
 #if EV_USE_FLOOR
@@ -2735,11 +2735,11 @@ childcb (EV_P_ ev_signal *sw, int revents)
 #if EV_USE_KQUEUE
 # include "ev_kqueue.c"
 #endif
-#if EV_USE_LINUXAIO
-# include "ev_linuxaio.c"
-#endif
 #if EV_USE_EPOLL
 # include "ev_epoll.c"
+#endif
+#if EV_USE_LINUXAIO
+# include "ev_linuxaio.c"
 #endif
 #if EV_USE_POLL
 # include "ev_poll.c"
