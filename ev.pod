@@ -586,10 +586,9 @@ be detected and this backend will be skipped.
 
 This backend can batch oneshot requests and supports a user-space ring
 buffer to receive events. It also doesn't suffer from most of the design
-problems of epoll (such as not being able to remove event sources from
-the epoll set), and generally sounds too good to be true. Because, this
-being the linux kernel, of course it suffers from a whole new set of
-limitations.
+problems of epoll (such as not being able to remove event sources from the
+epoll set), and generally sounds too good to be true. Because, this being
+the linux kernel, of course it suffers from a whole new set of limitations.
 
 For one, it is not easily embeddable (but probably could be done using
 an event fd at some extra overhead). It also is subject to a system wide
@@ -604,7 +603,10 @@ properly (a known bug that the kernel developers don't care about, see
 L<https://lore.kernel.org/patchwork/patch/1047453/>), so this is not
 (yet?) a generic event polling interface.
 
-To work around this latter problem, the current version of libev uses
+Overall, it seems the linux developers just don't want it to have a
+generic event handling mechanism other than C<select> or C<poll>.
+
+To work around the fd type problem, the current version of libev uses
 epoll as a fallback for file deescriptor types that do not work. Epoll
 is used in, kind of, slow mode that hopefully avoids most of its design
 problems and requires 1-3 extra syscalls per active fd every iteration.
