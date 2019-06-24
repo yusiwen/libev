@@ -338,9 +338,11 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
 #if EPOLL_FALLBACK
         else if (errno == EINVAL)
           {
-            /* This hapüpens for unsupported fds, officially, but in my testing,
+            /* This happens for unsupported fds, officially, but in my testing,
              * also randomly happens for supported fds. We fall back to good old
              * poll() here, under the assumption that this is a very rare case.
+             * See https://lore.kernel.org/patchwork/patch/1047453/ for evidence
+             * that the problem is known, but ignored.
              */
             struct iocb *iocb = linuxaio_submits [submitted];
             res = 1; /* skip this iocb */
@@ -406,8 +408,15 @@ linuxaio_init (EV_P_ int flags)
 {
   /* would be great to have a nice test for IOCB_CMD_POLL instead */
   /* also: test some semi-common fd types, such as files and ttys in recommended_backends */
-  if (ev_linux_version () < 0x041200) /* 4.18 introduced IOCB_CMD_POLL */
+#if EPOLL_FALLBACK
+  /* 4.19 made epoll work */
+  if (ev_linux_version () < 0x041300)
     return 0;
+#else
+  /* 4.18 introduced IOCB_CMD_POLL */
+  if (ev_linux_version () < 0x041200)
+    return 0;
+#endif
 
   linuxaio_ctx = 0;
   if (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)

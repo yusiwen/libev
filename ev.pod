@@ -600,8 +600,9 @@ backend will be skipped during initialisation.
 Most problematic in practise, however, is that not all file descriptors
 work with it. For example, in linux 5.1, tcp sockets, pipes, event fds,
 files, F</dev/null> and a few others are supported, but ttys do not work
-(probably because of a bug), so this is not (yet?) a generic event polling
-interface.
+properly (a known bug that the kernel developers don't care about, see
+L<https://lore.kernel.org/patchwork/patch/1047453/>), so this is not
+(yet?) a generic event polling interface.
 
 To work around this latter problem, the current version of libev uses
 epoll as a fallback for file deescriptor types that do not work. Epoll
