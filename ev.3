@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2019-06-23" "libev-4.25" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2019-06-24" "libev-4.25" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -712,10 +712,9 @@ be detected and this backend will be skipped.
 .Sp
 This backend can batch oneshot requests and supports a user-space ring
 buffer to receive events. It also doesn't suffer from most of the design
-problems of epoll (such as not being able to remove event sources from
-the epoll set), and generally sounds too good to be true. Because, this
-being the linux kernel, of course it suffers from a whole new set of
-limitations.
+problems of epoll (such as not being able to remove event sources from the
+epoll set), and generally sounds too good to be true. Because, this being
+the linux kernel, of course it suffers from a whole new set of limitations.
 .Sp
 For one, it is not easily embeddable (but probably could be done using
 an event fd at some extra overhead). It also is subject to a system wide
@@ -726,10 +725,14 @@ backend will be skipped during initialisation.
 Most problematic in practise, however, is that not all file descriptors
 work with it. For example, in linux 5.1, tcp sockets, pipes, event fds,
 files, \fI/dev/null\fR and a few others are supported, but ttys do not work
-(probably because of a bug), so this is not (yet?) a generic event polling
-interface.
+properly (a known bug that the kernel developers don't care about, see
+<https://lore.kernel.org/patchwork/patch/1047453/>), so this is not
+(yet?) a generic event polling interface.
 .Sp
-To work around this latter problem, the current version of libev uses
+Overall, it seems the linux developers just don't want it to have a
+generic event handling mechanism other than \f(CW\*(C`select\*(C'\fR or \f(CW\*(C`poll\*(C'\fR.
+.Sp
+To work around the fd type problem, the current version of libev uses
 epoll as a fallback for file deescriptor types that do not work. Epoll
 is used in, kind of, slow mode that hopefully avoids most of its design
 problems and requires 1\-3 extra syscalls per active fd every iteration.
