@@ -129,9 +129,9 @@ inline_size
 void
 linuxaio_array_needsize_iocbp (ANIOCBP *base, int offset, int count)
 {
-  /* TODO: quite the overhead to allocate every iocb separately, maybe use our own alocator? */
   while (count--)
     {
+      /* TODO: quite the overhead to allocate every iocb separately, maybe use our own alocator? */
       ANIOCBP iocb = (ANIOCBP)ev_malloc (sizeof (*iocb));
 
       /* full zero initialise is probably not required at the moment, but
