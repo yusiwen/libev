@@ -200,7 +200,7 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
       fd_change (EV_A_ fd, 0);
 
       /* feed events, we do not expect or handle POLLNVAL */
-      if (ecb_expect_false (res & POLLNVAL))
+      if (expect_false (res & POLLNVAL))
         fd_kill (EV_A_ fd);
       else
         fd_event (
@@ -231,9 +231,9 @@ linuxaio_get_events_from_ring (EV_P)
     return 0;
 
   /* bail out if the ring buffer doesn't match the expected layout */
-  if (ecb_expect_false (ring->magic != AIO_RING_MAGIC)
-                        || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
-                        || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
+  if (expect_false (ring->magic != AIO_RING_MAGIC)
+                    || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
+                    || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
     return 0;
 
   /* make sure the events up to tail are visible */
@@ -322,7 +322,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
     {
       int res = ev_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
 
-      if (ecb_expect_false (res < 0))
+      if (expect_false (res < 0))
         if (errno == EAGAIN)
           {
             /* This happens when the ring buffer is full, at least. I assume this means
@@ -378,7 +378,7 @@ linuxaio_epoll_cb (EV_P_ struct ev_io *w, int revents)
       int idx;
       int res = epoll_wait (backend_fd, events, sizeof (events) / sizeof (events [0]), 0);
 
-      if (ecb_expect_false (res < 0))
+      if (expect_false (res < 0))
         ev_syserr ("(libev) linuxaio epoll_wait");
       else if (!res)
         break;
