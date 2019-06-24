@@ -264,7 +264,7 @@ void
 linuxaio_get_events (EV_P_ ev_tstamp timeout)
 {
   struct timespec ts;
-  struct io_event ioev;
+  struct io_event ioev[1];
   int res;
 
   if (linuxaio_get_events_from_ring (EV_A))
@@ -277,7 +277,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
   ts.tv_sec  = (long)timeout;
   ts.tv_nsec = (long)((timeout - ts.tv_sec) * 1e9);
 
-  res = ev_io_getevents (linuxaio_ctx, 1, 1, &ioev, &ts);
+  res = ev_io_getevents (linuxaio_ctx, 1, sizeof (ioev) / sizeof (ioev [0]), ioev, &ts);
 
   if (res < 0)
     if (errno == EINTR)
@@ -287,7 +287,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
   else if (res)
     {
       /* at least one event received, handle it and any remaining ones in the ring buffer */
-      linuxaio_parse_events (EV_A_ &ioev, 1);
+      linuxaio_parse_events (EV_A_ ioev, res);
       linuxaio_get_events_from_ring (EV_A);
     }
 }
