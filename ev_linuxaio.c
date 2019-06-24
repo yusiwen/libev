@@ -55,7 +55,7 @@
 #define EV_LINUXAIO_DEPTH (128 / 2 - 2 - 1) /* max. number of io events per batch */
 
 /*****************************************************************************/
-/* syscall wrapdadoop */
+/* syscall wrapdadoop - this section has the raw syscall definitions */
 
 #include <sys/syscall.h> /* no glibc wrappers */
 
@@ -82,35 +82,35 @@ struct aio_ring
 
 inline_size
 int
-ev_io_setup (unsigned nr_events, aio_context_t *ctx_idp)
+evsys_io_setup (unsigned nr_events, aio_context_t *ctx_idp)
 {
   return syscall (SYS_io_setup, nr_events, ctx_idp);
 }
 
 inline_size
 int
-ev_io_destroy (aio_context_t ctx_id)
+evsys_io_destroy (aio_context_t ctx_id)
 {
   return syscall (SYS_io_destroy, ctx_id);
 }
 
 inline_size
 int
-ev_io_submit (aio_context_t ctx_id, long nr, struct iocb *cbp[])
+evsys_io_submit (aio_context_t ctx_id, long nr, struct iocb *cbp[])
 {
   return syscall (SYS_io_submit, ctx_id, nr, cbp);
 }
 
 inline_size
 int
-ev_io_cancel (aio_context_t ctx_id, struct iocb *cbp, struct io_event *result)
+evsys_io_cancel (aio_context_t ctx_id, struct iocb *cbp, struct io_event *result)
 {
   return syscall (SYS_io_cancel, ctx_id, cbp, result);
 }
 
 inline_size
 int
-ev_io_getevents (aio_context_t ctx_id, long min_nr, long nr, struct io_event *events, struct timespec *timeout)
+evsys_io_getevents (aio_context_t ctx_id, long min_nr, long nr, struct io_event *events, struct timespec *timeout)
 {
   return syscall (SYS_io_getevents, ctx_id, min_nr, nr, events, timeout);
 }
@@ -166,7 +166,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
 #endif
 
   if (iocb->io.aio_buf)
-    ev_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0); /* always returns an error relevant kernels */
+    evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0); /* always returns an error relevant kernels */
 
   if (nev)
     {
@@ -331,7 +331,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
   ts.tv_sec  = (long)timeout;
   ts.tv_nsec = (long)((timeout - ts.tv_sec) * 1e9);
 
-  res = ev_io_getevents (linuxaio_ctx, 1, sizeof (ioev) / sizeof (ioev [0]), ioev, &ts);
+  res = evsys_io_getevents (linuxaio_ctx, 1, sizeof (ioev) / sizeof (ioev [0]), ioev, &ts);
 
   EV_ACQUIRE_CB;
 
@@ -363,11 +363,11 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
 #if 0
       int res;
       if (linuxaio_submits[submitted]->aio_fildes == backend_fd)
-         res = ev_io_submit (linuxaio_ctx, 1, linuxaio_submits + submitted);
+         res = evsys_io_submit (linuxaio_ctx, 1, linuxaio_submits + submitted);
       else
         { res = -1; errno = EINVAL; };
 #else
-      int res = ev_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
+      int res = evsys_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
 #endif
 
       if (expect_false (res < 0))
@@ -437,14 +437,14 @@ linuxaio_init (EV_P_ int flags)
 #endif
 
   linuxaio_ctx = 0;
-  if (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
+  if (evsys_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
     return 0;
 
 #if EPOLL_FALLBACK
   backend_fd = ev_epoll_create ();
   if (backend_fd < 0)
     {
-      ev_io_destroy (linuxaio_ctx);
+      evsys_io_destroy (linuxaio_ctx);
       return 0;
     }
 
@@ -487,7 +487,7 @@ linuxaio_fork (EV_P)
   linuxaio_submitcnt = 0; /* all pointers were invalidated */
 
   linuxaio_ctx = 0;
-  while (ev_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
+  while (evsys_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
     ev_syserr ("(libev) linuxaio io_setup");
 
 #if EPOLL_FALLBACK
