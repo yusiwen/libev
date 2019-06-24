@@ -252,15 +252,12 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
       fd_change (EV_A_ fd, 0);
 
       /* feed events, we do not expect or handle POLLNVAL */
-      if (expect_false (res & POLLNVAL))
-        fd_kill (EV_A_ fd);
-      else
-        fd_event (
-          EV_A_
-          fd,
-          (res & (POLLOUT | POLLERR | POLLHUP) ? EV_WRITE : 0)
-          | (res & (POLLIN | POLLERR | POLLHUP) ? EV_READ : 0)
-        );
+      fd_event (
+        EV_A_
+        fd,
+        (res & (POLLOUT | POLLERR | POLLHUP) ? EV_WRITE : 0)
+        | (res & (POLLIN | POLLERR | POLLHUP) ? EV_READ : 0)
+      );
 
       --nr;
       ++ev;
@@ -401,12 +398,19 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
              * fails but POLLIN|POLLOUT works.
              */
             struct iocb *iocb = linuxaio_submits [submitted];
-            res = 1; /* skip this iocb */
 
-            linuxaio_rearm_epoll (EV_A_ iocb, EPOLL_CTL_ADD);
+            linuxaio_rearm_epoll (EV_A_ linuxaio_submits [submitted], EPOLL_CTL_ADD);
             iocb->aio_reqprio = -1; /* mark iocb as epoll */
+
+            res = 1; /* skip this iocb */
           }
 #endif
+        else if (errno == EBADF)
+          {
+            fd_kill (EV_A_ linuxaio_submits [submitted]->aio_fildes);
+
+            res = 1; /* skip this iocb */
+          }
         else
           ev_syserr ("(libev) linuxaio io_submit");
 
@@ -475,7 +479,7 @@ linuxaio_destroy (EV_P)
   close (backend_fd);
 #endif
   linuxaio_free_iocbp (EV_A);
-  ev_io_destroy (linuxaio_ctx);
+  evsys_io_destroy (linuxaio_ctx);
 }
 
 inline_size
