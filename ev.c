@@ -440,7 +440,7 @@
 
 #if EV_USE_LINUXAIO
 # include <sys/syscall.h>
-# if !SYS_io_getevents || !EV_USE_EPOLL
+# if !SYS_io_getevents || !EV_USE_EPOLL /* ev_linxaio uses ev_poll.c:ev_epoll_create */
 #  undef EV_USE_LINUXAIO
 #  define EV_USE_LINUXAIO 0
 # endif
@@ -1991,10 +1991,10 @@ array_realloc (int elem, void *base, int *cur, int cnt)
   return ev_realloc (base, elem * *cur);
 }
 
-#define array_needsize_noinit(base,count)
+#define array_needsize_noinit(base,offset,count)
 
-#define array_needsize_zerofill(base,count)	\
-  memset ((void *)(base), 0, sizeof (*(base)) * (count))
+#define array_needsize_zerofill(base,offset,count)	\
+  memset ((void *)(base + offset), 0, sizeof (*(base)) * (count))
 
 #define array_needsize(type,base,cur,cnt,init)			\
   if (expect_false ((cnt) > (cur)))				\
@@ -2002,7 +2002,7 @@ array_realloc (int elem, void *base, int *cur, int cnt)
       ecb_unused int ocur_ = (cur);				\
       (base) = (type *)array_realloc				\
          (sizeof (type), (base), &(cur), (cnt));		\
-      init ((base) + (ocur_), (cur) - ocur_);			\
+      init ((base), ocur_, ((cur) - ocur_));			\
     }
 
 #if 0

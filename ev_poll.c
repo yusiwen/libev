@@ -41,10 +41,12 @@
 
 inline_size
 void
-pollidx_init (int *base, int count)
+array_needsize_pollidx (int *base, int offset, int count)
 {
-  /* consider using memset (.., -1, ...), which is practically guaranteed
-   * to work on all systems implementing poll */
+  /* using memset (.., -1, ...) is tempting, we we try
+   * to be ultraportable
+   */
+  base += offset;
   while (count--)
     *base++ = -1;
 }
@@ -57,7 +59,7 @@ poll_modify (EV_P_ int fd, int oev, int nev)
   if (oev == nev)
     return;
 
-  array_needsize (int, pollidxs, pollidxmax, fd + 1, pollidx_init);
+  array_needsize (int, pollidxs, pollidxmax, fd + 1, array_needsize_pollidx);
 
   idx = pollidxs [fd];
 

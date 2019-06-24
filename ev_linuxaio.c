@@ -127,17 +127,23 @@ typedef struct aniocb
 
 inline_size
 void
-linuxaio_array_needsize_iocbp (ANIOCBP *base, int count)
+linuxaio_array_needsize_iocbp (ANIOCBP *base, int offset, int count)
 {
   /* TODO: quite the overhead to allocate every iocb separately, maybe use our own alocator? */
   while (count--)
     {
-      *base = (ANIOCBP)ev_malloc (sizeof (**base));
-      /* TODO: full zero initialize required? */
-      memset (*base, 0, sizeof (**base));
-      /* would be nice to initialize fd/data as well, but array_needsize API doesn't support that */
-      (*base)->io.aio_lio_opcode = IOCB_CMD_POLL;
-      ++base;
+      ANIOCBP iocb = (ANIOCBP)ev_malloc (sizeof (*iocb));
+
+      /* full zero initialise is probably not required at the moment, but
+       * this is not well documented, so we better do it.
+       */
+      memset (iocb, 0, sizeof (*iocb));
+
+      iocb->io.aio_lio_opcode = IOCB_CMD_POLL;
+      iocb->io.aio_data       = offset;
+      iocb->io.aio_fildes     = offset;
+
+      base [offset++] = iocb;
     }
 }
 
@@ -155,7 +161,7 @@ static void
 linuxaio_modify (EV_P_ int fd, int oev, int nev)
 {
   array_needsize (ANIOCBP, linuxaio_iocbps, linuxaio_iocbpmax, fd + 1, linuxaio_array_needsize_iocbp);
-  struct aniocb *iocb = linuxaio_iocbps [fd];
+  ANIOCBP iocb = linuxaio_iocbps [fd];
 
 #if EPOLL_FALLBACK
   if (iocb->io.aio_reqprio < 0)
@@ -170,9 +176,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
 
   if (nev)
     {
-      iocb->io.aio_data       = fd;
-      iocb->io.aio_fildes     = fd;
-      iocb->io.aio_buf        =
+      iocb->io.aio_buf =
           (nev & EV_READ ? POLLIN : 0)
           | (nev & EV_WRITE ? POLLOUT : 0);
 
