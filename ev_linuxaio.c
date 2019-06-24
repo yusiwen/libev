@@ -301,8 +301,7 @@ linuxaio_get_events_from_ring (EV_P)
       linuxaio_parse_events (EV_A_ ring->io_events, tail);
     }
 
-  /* TODO: we only need a compiler barrier here, not a read fence */
-  ECB_MEMORY_FENCE_RELEASE;
+  ECB_MEMORY_FENCE_RELAXED;
   /* as an extension to C, we hope that the volatile will make this atomic and once-only */
   *(volatile unsigned *)&ring->head = tail;
   /* make sure kernel can see our new head value - probably not required */

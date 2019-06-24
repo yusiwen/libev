@@ -561,7 +561,7 @@ struct signalfd_siginfo
 #define ECB_H
 
 /* 16 bits major, 16 bits minor */
-#define ECB_VERSION 0x00010005
+#define ECB_VERSION 0x00010006
 
 #ifdef _WIN32
   typedef   signed char   int8_t;
@@ -685,6 +685,7 @@ struct signalfd_siginfo
 
 #ifndef ECB_MEMORY_FENCE
   #if ECB_GCC_VERSION(2,5) || defined __INTEL_COMPILER || (__llvm__ && __GNUC__) || __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
+    #define ECB_MEMORY_FENCE_RELAXED __asm__ __volatile__ ("" : : : "memory")
     #if __i386 || __i386__
       #define ECB_MEMORY_FENCE         __asm__ __volatile__ ("lock; orb $0, -1(%%esp)" : : : "memory")
       #define ECB_MEMORY_FENCE_ACQUIRE __asm__ __volatile__ (""                        : : : "memory")
@@ -744,12 +745,14 @@ struct signalfd_siginfo
     #define ECB_MEMORY_FENCE         __atomic_thread_fence (__ATOMIC_SEQ_CST)
     #define ECB_MEMORY_FENCE_ACQUIRE __atomic_thread_fence (__ATOMIC_ACQUIRE)
     #define ECB_MEMORY_FENCE_RELEASE __atomic_thread_fence (__ATOMIC_RELEASE)
+    #define ECB_MEMORY_FENCE_RELAXED __atomic_thread_fence (__ATOMIC_RELAXED)
 
   #elif ECB_CLANG_EXTENSION(c_atomic)
     /* see comment below (stdatomic.h) about the C11 memory model. */
     #define ECB_MEMORY_FENCE         __c11_atomic_thread_fence (__ATOMIC_SEQ_CST)
     #define ECB_MEMORY_FENCE_ACQUIRE __c11_atomic_thread_fence (__ATOMIC_ACQUIRE)
     #define ECB_MEMORY_FENCE_RELEASE __c11_atomic_thread_fence (__ATOMIC_RELEASE)
+    #define ECB_MEMORY_FENCE_RELAXED __c11_atomic_thread_fence (__ATOMIC_RELAXED)
 
   #elif ECB_GCC_VERSION(4,4) || defined __INTEL_COMPILER || defined __clang__
     #define ECB_MEMORY_FENCE         __sync_synchronize ()
@@ -769,9 +772,10 @@ struct signalfd_siginfo
     #define ECB_MEMORY_FENCE         MemoryBarrier () /* actually just xchg on x86... scary */
   #elif __SUNPRO_C >= 0x5110 || __SUNPRO_CC >= 0x5110
     #include <mbarrier.h>
-    #define ECB_MEMORY_FENCE         __machine_rw_barrier ()
-    #define ECB_MEMORY_FENCE_ACQUIRE __machine_r_barrier  ()
-    #define ECB_MEMORY_FENCE_RELEASE __machine_w_barrier  ()
+    #define ECB_MEMORY_FENCE         __machine_rw_barrier  ()
+    #define ECB_MEMORY_FENCE_ACQUIRE __machine_acq_barrier ()
+    #define ECB_MEMORY_FENCE_RELEASE __machine_rel_barrier ()
+    #define ECB_MEMORY_FENCE_RELAXED __compiler_barrier ()
   #elif __xlC__
     #define ECB_MEMORY_FENCE         __sync ()
   #endif
@@ -782,15 +786,9 @@ struct signalfd_siginfo
     /* we assume that these memory fences work on all variables/all memory accesses, */
     /* not just C11 atomics and atomic accesses */
     #include <stdatomic.h>
-    /* Unfortunately, neither gcc 4.7 nor clang 3.1 generate any instructions for */
-    /* any fence other than seq_cst, which isn't very efficient for us. */
-    /* Why that is, we don't know - either the C11 memory model is quite useless */
-    /* for most usages, or gcc and clang have a bug */
-    /* I *currently* lean towards the latter, and inefficiently implement */
-    /* all three of ecb's fences as a seq_cst fence */
-    /* Update, gcc-4.8 generates mfence for all c++ fences, but nothing */
-    /* for all __atomic_thread_fence's except seq_cst */
     #define ECB_MEMORY_FENCE         atomic_thread_fence (memory_order_seq_cst)
+    #define ECB_MEMORY_FENCE_ACQUIRE atomic_thread_fence (memory_order_acquire)
+    #define ECB_MEMORY_FENCE_RELEASE atomic_thread_fence (memory_order_release)
   #endif
 #endif
 
@@ -818,6 +816,10 @@ struct signalfd_siginfo
 
 #if !defined ECB_MEMORY_FENCE_RELEASE && defined ECB_MEMORY_FENCE
   #define ECB_MEMORY_FENCE_RELEASE ECB_MEMORY_FENCE
+#endif
+
+#if !defined ECB_MEMORY_FENCE_RELAXED && defined ECB_MEMORY_FENCE
+  #define ECB_MEMORY_FENCE_RELAXED ECB_MEMORY_FENCE /* very heavy-handed */
 #endif
 
 /*****************************************************************************/

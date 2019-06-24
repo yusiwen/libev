@@ -1,5 +1,7 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
+4.26 (no standalone release)
+	- update to libec 0x00010006.
 	- new experimental linux aio backend (linux 4.18+).
 	- removed redundant 0-ptr check in ev_once.
         - updated/extended ev_set_allocator documentation.
