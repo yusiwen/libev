@@ -58,7 +58,7 @@
  *    but at least the fallback can be slow, because these are
  *    exceptional cases, right?
  * d) hmm, you have to tell the kernel the maximum number of watchers
- *    you want to queue when initialiasing the aio context. but of
+ *    you want to queue when initialising the aio context. but of
  *    course the real limit is magically calculated in the kernel, and
  *    is often higher then we asked for. so we just have to destroy
  *    the aio context and re-create it a bit larger if we hit the limit.
@@ -70,18 +70,18 @@
  *    of event handling we have to switch to 100% epoll polling. and
  *    that better is as fast as normal epoll polling, so you practically
  *    have to use the normal epoll backend with all its quirks.
- * f) end result of this trainwreck: it inherits all the disadvantages
+ * f) end result of this train wreck: it inherits all the disadvantages
  *    from epoll, while adding a number on its own. why even bother to use
  *    it? because if conditions are right and your fds are supported and you
  *    don't hit a limit, this backend is actually faster, doesn't gamble with
  *    your fds, batches watchers and events and doesn't require costly state
  *    recreates. well, until it does.
  * g) all of this makes this backend use almost twice as much code as epoll.
- *    which in turn uses twice as much code as poll. and thats not counting
+ *    which in turn uses twice as much code as poll. and that#s not counting
  *    the fact that this backend also depends on the epoll backend, making
  *    it three times as much code as poll, or kqueue.
  * h) bleah. why can't linux just do kqueue. sure kqueue is ugly, but by now
- *    it's clear that whetaver linux comes up with is far, far, far worse.
+ *    it's clear that whatever linux comes up with is far, far, far worse.
  */
 
 #include <sys/time.h> /* actually linux/time.h, but we must assume they are compatible */
@@ -192,7 +192,7 @@ linuxaio_nr_events (EV_P)
   return requests;
 }
 
-/* we use out own wrapper structure in acse we ever want to do something "clever" */
+/* we use out own wrapper structure in case we ever want to do something "clever" */
 typedef struct aniocb
 {
   struct iocb io;
@@ -205,7 +205,7 @@ linuxaio_array_needsize_iocbp (ANIOCBP *base, int offset, int count)
 {
   while (count--)
     {
-      /* TODO: quite the overhead to allocate every iocb separately, maybe use our own alocator? */
+      /* TODO: quite the overhead to allocate every iocb separately, maybe use our own allocator? */
       ANIOCBP iocb = (ANIOCBP)ev_malloc (sizeof (*iocb));
 
       /* full zero initialise is probably not required at the moment, but
@@ -240,7 +240,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   if (iocb->io.aio_reqprio < 0)
     {
       /* we handed this fd over to epoll, so undo this first */
-      /* we do it manually becvause the optimisations on epoll_modfy won't do us any good */
+      /* we do it manually because the optimisations on epoll_modfy won't do us any good */
       epoll_ctl (backend_fd, EPOLL_CTL_DEL, fd, 0);
       iocb->io.aio_reqprio = 0;
     }
@@ -303,7 +303,7 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
     }
 }
 
-/* get any events from ringbuffer, return true if any were handled */
+/* get any events from ring buffer, return true if any were handled */
 static int
 linuxaio_get_events_from_ring (EV_P)
 {
@@ -399,7 +399,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
 
   /* io_submit might return less than the requested number of iocbs */
   /* this is, afaics, only because of errors, but we go by the book and use a loop, */
-  /* which allows us to pinpoint the errornous iocb */
+  /* which allows us to pinpoint the erroneous iocb */
   for (submitted = 0; submitted < linuxaio_submitcnt; )
     {
       int res = evsys_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
@@ -423,7 +423,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
         else if (errno == EAGAIN)
           {
             /* This happens when the ring buffer is full, or some other shit we
-             * dont' know and isn't documented. Most likely because we have too
+             * don't know and isn't documented. Most likely because we have too
              * many requests and linux aio can't be assed to handle them.
              * In this case, we try to allocate a larger ring buffer, freeing
              * ours first. This might fail, in which case we have to fall back to 100%
@@ -482,7 +482,7 @@ linuxaio_init (EV_P_ int flags)
 {
   /* would be great to have a nice test for IOCB_CMD_POLL instead */
   /* also: test some semi-common fd types, such as files and ttys in recommended_backends */
-  /* 4.18 introduced IOCB_CMD_POLL, 4.19 made epoll work */
+  /* 4.18 introduced IOCB_CMD_POLL, 4.19 made epoll work, and we need that */
   if (ev_linux_version () < 0x041300)
     return 0;
 
