@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2019-06-24" "libev-4.25" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2019-06-25" "libev-4.25" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -640,7 +640,7 @@ This backend maps \f(CW\*(C`EV_READ\*(C'\fR to \f(CW\*(C`POLLIN | POLLERR | POLL
 .ie n .IP """EVBACKEND_EPOLL""   (value 4, Linux)" 4
 .el .IP "\f(CWEVBACKEND_EPOLL\fR   (value 4, Linux)" 4
 .IX Item "EVBACKEND_EPOLL (value 4, Linux)"
-Use the linux-specific \fBepoll\fR\|(7) interface (for both pre\- and post\-2.6.9
+Use the Linux-specific \fBepoll\fR\|(7) interface (for both pre\- and post\-2.6.9
 kernels).
 .Sp
 For few fds, this backend is a bit little slower than poll and select, but
@@ -703,54 +703,58 @@ This backend maps \f(CW\*(C`EV_READ\*(C'\fR and \f(CW\*(C`EV_WRITE\*(C'\fR in th
 .ie n .IP """EVBACKEND_LINUXAIO""   (value 64, Linux)" 4
 .el .IP "\f(CWEVBACKEND_LINUXAIO\fR   (value 64, Linux)" 4
 .IX Item "EVBACKEND_LINUXAIO (value 64, Linux)"
-Use the linux-specific linux aio (\fInot\fR \f(CWaio(7)\fR but \f(CWio_submit(2)\fR) event interface available in post\-4.18 kernels.
+Use the Linux-specific Linux \s-1AIO\s0 (\fInot\fR \f(CWaio(7)\fR but \f(CWio_submit(2)\fR) event interface available in post\-4.18 kernels (but libev
+only tries to use it in 4.19+).
+.Sp
+This is another Linux train wreck of an event interface.
 .Sp
 If this backend works for you (as of this writing, it was very
-experimental), it is the best event interface available on linux and might
+experimental), it is the best event interface available on Linux and might
 be well worth enabling it \- if it isn't available in your kernel this will
 be detected and this backend will be skipped.
 .Sp
 This backend can batch oneshot requests and supports a user-space ring
 buffer to receive events. It also doesn't suffer from most of the design
-problems of epoll (such as not being able to remove event sources from the
-epoll set), and generally sounds too good to be true. Because, this being
-the linux kernel, of course it suffers from a whole new set of limitations.
+problems of epoll (such as not being able to remove event sources from
+the epoll set), and generally sounds too good to be true. Because, this
+being the Linux kernel, of course it suffers from a whole new set of
+limitations, forcing you to fall back to epoll, inheriting all its design
+issues.
 .Sp
 For one, it is not easily embeddable (but probably could be done using
 an event fd at some extra overhead). It also is subject to a system wide
-limit that can be configured in \fI/proc/sys/fs/aio\-max\-nr\fR \- each loop
-currently requires \f(CW61\fR of this number. If no aio requests are left, this
-backend will be skipped during initialisation.
+limit that can be configured in \fI/proc/sys/fs/aio\-max\-nr\fR. If no \s-1AIO\s0
+requests are left, this backend will be skipped during initialisation, and
+will switch to epoll when the loop is active.
 .Sp
-Most problematic in practise, however, is that not all file descriptors
-work with it. For example, in linux 5.1, tcp sockets, pipes, event fds,
-files, \fI/dev/null\fR and a few others are supported, but ttys do not work
+Most problematic in practice, however, is that not all file descriptors
+work with it. For example, in Linux 5.1, \s-1TCP\s0 sockets, pipes, event fds,
+files, \fI/dev/null\fR and many others are supported, but ttys do not work
 properly (a known bug that the kernel developers don't care about, see
 <https://lore.kernel.org/patchwork/patch/1047453/>), so this is not
 (yet?) a generic event polling interface.
 .Sp
-Overall, it seems the linux developers just don't want it to have a
+Overall, it seems the Linux developers just don't want it to have a
 generic event handling mechanism other than \f(CW\*(C`select\*(C'\fR or \f(CW\*(C`poll\*(C'\fR.
 .Sp
-To work around the fd type problem, the current version of libev uses
-epoll as a fallback for file deescriptor types that do not work. Epoll
-is used in, kind of, slow mode that hopefully avoids most of its design
-problems and requires 1\-3 extra syscalls per active fd every iteration.
+To work around all these problem, the current version of libev uses its
+epoll backend as a fallback for file descriptor types that do not work. Or
+falls back completely to epoll if the kernel acts up.
 .Sp
 This backend maps \f(CW\*(C`EV_READ\*(C'\fR and \f(CW\*(C`EV_WRITE\*(C'\fR in the same way as
 \&\f(CW\*(C`EVBACKEND_POLL\*(C'\fR.
 .ie n .IP """EVBACKEND_KQUEUE""  (value 8, most \s-1BSD\s0 clones)" 4
 .el .IP "\f(CWEVBACKEND_KQUEUE\fR  (value 8, most \s-1BSD\s0 clones)" 4
 .IX Item "EVBACKEND_KQUEUE (value 8, most BSD clones)"
-Kqueue deserves special mention, as at the time of this writing, it
-was broken on all BSDs except NetBSD (usually it doesn't work reliably
-with anything but sockets and pipes, except on Darwin, where of course
-it's completely useless). Unlike epoll, however, whose brokenness
-is by design, these kqueue bugs can (and eventually will) be fixed
-without \s-1API\s0 changes to existing programs. For this reason it's not being
-\&\*(L"auto-detected\*(R" unless you explicitly specify it in the flags (i.e. using
-\&\f(CW\*(C`EVBACKEND_KQUEUE\*(C'\fR) or libev was compiled on a known-to-be-good (\-enough)
-system like NetBSD.
+Kqueue deserves special mention, as at the time this backend was
+implemented, it was broken on all BSDs except NetBSD (usually it doesn't
+work reliably with anything but sockets and pipes, except on Darwin,
+where of course it's completely useless). Unlike epoll, however, whose
+brokenness is by design, these kqueue bugs can be (and mostly have been)
+fixed without \s-1API\s0 changes to existing programs. For this reason it's not
+being \*(L"auto-detected\*(R" on all platforms unless you explicitly specify it
+in the flags (i.e. using \f(CW\*(C`EVBACKEND_KQUEUE\*(C'\fR) or libev was compiled on a
+known-to-be-good (\-enough) system like NetBSD.
 .Sp
 You still can embed kqueue into a normal poll or select backend and use it
 only for sockets (after having made sure that sockets work with kqueue on
@@ -761,7 +765,7 @@ kernel is more efficient (which says nothing about its actual speed, of
 course). While stopping, setting and starting an I/O watcher does never
 cause an extra system call as with \f(CW\*(C`EVBACKEND_EPOLL\*(C'\fR, it still adds up to
 two event changes per incident. Support for \f(CW\*(C`fork ()\*(C'\fR is very bad (you
-might have to leak fd's on fork, but it's more sane than epoll) and it
+might have to leak fds on fork, but it's more sane than epoll) and it
 drops fds silently in similarly hard-to-detect cases.
 .Sp
 This backend usually performs well under most conditions.
