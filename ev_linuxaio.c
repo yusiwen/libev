@@ -81,7 +81,7 @@
  *    the fact that this backend also depends on the epoll backend, making
  *    it three times as much code as poll, or kqueue.
  * h) bleah. why can't linux just do kqueue. sure kqueue is ugly, but by now
- *    it's clear that whwetaver linux does is far, far far worse.
+ *    it's clear that whetaver linux comes up with is far, far, far worse.
  */
 
 #include <sys/time.h> /* actually linux/time.h, but we must assume they are compatible */
