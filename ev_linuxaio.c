@@ -426,13 +426,14 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
       ev_syserr ("(libev) linuxaio io_getevents");
   else if (res)
     {
-      /* at least one event received, handle it and any remaining ones in the ring buffer */
+      /* at least one event available, handle it and any remaining ones in the ring buffer */
       linuxaio_parse_events (EV_A_ ioev, res);
       linuxaio_get_events_from_ring (EV_A);
     }
 }
 
-static int
+inline_size
+int
 linuxaio_io_setup (EV_P)
 {
   linuxaio_ctx = 0;
