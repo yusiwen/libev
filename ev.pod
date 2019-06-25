@@ -620,15 +620,15 @@ C<EVBACKEND_POLL>.
 
 =item C<EVBACKEND_KQUEUE>  (value 8, most BSD clones)
 
-Kqueue deserves special mention, as at the time of this writing, it
-was broken on all BSDs except NetBSD (usually it doesn't work reliably
-with anything but sockets and pipes, except on Darwin, where of course
-it's completely useless). Unlike epoll, however, whose brokenness
-is by design, these kqueue bugs can (and eventually will) be fixed
-without API changes to existing programs. For this reason it's not being
-"auto-detected" unless you explicitly specify it in the flags (i.e. using
-C<EVBACKEND_KQUEUE>) or libev was compiled on a known-to-be-good (-enough)
-system like NetBSD.
+Kqueue deserves special mention, as at the time this backend was
+implemented, it was broken on all BSDs except NetBSD (usually it doesn't
+work reliably with anything but sockets and pipes, except on Darwin,
+where of course it's completely useless). Unlike epoll, however, whose
+brokenness is by design, these kqueue bugs can be (and mostly have been)
+fixed without API changes to existing programs. For this reason it's not
+being "auto-detected" on all platforms unless you explicitly specify it
+in the flags (i.e. using C<EVBACKEND_KQUEUE>) or libev was compiled on a
+known-to-be-good (-enough) system like NetBSD.
 
 You still can embed kqueue into a normal poll or select backend and use it
 only for sockets (after having made sure that sockets work with kqueue on
