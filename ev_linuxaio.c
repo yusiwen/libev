@@ -572,7 +572,7 @@ linuxaio_destroy (EV_P)
 {
   epoll_destroy (EV_A);
   linuxaio_free_iocbp (EV_A);
-  evsys_io_destroy (linuxaio_ctx);
+  evsys_io_destroy (linuxaio_ctx); /* fails in child, aio context is destroyed */
 }
 
 inline_size
@@ -588,6 +588,7 @@ linuxaio_fork (EV_P)
   while (linuxaio_io_setup (EV_A) < 0)
     ev_syserr ("(libev) linuxaio io_setup");
 
+  /* forking epoll should also effectively unregister all fds from the backend */
   epoll_fork (EV_A);
 
   ev_io_stop  (EV_A_ &linuxaio_epoll_w);
