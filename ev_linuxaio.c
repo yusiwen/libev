@@ -339,7 +339,6 @@ linuxaio_get_events_from_ring (EV_P)
   ECB_MEMORY_FENCE_RELEASE;
   /* as an extension to C, we hope that the volatile will make this atomic and once-only */
   *(volatile unsigned *)&ring->head = tail;
-  /* make sure kernel can see our new head value - probably not required */
 
   return 1;
 }
