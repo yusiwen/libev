@@ -37,32 +37,70 @@
  * either the BSD or the GPL.
  */
 
-#define EPOLL_FALLBACK 1
+/*
+ * general notes about linux aio:
+ *
+ * a) at first, the linux aio IOCB_CMD_POLL functionality introduced in
+ *    4.18 looks too good to be true: both watchers and events can be
+ *    batched, and events can even be handled in userspace using
+ *    a ring buffer shared with the kernel. watchers can be canceled
+ *    regardless of whether the fd has been closed. no problems with fork.
+ *    ok, the ring buffer is 200% undocumented (there isn't even a
+ *    header file), but otherwise, it's pure bliss!
+ * b) ok, watchers are one-shot, so you have to re-arm active ones
+ *    on every iteration. so much for syscall-less event handling,
+ *    but at least these re-arms can be batched, no big deal, right?
+ * c) well, linux as usual: the documentation lies to you: io_submit
+ *    sometimes returns EINVAL because the kernel doesn't feel like
+ *    handling your poll mask - ttys can be polled for POLLOUT,
+ *    POLLOUT|POLLIN, but polling for POLLIN fails. just great,
+ *    so we have to fall back to something else (hello, epoll),
+ *    but at least the fallback can be slow, because these are
+ *    exceptional cases, right?
+ * d) hmm, you have to tell the kernel the maximum number of watchers
+ *    you want to queue when initialiasing the aio context. but of
+ *    course the real limit is magically calculated in the kernel, and
+ *    is often higher then we asked for. so we just have to destroy
+ *    the aio context and re-create it a bit larger if we hit the limit.
+ *    (starts to remind you of epoll? well, it's a bit more deterministic
+ *    and less gambling, but still ugly as hell).
+ * e) that's when you find out you can also hit an arbitrary system-wide
+ *    limit. or the kernel simply doesn't want to handle your watchers.
+ *    what the fuck do we do then? you guessed it, in the middle
+ *    of event handling we have to switch to 100% epoll polling. and
+ *    that better is as fast as normal epoll polling, so you practically
+ *    have to use the normal epoll backend with all its quirks.
+ * f) end result of this trainwreck: it inherits all the disadvantages
+ *    from epoll, while adding a number on its own. why even bother to use
+ *    it? because if conditions are right and your fds are supported and you
+ *    don't hit a limit, this backend is actually faster, doesn't gamble with
+ *    your fds, batches watchers and events and doesn't require costly state
+ *    recreates. well, until it does.
+ * g) all of this makes this backend use almost twice as much code as epoll.
+ *    which in turn uses twice as much code as poll. and thats not counting
+ *    the fact that this backend also depends on the epoll backend, making
+ *    it three times as much code as poll, or kqueue.
+ * h) bleah. why can't linux just do kqueue. sure kqueue is ugly, but by now
+ *    it's clear that whwetaver linux does is far, far far worse.
+ */
 
 #include <sys/time.h> /* actually linux/time.h, but we must assume they are compatible */
 #include <poll.h>
 #include <linux/aio_abi.h>
 
-#if EPOLL_FALLBACK
-# include <sys/epoll.h>
-#endif
-
-/* we try to fill 4kB pages exactly.
- * the ring buffer header is 32 bytes, every io event is 32 bytes.
- * the kernel takes the io event number, doubles it, adds 2, adds the ring buffer.
- * therefore the calculation below will use "exactly" 4kB for the ring buffer
- */
-#define EV_LINUXAIO_DEPTH (128 / 2 - 2 - 1) /* max. number of io events per batch */
-
 /*****************************************************************************/
-/* syscall wrapdadoop - this section has the raw syscall definitions */
+/* syscall wrapdadoop - this section has the raw api/abi definitions */
 
 #include <sys/syscall.h> /* no glibc wrappers */
 
 /* aio_abi.h is not versioned in any way, so we cannot test for its existance */
 #define IOCB_CMD_POLL 5
 
-/* taken from linux/fs/aio.c */
+/* taken from linux/fs/aio.c. yup, that's a .c file.
+ * not only is this totally undocumented, not even the source code
+ * can tell you what the future semantics of compat_features and
+ * incompat_features are, or what header_length actually is for.
+ */
 #define AIO_RING_MAGIC                  0xa10a10a1
 #define AIO_RING_INCOMPAT_FEATURES      0
 struct aio_ring
@@ -118,6 +156,42 @@ evsys_io_getevents (aio_context_t ctx_id, long min_nr, long nr, struct io_event 
 /*****************************************************************************/
 /* actual backed implementation */
 
+ecb_cold
+static int
+linuxaio_nr_events (EV_P)
+{
+  /* we start with 16 iocbs and incraese from there
+   * that's tiny, but the kernel has a rather low system-wide
+   * limit that can be reached quickly, so let's be parsimonious
+   * with this resource.
+   * Rest assured, the kernel generously rounds up small and big numbers
+   * in different ways (but doesn't seem to charge you for it).
+   * The 15 here is because the kernel usually has a power of two as aio-max-nr,
+   * and this helps to take advantage of that limit.
+   */
+
+  /* we try to fill 4kB pages exactly.
+   * the ring buffer header is 32 bytes, every io event is 32 bytes.
+   * the kernel takes the io requests number, doubles it, adds 2
+   * and adds the ring buffer.
+   * the way we use this is by starting low, and then roughly doubling the
+   * size each time we hit a limit.
+   */
+
+  int requests   = 15 << linuxaio_iteration;
+  int one_page   =  (4096
+                    / sizeof (struct io_event)    ) / 2; /* how many fit into one page */
+  int first_page = ((4096 - sizeof (struct aio_ring))
+                    / sizeof (struct io_event) - 2) / 2; /* how many fit into the first page */
+
+  /* if everything fits into one page, use count exactly */
+  if (requests > first_page)
+    /* otherwise, round down to full pages and add the first page */
+    requests = requests / one_page * one_page + first_page;
+
+  return requests;
+}
+
 /* we use out own wrapper structure in acse we ever want to do something "clever" */
 typedef struct aniocb
 {
@@ -163,16 +237,17 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   array_needsize (ANIOCBP, linuxaio_iocbps, linuxaio_iocbpmax, fd + 1, linuxaio_array_needsize_iocbp);
   ANIOCBP iocb = linuxaio_iocbps [fd];
 
-#if EPOLL_FALLBACK
   if (iocb->io.aio_reqprio < 0)
     {
+      /* we handed this fd over to epoll, so undo this first */
+      /* we do it manually becvause the optimisations on epoll_modfy won't do us any good */
       epoll_ctl (backend_fd, EPOLL_CTL_DEL, fd, 0);
       iocb->io.aio_reqprio = 0;
     }
-#endif
 
   if (iocb->io.aio_buf)
-    evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0); /* always returns an error relevant kernels */
+    /* io_cancel always returns some error on relevant kernels, but works */
+    evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0);
 
   if (nev)
     {
@@ -188,57 +263,19 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
     }
 }
 
-#if EPOLL_FALLBACK
-
-static void
-linuxaio_rearm_epoll (EV_P_ struct iocb *iocb, int op)
-{
-  struct epoll_event eev;
-
-  eev.events = EPOLLONESHOT;
-  if (iocb->aio_buf & POLLIN ) eev.events |= EPOLLIN ;
-  if (iocb->aio_buf & POLLOUT) eev.events |= EPOLLOUT;
-  eev.data.fd = iocb->aio_fildes;
-
-  if (epoll_ctl (backend_fd, op, iocb->aio_fildes, &eev) < 0)
-    ev_syserr ("(libeio) linuxaio epoll_ctl");
-}
-
 static void
 linuxaio_epoll_cb (EV_P_ struct ev_io *w, int revents)
 {
-  struct epoll_event events[16];
-
-  for (;;)
-    {
-      int idx;
-      int res = epoll_wait (backend_fd, events, sizeof (events) / sizeof (events [0]), 0);
-
-      if (expect_false (res < 0))
-        ev_syserr ("(libev) linuxaio epoll_wait");
-      else if (!res)
-        break;
-
-      for (idx = res; idx--; )
-        {
-          int      fd = events [idx].data.fd;
-          uint32_t ev = events [idx].events;
-
-          assert (("libev: iocb fd must be in-bounds", fd >= 0 && fd < anfdmax));
-
-          linuxaio_rearm_epoll (EV_A_ &linuxaio_iocbps [fd]->io, EPOLL_CTL_MOD);
-
-          fd_event (EV_A_ fd,
-            (ev & (EPOLLOUT | EPOLLERR | EPOLLHUP) ? EV_WRITE : 0)
-            | (ev & (EPOLLIN  | EPOLLERR | EPOLLHUP) ? EV_READ  : 0));
-        }
-
-      if (res < sizeof (events) / sizeof (events [0]))
-        break;
-    }
+  epoll_poll (EV_A_ 0);
 }
 
-#endif
+static void
+linuxaio_fd_rearm (EV_P_ int fd)
+{
+  anfds [fd].events = 0;
+  linuxaio_iocbps [fd]->io.aio_buf = 0;
+  fd_change (EV_A_ fd, EV_ANFD_REIFY);
+}
 
 static void
 linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
@@ -250,11 +287,6 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
 
       assert (("libev: iocb fd must be in-bounds", fd >= 0 && fd < anfdmax));
 
-      /* linux aio is oneshot: rearm fd. TODO: this does more work than needed */
-      linuxaio_iocbps [fd]->io.aio_buf = 0;
-      anfds [fd].events = 0;
-      fd_change (EV_A_ fd, 0);
-
       /* feed events, we do not expect or handle POLLNVAL */
       fd_event (
         EV_A_
@@ -262,6 +294,9 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
         (res & (POLLOUT | POLLERR | POLLHUP) ? EV_WRITE : 0)
         | (res & (POLLIN | POLLERR | POLLHUP) ? EV_READ : 0)
       );
+
+      /* linux aio is oneshot: rearm fd. TODO: this does more work than needed */
+      linuxaio_fd_rearm (EV_A_ fd);
 
       --nr;
       ++ev;
@@ -348,6 +383,13 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
     }
 }
 
+static int
+linuxaio_io_setup (EV_P)
+{
+  linuxaio_ctx = 0;
+  return evsys_io_setup (linuxaio_nr_events (EV_A), &linuxaio_ctx);
+}
+
 static void
 linuxaio_poll (EV_P_ ev_tstamp timeout)
 {
@@ -360,38 +402,10 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
   /* which allows us to pinpoint the errornous iocb */
   for (submitted = 0; submitted < linuxaio_submitcnt; )
     {
-#if 0
-      int res;
-      if (linuxaio_submits[submitted]->aio_fildes == backend_fd)
-         res = evsys_io_submit (linuxaio_ctx, 1, linuxaio_submits + submitted);
-      else
-        { res = -1; errno = EINVAL; };
-#else
       int res = evsys_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
-#endif
 
       if (expect_false (res < 0))
-        if (errno == EAGAIN)
-          {
-            /* This happens when the ring buffer is full, at least. I assume this means
-             * that the event was queued synchronously during io_submit, and thus
-             * the buffer overflowed.
-             * In this case, we just try in next loop iteration.
-             * This should not result in a few fds taking priority, as the interface
-             * is one-shot, and we submit iocb's in a round-robin fashion.
-             * TODO: maybe make "submitted" persistent, so we don't have to memmove?
-             */
-            if (ecb_expect_false (submitted))
-              {
-                memmove (linuxaio_submits, linuxaio_submits + submitted, (linuxaio_submitcnt - submitted) * sizeof (*linuxaio_submits));
-                linuxaio_submitcnt -= submitted;
-              }
-
-            timeout = 0;
-            break;
-          }
-#if EPOLL_FALLBACK
-        else if (errno == EINVAL)
+        if (errno == EINVAL)
           {
             /* This happens for unsupported fds, officially, but in my testing,
              * also randomly happens for supported fds. We fall back to good old
@@ -401,13 +415,48 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
              * fails but POLLIN|POLLOUT works.
              */
             struct iocb *iocb = linuxaio_submits [submitted];
-
-            linuxaio_rearm_epoll (EV_A_ linuxaio_submits [submitted], EPOLL_CTL_ADD);
+            epoll_modify (EV_A_ iocb->aio_fildes, 0, anfds [iocb->aio_fildes].events);
             iocb->aio_reqprio = -1; /* mark iocb as epoll */
 
-            res = 1; /* skip this iocb */
+            res = 1; /* skip this iocb - another iocb, another chance */
           }
-#endif
+        else if (errno == EAGAIN)
+          {
+            /* This happens when the ring buffer is full, or some other shit we
+             * dont' know and isn't documented. Most likely because we have too
+             * many requests and linux aio can't be assed to handle them.
+             * In this case, we try to allocate a larger ring buffer, freeing
+             * ours first. This might fail, in which case we have to fall back to 100%
+             * epoll.
+             * God, how I hate linux not getting its act together. Ever.
+             */
+            evsys_io_destroy (linuxaio_ctx);
+            linuxaio_submitcnt = 0;
+
+            /* rearm all fds with active iocbs */
+            {
+              int fd;
+	      for (fd = 0; fd < linuxaio_iocbpmax; ++fd)
+                if (linuxaio_iocbps [fd]->io.aio_buf)
+                  linuxaio_fd_rearm (EV_A_ fd);
+            }
+
+            ++linuxaio_iteration;
+            if (linuxaio_io_setup (EV_A) < 0)
+              {
+                /* to bad, we can't get a new aio context, go 100% epoll */
+                linuxaio_free_iocbp (EV_A);
+                ev_io_stop (EV_A_ &linuxaio_epoll_w);
+                ev_ref (EV_A);
+                linuxaio_ctx = 0;
+                backend_modify = epoll_modify;
+                backend_poll   = epoll_poll;
+              }
+
+            timeout = 0;
+            /* it's easiest to handle this mess in another iteration */
+            return;
+          }
         else if (errno == EBADF)
           {
             fd_kill (EV_A_ linuxaio_submits [submitted]->aio_fildes);
@@ -433,25 +482,18 @@ linuxaio_init (EV_P_ int flags)
 {
   /* would be great to have a nice test for IOCB_CMD_POLL instead */
   /* also: test some semi-common fd types, such as files and ttys in recommended_backends */
-#if EPOLL_FALLBACK
-  /* 4.19 made epoll work */
+  /* 4.18 introduced IOCB_CMD_POLL, 4.19 made epoll work */
   if (ev_linux_version () < 0x041300)
     return 0;
-#else
-  /* 4.18 introduced IOCB_CMD_POLL */
-  if (ev_linux_version () < 0x041200)
-    return 0;
-#endif
 
-  linuxaio_ctx = 0;
-  if (evsys_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
+  if (!epoll_init (EV_A_ 0))
     return 0;
 
-#if EPOLL_FALLBACK
-  backend_fd = ev_epoll_create ();
-  if (backend_fd < 0)
+  linuxaio_iteration = 0;
+
+  if (linuxaio_io_setup (EV_A) < 0)
     {
-      evsys_io_destroy (linuxaio_ctx);
+      epoll_destroy (EV_A);
       return 0;
     }
 
@@ -459,7 +501,6 @@ linuxaio_init (EV_P_ int flags)
   ev_set_priority (&linuxaio_epoll_w, EV_MAXPRI);
   ev_io_start (EV_A_ &linuxaio_epoll_w);
   ev_unref (EV_A); /* watcher should not keep loop alive */
-#endif
 
   backend_modify  = linuxaio_modify;
   backend_poll    = linuxaio_poll;
@@ -478,9 +519,7 @@ inline_size
 void
 linuxaio_destroy (EV_P)
 {
-#if EPOLL_FALLBACK
-  close (backend_fd);
-#endif
+  epoll_destroy (EV_A);
   linuxaio_free_iocbp (EV_A);
   evsys_io_destroy (linuxaio_ctx);
 }
@@ -493,19 +532,18 @@ linuxaio_fork (EV_P)
   linuxaio_destroy (EV_A);
   linuxaio_submitcnt = 0; /* all pointers were invalidated */
 
-  linuxaio_ctx = 0;
-  while (evsys_io_setup (EV_LINUXAIO_DEPTH, &linuxaio_ctx) < 0)
+  linuxaio_iteration = 0; /* we start over in the child */
+
+  while (linuxaio_io_setup (EV_A) < 0)
     ev_syserr ("(libev) linuxaio io_setup");
 
-#if EPOLL_FALLBACK
-  while ((backend_fd = ev_epoll_create ()) < 0)
-   ev_syserr ("(libev) linuxaio epoll_create");
+  epoll_fork (EV_A);
 
   ev_io_stop  (EV_A_ &linuxaio_epoll_w);
-  ev_io_init  (EV_A_ &linuxaio_epoll_w, linuxaio_epoll_cb, backend_fd, EV_READ);
+  ev_io_set   (EV_A_ &linuxaio_epoll_w, backend_fd, EV_READ);
   ev_io_start (EV_A_ &linuxaio_epoll_w);
-#endif
 
-  fd_rearm_all (EV_A);
+  /* epoll_fork already did this. hopefully */
+  /*fd_rearm_all (EV_A);*/
 }
 
