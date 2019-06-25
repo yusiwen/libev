@@ -2149,7 +2149,7 @@ fd_reify (EV_P)
       unsigned char o_events = anfd->events;
       unsigned char o_reify  = anfd->reify;
 
-      anfd->reify  = 0;
+      anfd->reify = 0;
 
       /*if (expect_true (o_reify & EV_ANFD_REIFY)) probably a deoptimisation */
         {

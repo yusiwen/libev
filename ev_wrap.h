@@ -54,6 +54,7 @@
 #define linuxaio_epoll_w ((loop)->linuxaio_epoll_w)
 #define linuxaio_iocbpmax ((loop)->linuxaio_iocbpmax)
 #define linuxaio_iocbps ((loop)->linuxaio_iocbps)
+#define linuxaio_iteration ((loop)->linuxaio_iteration)
 #define linuxaio_submitcnt ((loop)->linuxaio_submitcnt)
 #define linuxaio_submitmax ((loop)->linuxaio_submitmax)
 #define linuxaio_submits ((loop)->linuxaio_submits)
@@ -160,6 +161,7 @@
 #undef linuxaio_epoll_w
 #undef linuxaio_iocbpmax
 #undef linuxaio_iocbps
+#undef linuxaio_iteration
 #undef linuxaio_submitcnt
 #undef linuxaio_submitmax
 #undef linuxaio_submits

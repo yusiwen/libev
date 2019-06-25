@@ -577,7 +577,10 @@ C<EVBACKEND_POLL>.
 =item C<EVBACKEND_LINUXAIO>   (value 64, Linux)
 
 Use the linux-specific linux aio (I<not> C<< aio(7) >> but C<<
-io_submit(2) >>) event interface available in post-4.18 kernels.
+io_submit(2) >>) event interface available in post-4.18 kernels (but libev
+only tries to use it in 4.19+).
+
+This is another linux trainwreck of an event interface.
 
 If this backend works for you (as of this writing, it was very
 experimental), it is the best event interface available on linux and might
@@ -586,17 +589,19 @@ be detected and this backend will be skipped.
 
 This backend can batch oneshot requests and supports a user-space ring
 buffer to receive events. It also doesn't suffer from most of the design
-problems of epoll (such as not being able to remove event sources from the
-epoll set), and generally sounds too good to be true. Because, this being
-the linux kernel, of course it suffers from a whole new set of limitations.
+problems of epoll (such as not being able to remove event sources from
+the epoll set), and generally sounds too good to be true. Because, this
+being the linux kernel, of course it suffers from a whole new set of
+limitations, forcing you to fall back to epoll, inheriting all its design
+issues.
 
 For one, it is not easily embeddable (but probably could be done using
 an event fd at some extra overhead). It also is subject to a system wide
-limit that can be configured in F</proc/sys/fs/aio-max-nr> - each loop
-currently requires C<61> of this number. If no aio requests are left, this
-backend will be skipped during initialisation.
+limit that can be configured in F</proc/sys/fs/aio-max-nr>. If no aio
+requests are left, this backend will be skipped during initialisation, and
+will switch to epoll when the loop is active.
 
-Most problematic in practise, however, is that not all file descriptors
+Most problematic in practice, however, is that not all file descriptors
 work with it. For example, in linux 5.1, tcp sockets, pipes, event fds,
 files, F</dev/null> and a few others are supported, but ttys do not work
 properly (a known bug that the kernel developers don't care about, see
@@ -606,10 +611,9 @@ L<https://lore.kernel.org/patchwork/patch/1047453/>), so this is not
 Overall, it seems the linux developers just don't want it to have a
 generic event handling mechanism other than C<select> or C<poll>.
 
-To work around the fd type problem, the current version of libev uses
-epoll as a fallback for file deescriptor types that do not work. Epoll
-is used in, kind of, slow mode that hopefully avoids most of its design
-problems and requires 1-3 extra syscalls per active fd every iteration.
+To work around all these problem, the current version of libev uses its
+epoll backend as a fallback for file descriptor types that do not work. Or
+falls back completely to epoll if the kernel acts up.
 
 This backend maps C<EV_READ> and C<EV_WRITE> in the same way as
 C<EVBACKEND_POLL>.

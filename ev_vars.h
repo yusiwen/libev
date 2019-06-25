@@ -109,6 +109,7 @@ VARx(int, epoll_epermmax)
 
 #if EV_USE_LINUXAIO || EV_GENWRAP
 VARx(aio_context_t, linuxaio_ctx)
+VARx(int, linuxaio_iteration)
 VARx(struct aniocb **, linuxaio_iocbps)
 VARx(int, linuxaio_iocbpmax)
 VARx(struct iocb **, linuxaio_submits)
