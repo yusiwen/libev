@@ -126,7 +126,8 @@ struct aio_ring
  * TODO: arm is also common nowadays, maybe even mips and x86
  * TODO: after implementing this, it suddenly looks like overkill, but its hard to remove...
  */
-#if __GNUC__ && __linux && ECB_AMD64
+#if __GNUC__ && __linux && ECB_AMD64 && !defined __OPTIMIZE_SIZE__
+  /* the costly errno access probably kills this for size optimisation */
 
   #define ev_syscall(nr,narg,arg1,arg2,arg3,arg4,arg5)                 \
     ({                                                                 \
