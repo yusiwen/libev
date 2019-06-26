@@ -102,7 +102,7 @@
  * incompat_features are, or what header_length actually is for.
  */
 #define AIO_RING_MAGIC                  0xa10a10a1
-#define AIO_RING_INCOMPAT_FEATURES      0
+#define EV_AIO_RING_INCOMPAT_FEATURES   0
 struct aio_ring
 {
   unsigned id;    /* kernel internal index number */
@@ -374,12 +374,6 @@ linuxaio_get_events_from_ring (EV_P)
   if (head == tail)
     return 0;
 
-  /* bail out if the ring buffer doesn't match the expected layout */
-  if (expect_false (ring->magic != AIO_RING_MAGIC)
-                    || ring->incompat_features != AIO_RING_INCOMPAT_FEATURES
-                    || ring->header_length != sizeof (struct aio_ring)) /* TODO: or use it to find io_event[0]? */
-    return 0;
-
   /* make sure the events up to tail are visible */
   ECB_MEMORY_FENCE_ACQUIRE;
 
@@ -399,41 +393,83 @@ linuxaio_get_events_from_ring (EV_P)
   return 1;
 }
 
+inline_size
+int
+linuxaio_ringbuf_valid (EV_P)
+{
+  struct aio_ring *ring = (struct aio_ring *)linuxaio_ctx;
+
+  return expect_true (ring->magic == AIO_RING_MAGIC)
+                      && ring->incompat_features == EV_AIO_RING_INCOMPAT_FEATURES
+                      && ring->header_length == sizeof (struct aio_ring); /* TODO: or use it to find io_event[0]? */
+}
+
 /* read at least one event from kernel, or timeout */
 inline_size
 void
 linuxaio_get_events (EV_P_ ev_tstamp timeout)
 {
   struct timespec ts;
-  struct io_event ioev[1];
-  int res;
+  struct io_event ioev[8]; /* 256 octet stack space */
+  int want = 1; /* how many events to request */
+  int ringbuf_valid = linuxaio_ringbuf_valid (EV_A);
 
-  if (linuxaio_get_events_from_ring (EV_A))
-    return;
-
-  /* no events, so wait for at least one, then poll ring buffer again */
-  /* this degrades to one event per loop iteration */
-  /* if the ring buffer changes layout, but so be it */
-
-  EV_RELEASE_CB;
-
-  ts.tv_sec  = (long)timeout;
-  ts.tv_nsec = (long)((timeout - ts.tv_sec) * 1e9);
-
-  res = evsys_io_getevents (linuxaio_ctx, 1, sizeof (ioev) / sizeof (ioev [0]), ioev, &ts);
-
-  EV_ACQUIRE_CB;
-
-  if (res < 0)
-    if (errno == EINTR)
-      /* ignored */;
-    else
-      ev_syserr ("(libev) linuxaio io_getevents");
-  else if (res)
+  if (expect_true (ringbuf_valid))
     {
-      /* at least one event available, handle it and any remaining ones in the ring buffer */
-      linuxaio_parse_events (EV_A_ ioev, res);
-      linuxaio_get_events_from_ring (EV_A);
+      /* if the ring buffer has any events, we don't wait or call the kernel at all */
+      if (linuxaio_get_events_from_ring (EV_A))
+        return;
+
+      /* if the ring buffer is empty, and we don't have a timeout, then don't call the kernel */
+      if (!timeout)
+        return;
+    }
+  else
+    /* no ringbuffer, request slightly larger batch */
+    want = sizeof (ioev) / sizeof (ioev [0]);
+
+  /* no events, so wait for some
+   * for fairness reasons, we do this in a loop, to fetch all events
+   */
+  for (;;)
+    {
+      int res;
+
+      EV_RELEASE_CB;
+
+      ts.tv_sec  = (long)timeout;
+      ts.tv_nsec = (long)((timeout - ts.tv_sec) * 1e9);
+
+      res = evsys_io_getevents (linuxaio_ctx, 1, want, ioev, &ts);
+
+      EV_ACQUIRE_CB;
+
+      if (res < 0)
+        if (errno == EINTR)
+          /* ignored, retry */;
+        else
+          ev_syserr ("(libev) linuxaio io_getevents");
+      else if (res)
+        {
+          /* at least one event available, handle them */
+          linuxaio_parse_events (EV_A_ ioev, res);
+
+          if (expect_true (ringbuf_valid))
+            {
+              /* if we have a ring buffer, handle any remaining events in it */
+              linuxaio_get_events_from_ring (EV_A);
+
+              /* at this point, we should have handled all outstanding events */
+              break;
+            }
+          else if (res < want)
+            /* otherwise, if there were fewere events than we wanted, we assume there are no more */
+            break;
+        }
+      else
+        break; /* no events from the kernel, we are done */
+
+      timeout = 0; /* only wait in the first iteration */
     }
 }
 
