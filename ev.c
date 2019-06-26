@@ -3751,7 +3751,6 @@ ev_run (EV_P_ int flags)
             ev_feed_event (EV_A_ &pipe_w, EV_CUSTOM);
           }
 
-
         /* update ev_rt_now, do magic */
         time_update (EV_A_ waittime + sleeptime);
       }
