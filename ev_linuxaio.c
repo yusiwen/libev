@@ -291,15 +291,18 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   if (iocb->io.aio_reqprio < 0)
     {
       /* we handed this fd over to epoll, so undo this first */
-      /* we do it manually because the optimisations on epoll_modfy won't do us any good */
+      /* we do it manually because the optimisations on epoll_modify won't do us any good */
       epoll_ctl (backend_fd, EPOLL_CTL_DEL, fd, 0);
       anfds [fd].emask = 0;
       iocb->io.aio_reqprio = 0;
     }
 
   if (iocb->io.aio_buf)
-    /* io_cancel always returns some error on relevant kernels, but works */
-    evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0);
+    {
+      evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0);
+      /* on relevant kernels, io_cancel fails with EINPROGRES if everything is fine */
+      assert (("libev: linuxaio unexpected io_cancel failed", errno != EINPROGRESS));
+    }
 
   if (nev)
     {
@@ -510,6 +513,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
           }
         else if (errno == EBADF)
           {
+            assert (("libev: event loop rejected bad fd", errno != EBADF));
             fd_kill (EV_A_ linuxaio_submits [submitted]->aio_fildes);
 
             res = 1; /* skip this iocb */
