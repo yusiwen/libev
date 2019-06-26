@@ -1,5 +1,6 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
+TODO: revisit 59.x timer in the light of mdoenr powersaving
 	- linux aio backend almost complete rewritten to work around its
           limitations.
         - epoll backend now mandatory for linux aio backend.
