@@ -324,7 +324,8 @@ linuxaio_epoll_cb (EV_P_ struct ev_io *w, int revents)
   epoll_poll (EV_A_ 0);
 }
 
-static void
+inline_speed
+void
 linuxaio_fd_rearm (EV_P_ int fd)
 {
   anfds [fd].events = 0;
@@ -350,7 +351,7 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
         | (res & (POLLIN | POLLERR | POLLHUP) ? EV_READ : 0)
       );
 
-      /* linux aio is oneshot: rearm fd. TODO: this does more work than needed */
+      /* linux aio is oneshot: rearm fd. TODO: this does more work than strictly needed */
       linuxaio_fd_rearm (EV_A_ fd);
 
       --nr;
