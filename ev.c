@@ -334,6 +334,14 @@
 # endif
 #endif
 
+#ifndef EV_USE_IOURING
+# if __linux
+#  define EV_USE_IOURING 0
+# else
+#  define EV_USE_IOURING 0
+# endif
+#endif
+
 #ifndef EV_USE_INOTIFY
 # if __linux && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 4))
 #  define EV_USE_INOTIFY EV_FEATURE_OS
@@ -408,6 +416,7 @@
 #  define clock_gettime(id, ts) syscall (SYS_clock_gettime, (id), (ts))
 #  undef EV_USE_MONOTONIC
 #  define EV_USE_MONOTONIC 1
+#  define EV_NEED_SYSCALL 1
 # else
 #  undef EV_USE_CLOCK_SYSCALL
 #  define EV_USE_CLOCK_SYSCALL 0
@@ -443,6 +452,23 @@
 # if !SYS_io_getevents || !EV_USE_EPOLL /* ev_linxaio uses ev_poll.c:ev_epoll_create */
 #  undef EV_USE_LINUXAIO
 #  define EV_USE_LINUXAIO 0
+# else
+#  define EV_NEED_SYSCALL 1
+# endif
+#endif
+
+#if EV_USE_IOURING
+# include <sys/syscall.h>
+# if !__alpha && !SYS_io_uring_setup
+#  define SYS_io_uring_setup     425
+#  define SYS_io_uring_enter     426
+#  define SYS_io_uring_wregister 427
+# endif
+# if SYS_io_uring_setup
+#  define EV_NEED_SYSCALL 1
+# else
+#  undef EV_USE_IOURING
+#  define EV_USE_IOURING 0
 # endif
 #endif
 
@@ -494,7 +520,66 @@ struct signalfd_siginfo
 };
 #endif
 
-/**/
+/*****************************************************************************/
+
+#if EV_NEED_SYSCALL
+
+#include <sys/syscall.h>
+
+/*
+ * define some syscall wrappers for common architectures
+ * this is mostly for nice looks during debugging, not performance.
+ * our syscalls return < 0, not == -1, on error. which is good
+ * enough for linux aio.
+ * TODO: arm is also common nowadays, maybe even mips and x86
+ * TODO: after implementing this, it suddenly looks like overkill, but its hard to remove...
+ */
+#if __GNUC__ && __linux && ECB_AMD64 && !defined __OPTIMIZE_SIZE__
+  /* the costly errno access probably kills this for size optimisation */
+
+  #define ev_syscall(nr,narg,arg1,arg2,arg3,arg4,arg5)                 \
+    ({                                                                 \
+        long res;                                                      \
+        register unsigned long r5 __asm__ ("r8" );                     \
+        register unsigned long r4 __asm__ ("r10");                     \
+        register unsigned long r3 __asm__ ("rdx");                     \
+        register unsigned long r2 __asm__ ("rsi");                     \
+        register unsigned long r1 __asm__ ("rdi");                     \
+        if (narg >= 5) r5 = (unsigned long)(arg5);                     \
+        if (narg >= 4) r4 = (unsigned long)(arg4);                     \
+        if (narg >= 3) r3 = (unsigned long)(arg3);                     \
+        if (narg >= 2) r2 = (unsigned long)(arg2);                     \
+        if (narg >= 1) r1 = (unsigned long)(arg1);                     \
+        __asm__ __volatile__ (                                         \
+          "syscall\n\t"                                                \
+          : "=a" (res)                                                 \
+          : "0" (nr), "r" (r1), "r" (r2), "r" (r3), "r" (r4), "r" (r5) \
+          : "cc", "r11", "cx", "memory");                              \
+        errno = -res;                                                  \
+        res;                                                           \
+    })
+
+#endif
+
+#ifdef ev_syscall
+  #define ev_syscall0(nr)                          ev_syscall (nr, 0,    0,    0,    0,    0,    0
+  #define ev_syscall1(nr,arg1)                     ev_syscall (nr, 1, arg1,    0,    0,    0,    0)
+  #define ev_syscall2(nr,arg1,arg2)                ev_syscall (nr, 2, arg1, arg2,    0,    0,    0)
+  #define ev_syscall3(nr,arg1,arg2,arg3)           ev_syscall (nr, 3, arg1, arg2, arg3,    0,    0)
+  #define ev_syscall4(nr,arg1,arg2,arg3,arg4)      ev_syscall (nr, 3, arg1, arg2, arg3, arg4,    0)
+  #define ev_syscall5(nr,arg1,arg2,arg3,arg4,arg5) ev_syscall (nr, 5, arg1, arg2, arg3, arg4, arg5)
+#else
+  #define ev_syscall0(nr)                          syscall (nr)
+  #define ev_syscall1(nr,arg1)                     syscall (nr, arg1)
+  #define ev_syscall2(nr,arg1,arg2)                syscall (nr, arg1, arg2)
+  #define ev_syscall3(nr,arg1,arg2,arg3)           syscall (nr, arg1, arg2, arg3)
+  #define ev_syscall4(nr,arg1,arg2,arg3,arg4)      syscall (nr, arg1, arg2, arg3, arg4)
+  #define ev_syscall5(nr,arg1,arg2,arg3,arg4,arg5) syscall (nr, arg1, arg2, arg3, arg4, arg5)
+#endif
+
+#endif
+
+/*****************************************************************************/
 
 #if EV_VERIFY >= 3
 # define EV_FREQUENT_CHECK ev_verify (EV_A)
@@ -2739,6 +2824,9 @@ childcb (EV_P_ ev_signal *sw, int revents)
 #if EV_USE_LINUXAIO
 # include "ev_linuxaio.c"
 #endif
+#if EV_USE_IOURING
+# include "ev_iouring.c"
+#endif
 #if EV_USE_POLL
 # include "ev_poll.c"
 #endif
@@ -2780,6 +2868,7 @@ ev_supported_backends (void) EV_NOEXCEPT
   if (EV_USE_KQUEUE  ) flags |= EVBACKEND_KQUEUE;
   if (EV_USE_EPOLL   ) flags |= EVBACKEND_EPOLL;
   if (EV_USE_LINUXAIO) flags |= EVBACKEND_LINUXAIO;
+  if (EV_USE_IOURING ) flags |= EVBACKEND_IOURING;
   if (EV_USE_POLL    ) flags |= EVBACKEND_POLL;
   if (EV_USE_SELECT  ) flags |= EVBACKEND_SELECT;
   
@@ -2809,6 +2898,10 @@ ev_recommended_backends (void) EV_NOEXCEPT
   /* TODO: linuxaio is very experimental */
 #if !EV_RECOMMEND_LINUXAIO
   flags &= ~EVBACKEND_LINUXAIO;
+#endif
+  /* TODO: linuxaio is super experimental */
+#if !EV_RECOMMEND_IOURING
+  flags &= ~EVBACKEND_IOURING;
 #endif
 
   return flags;
@@ -2963,6 +3056,9 @@ loop_init (EV_P_ unsigned int flags) EV_NOEXCEPT
 #if EV_USE_KQUEUE
       if (!backend && (flags & EVBACKEND_KQUEUE  )) backend = kqueue_init    (EV_A_ flags);
 #endif
+#if EV_USE_IOURING
+      if (!backend && (flags & EVBACKEND_IOURING )) backend = iouring_init   (EV_A_ flags);
+#endif
 #if EV_USE_LINUXAIO
       if (!backend && (flags & EVBACKEND_LINUXAIO)) backend = linuxaio_init  (EV_A_ flags);
 #endif
@@ -3046,6 +3142,9 @@ ev_loop_destroy (EV_P)
 #if EV_USE_KQUEUE
   if (backend == EVBACKEND_KQUEUE  ) kqueue_destroy   (EV_A);
 #endif
+#if EV_USE_IOURING
+  if (backend == EVBACKEND_IOURING ) iouring_destroy  (EV_A);
+#endif
 #if EV_USE_LINUXAIO
   if (backend == EVBACKEND_LINUXAIO) linuxaio_destroy (EV_A);
 #endif
@@ -3112,6 +3211,9 @@ loop_fork (EV_P)
 #endif
 #if EV_USE_KQUEUE
   if (backend == EVBACKEND_KQUEUE  ) kqueue_fork   (EV_A);
+#endif
+#if EV_USE_IOURING
+  if (backend == EVBACKEND_IOURING ) iouring_fork  (EV_A);
 #endif
 #if EV_USE_LINUXAIO
   if (backend == EVBACKEND_LINUXAIO) linuxaio_fork (EV_A);
