@@ -301,7 +301,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
     {
       evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0);
       /* on relevant kernels, io_cancel fails with EINPROGRES if everything is fine */
-      assert (("libev: linuxaio unexpected io_cancel failed", errno == EINPROGRESS));
+      assert (("libev: linuxaio unexpected io_cancel failed", errno == EINPROGRESS || errno == EINTR));
     }
 
   if (nev)
@@ -555,6 +555,8 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
 
             res = 1; /* skip this iocb */
           }
+        else if (errno == EINTR)
+          /* silently ignored */;
         else
           ev_syserr ("(libev) linuxaio io_submit");
 
