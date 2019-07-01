@@ -132,7 +132,7 @@ port_poll (EV_P_ ev_tstamp timeout)
         }
     }
 
-  if (expect_false (nget == port_eventmax))
+  if (ecb_expect_false (nget == port_eventmax))
     {
       ev_free (port_events);
       port_eventmax = array_nextsize (sizeof (port_event_t), port_eventmax, port_eventmax + 1);
