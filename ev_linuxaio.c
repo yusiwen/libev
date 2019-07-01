@@ -288,7 +288,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   array_needsize (ANIOCBP, linuxaio_iocbps, linuxaio_iocbpmax, fd + 1, linuxaio_array_needsize_iocbp);
   ANIOCBP iocb = linuxaio_iocbps [fd];
 
-  if (iocb->io.aio_reqprio < 0)
+  if (expect_false (iocb->io.aio_reqprio < 0))
     {
       /* we handed this fd over to epoll, so undo this first */
       /* we do it manually because the optimisations on epoll_modify won't do us any good */
@@ -297,8 +297,9 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
       iocb->io.aio_reqprio = 0;
     }
 
-  if (iocb->io.aio_buf)
+  if (expect_false (iocb->io.aio_buf))
     {
+      /* iocb active, so cancel it first before resubmit */
       for (;;)
         {
           /* on all relevant kernels, io_cancel fails with EINPROGRESS on "success" */
@@ -313,12 +314,12 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
        }
     }
 
+  iocb->io.aio_buf =
+      (nev & EV_READ ? POLLIN : 0)
+      | (nev & EV_WRITE ? POLLOUT : 0);
+
   if (nev)
     {
-      iocb->io.aio_buf =
-          (nev & EV_READ ? POLLIN : 0)
-          | (nev & EV_WRITE ? POLLOUT : 0);
-
       /* queue iocb up for io_submit */
       /* this assumes we only ever get one call per fd per loop iteration */
       ++linuxaio_submitcnt;
