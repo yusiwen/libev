@@ -302,7 +302,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
       for (;;)
         {
           /* on all relevant kernels, io_cancel fails with EINPROGRESS on "success" */
-          if (expect_false (evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0) == 09)
+          if (expect_false (evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0) == 0))
             break;
 
           if (expect_true (errno == EINPROGRESS))
