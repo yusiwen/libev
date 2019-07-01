@@ -288,7 +288,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
   array_needsize (ANIOCBP, linuxaio_iocbps, linuxaio_iocbpmax, fd + 1, linuxaio_array_needsize_iocbp);
   ANIOCBP iocb = linuxaio_iocbps [fd];
 
-  if (expect_false (iocb->io.aio_reqprio < 0))
+  if (ecb_expect_false (iocb->io.aio_reqprio < 0))
     {
       /* we handed this fd over to epoll, so undo this first */
       /* we do it manually because the optimisations on epoll_modify won't do us any good */
@@ -297,16 +297,16 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
       iocb->io.aio_reqprio = 0;
     }
 
-  if (expect_false (iocb->io.aio_buf))
+  if (ecb_expect_false (iocb->io.aio_buf))
     {
       /* iocb active, so cancel it first before resubmit */
       for (;;)
         {
           /* on all relevant kernels, io_cancel fails with EINPROGRESS on "success" */
-          if (expect_false (evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0) == 0))
+          if (ecb_expect_false (evsys_io_cancel (linuxaio_ctx, &iocb->io, (struct io_event *)0) == 0))
             break;
 
-          if (expect_true (errno == EINPROGRESS))
+          if (ecb_expect_true (errno == EINPROGRESS))
             break;
 
           /* the EINPROGRESS test is for nicer error message. clumsy. */
@@ -409,7 +409,7 @@ linuxaio_ringbuf_valid (EV_P)
 {
   struct aio_ring *ring = (struct aio_ring *)linuxaio_ctx;
 
-  return expect_true (ring->magic == AIO_RING_MAGIC)
+  return ecb_expect_true (ring->magic == AIO_RING_MAGIC)
                       && ring->incompat_features == EV_AIO_RING_INCOMPAT_FEATURES
                       && ring->header_length == sizeof (struct aio_ring); /* TODO: or use it to find io_event[0]? */
 }
@@ -424,7 +424,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
   int want = 1; /* how many events to request */
   int ringbuf_valid = linuxaio_ringbuf_valid (EV_A);
 
-  if (expect_true (ringbuf_valid))
+  if (ecb_expect_true (ringbuf_valid))
     {
       /* if the ring buffer has any events, we don't wait or call the kernel at all */
       if (linuxaio_get_events_from_ring (EV_A))
@@ -464,7 +464,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
           /* at least one event available, handle them */
           linuxaio_parse_events (EV_A_ ioev, res);
 
-          if (expect_true (ringbuf_valid))
+          if (ecb_expect_true (ringbuf_valid))
             {
               /* if we have a ring buffer, handle any remaining events in it */
               linuxaio_get_events_from_ring (EV_A);
@@ -505,7 +505,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
     {
       int res = evsys_io_submit (linuxaio_ctx, linuxaio_submitcnt - submitted, linuxaio_submits + submitted);
 
-      if (expect_false (res < 0))
+      if (ecb_expect_false (res < 0))
         if (errno == EINVAL)
           {
             /* This happens for unsupported fds, officially, but in my testing,
