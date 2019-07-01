@@ -1,6 +1,8 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
 TODO: revisit 59.x timer in the light of mdoenr powersaving
+        - linuxaio backend might have tried to cancel an iocb
+          multiple times (was unable to trigger this).
 	- io_cancel can return EINTR, deal with it. also, assume
           io_asubmit also retursn EINTR.
 
