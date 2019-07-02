@@ -197,6 +197,8 @@ epoll_poll (EV_P_ ev_tstamp timeout)
            * above with the gencounter check (== our fd is not the event fd), and
            * partially here, when epoll_ctl returns an error (== a child has the fd
            * but we closed it).
+           * note: for events such as POLLHUP, where we can't know whether it refers
+           * to EV_READ or EV_WRITE, we might issue redundant EPOLL_CTL_MOD calls.
            */
           ev->events = (want & EV_READ  ? EPOLLIN  : 0)
                      | (want & EV_WRITE ? EPOLLOUT : 0);
@@ -282,8 +284,8 @@ epoll_destroy (EV_P)
   array_free (epoll_eperm, EMPTY);
 }
 
-inline_size
-void
+ecb_cold
+static void
 epoll_fork (EV_P)
 {
   close (backend_fd);

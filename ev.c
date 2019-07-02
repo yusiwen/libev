@@ -449,11 +449,11 @@
 
 #if EV_USE_LINUXAIO
 # include <sys/syscall.h>
-# if !SYS_io_getevents || !EV_USE_EPOLL /* ev_linxaio uses ev_poll.c:ev_epoll_create */
+# if SYS_io_getevents && EV_USE_EPOLL /* linuxaio backend requires epoll backend */
+#  define EV_NEED_SYSCALL 1
+# else
 #  undef EV_USE_LINUXAIO
 #  define EV_USE_LINUXAIO 0
-# else
-#  define EV_NEED_SYSCALL 1
 # endif
 #endif
 
@@ -464,7 +464,7 @@
 #  define SYS_io_uring_enter     426
 #  define SYS_io_uring_wregister 427
 # endif
-# if SYS_io_uring_setup
+# if SYS_io_uring_setup && EV_USE_EPOLL /* iouring backend requires epoll backend */
 #  define EV_NEED_SYSCALL 1
 # else
 #  undef EV_USE_IOURING
@@ -522,65 +522,6 @@ struct signalfd_siginfo
 
 /*****************************************************************************/
 
-#if EV_NEED_SYSCALL
-
-#include <sys/syscall.h>
-
-/*
- * define some syscall wrappers for common architectures
- * this is mostly for nice looks during debugging, not performance.
- * our syscalls return < 0, not == -1, on error. which is good
- * enough for linux aio.
- * TODO: arm is also common nowadays, maybe even mips and x86
- * TODO: after implementing this, it suddenly looks like overkill, but its hard to remove...
- */
-#if __GNUC__ && __linux && ECB_AMD64 && !defined __OPTIMIZE_SIZE__
-  /* the costly errno access probably kills this for size optimisation */
-
-  #define ev_syscall(nr,narg,arg1,arg2,arg3,arg4,arg5)                 \
-    ({                                                                 \
-        long res;                                                      \
-        register unsigned long r5 __asm__ ("r8" );                     \
-        register unsigned long r4 __asm__ ("r10");                     \
-        register unsigned long r3 __asm__ ("rdx");                     \
-        register unsigned long r2 __asm__ ("rsi");                     \
-        register unsigned long r1 __asm__ ("rdi");                     \
-        if (narg >= 5) r5 = (unsigned long)(arg5);                     \
-        if (narg >= 4) r4 = (unsigned long)(arg4);                     \
-        if (narg >= 3) r3 = (unsigned long)(arg3);                     \
-        if (narg >= 2) r2 = (unsigned long)(arg2);                     \
-        if (narg >= 1) r1 = (unsigned long)(arg1);                     \
-        __asm__ __volatile__ (                                         \
-          "syscall\n\t"                                                \
-          : "=a" (res)                                                 \
-          : "0" (nr), "r" (r1), "r" (r2), "r" (r3), "r" (r4), "r" (r5) \
-          : "cc", "r11", "cx", "memory");                              \
-        errno = -res;                                                  \
-        res;                                                           \
-    })
-
-#endif
-
-#ifdef ev_syscall
-  #define ev_syscall0(nr)                          ev_syscall (nr, 0,    0,    0,    0,    0,    0
-  #define ev_syscall1(nr,arg1)                     ev_syscall (nr, 1, arg1,    0,    0,    0,    0)
-  #define ev_syscall2(nr,arg1,arg2)                ev_syscall (nr, 2, arg1, arg2,    0,    0,    0)
-  #define ev_syscall3(nr,arg1,arg2,arg3)           ev_syscall (nr, 3, arg1, arg2, arg3,    0,    0)
-  #define ev_syscall4(nr,arg1,arg2,arg3,arg4)      ev_syscall (nr, 3, arg1, arg2, arg3, arg4,    0)
-  #define ev_syscall5(nr,arg1,arg2,arg3,arg4,arg5) ev_syscall (nr, 5, arg1, arg2, arg3, arg4, arg5)
-#else
-  #define ev_syscall0(nr)                          syscall (nr)
-  #define ev_syscall1(nr,arg1)                     syscall (nr, arg1)
-  #define ev_syscall2(nr,arg1,arg2)                syscall (nr, arg1, arg2)
-  #define ev_syscall3(nr,arg1,arg2,arg3)           syscall (nr, arg1, arg2, arg3)
-  #define ev_syscall4(nr,arg1,arg2,arg3,arg4)      syscall (nr, arg1, arg2, arg3, arg4)
-  #define ev_syscall5(nr,arg1,arg2,arg3,arg4,arg5) syscall (nr, arg1, arg2, arg3, arg4, arg5)
-#endif
-
-#endif
-
-/*****************************************************************************/
-
 #if EV_VERIFY >= 3
 # define EV_FREQUENT_CHECK ev_verify (EV_A)
 #else
@@ -594,8 +535,16 @@ struct signalfd_siginfo
 #define MIN_INTERVAL  0.0001220703125 /* 1/2**13, good till 4000 */
 /*#define MIN_INTERVAL  0.00000095367431640625 /* 1/2**20, good till 2200 */
 
-#define MIN_TIMEJUMP  1. /* minimum timejump that gets detected (if monotonic clock available) */
-#define MAX_BLOCKTIME 59.743 /* never wait longer than this time (to detect time jumps) */
+#define MIN_TIMEJUMP   1. /* minimum timejump that gets detected (if monotonic clock available) */
+#define MAX_BLOCKTIME  59.743 /* never wait longer than this time (to detect time jumps) */
+
+/* find a portable timestamp that is "alawys" in the future but fits into time_t.
+ * this is quite hard, and we are mostly guessing - we handle 32 bit signed/unsigned time_t,
+ * and sizes large than 32 bit, but and maybe the unlikely loating point time_t */
+#define EV_TSTAMP_HUGE \
+  (sizeof (time_t) >= 8     ? 10000000000000.  \
+   : 0 < (time_t)4294967295 ?     4294967295.  \
+   :                              2147483647.) \
 
 #define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
 #define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
@@ -1645,6 +1594,72 @@ ecb_binary32_to_binary16 (uint32_t x)
 # define inline_speed      ecb_noinline static
 #endif
 
+/*****************************************************************************/
+/* raw syscall wrappers */
+
+#if EV_NEED_SYSCALL
+
+#include <sys/syscall.h>
+
+/*
+ * define some syscall wrappers for common architectures
+ * this is mostly for nice looks during debugging, not performance.
+ * our syscalls return < 0, not == -1, on error. which is good
+ * enough for linux aio.
+ * TODO: arm is also common nowadays, maybe even mips and x86
+ * TODO: after implementing this, it suddenly looks like overkill, but its hard to remove...
+ */
+#if __GNUC__ && __linux && ECB_AMD64 && !defined __OPTIMIZE_SIZE__
+  /* the costly errno access probably kills this for size optimisation */
+
+  #define ev_syscall(nr,narg,arg1,arg2,arg3,arg4,arg5,arg6)            \
+    ({                                                                 \
+        long res;                                                      \
+        register unsigned long r6 __asm__ ("r9" );                     \
+        register unsigned long r5 __asm__ ("r8" );                     \
+        register unsigned long r4 __asm__ ("r10");                     \
+        register unsigned long r3 __asm__ ("rdx");                     \
+        register unsigned long r2 __asm__ ("rsi");                     \
+        register unsigned long r1 __asm__ ("rdi");                     \
+        if (narg >= 6) r6 = (unsigned long)(arg6);                     \
+        if (narg >= 5) r5 = (unsigned long)(arg5);                     \
+        if (narg >= 4) r4 = (unsigned long)(arg4);                     \
+        if (narg >= 3) r3 = (unsigned long)(arg3);                     \
+        if (narg >= 2) r2 = (unsigned long)(arg2);                     \
+        if (narg >= 1) r1 = (unsigned long)(arg1);                     \
+        __asm__ __volatile__ (                                         \
+          "syscall\n\t"                                                \
+          : "=a" (res)                                                 \
+          : "0" (nr), "r" (r1), "r" (r2), "r" (r3), "r" (r4), "r" (r5) \
+          : "cc", "r11", "cx", "memory");                              \
+        errno = -res;                                                  \
+        res;                                                           \
+    })
+
+#endif
+
+#ifdef ev_syscall
+  #define ev_syscall0(nr)                               ev_syscall (nr, 0,    0,    0,    0,    0,    0,   0)
+  #define ev_syscall1(nr,arg1)                          ev_syscall (nr, 1, arg1,    0,    0,    0,    0,   0)
+  #define ev_syscall2(nr,arg1,arg2)                     ev_syscall (nr, 2, arg1, arg2,    0,    0,    0,   0)
+  #define ev_syscall3(nr,arg1,arg2,arg3)                ev_syscall (nr, 3, arg1, arg2, arg3,    0,    0,   0)
+  #define ev_syscall4(nr,arg1,arg2,arg3,arg4)           ev_syscall (nr, 3, arg1, arg2, arg3, arg4,    0,   0)
+  #define ev_syscall5(nr,arg1,arg2,arg3,arg4,arg5)      ev_syscall (nr, 5, arg1, arg2, arg3, arg4, arg5,   0)
+  #define ev_syscall6(nr,arg1,arg2,arg3,arg4,arg5,arg6) ev_syscall (nr, 6, arg1, arg2, arg3, arg4, arg5,arg6)
+#else
+  #define ev_syscall0(nr)                               syscall (nr)
+  #define ev_syscall1(nr,arg1)                          syscall (nr, arg1)
+  #define ev_syscall2(nr,arg1,arg2)                     syscall (nr, arg1, arg2)
+  #define ev_syscall3(nr,arg1,arg2,arg3)                syscall (nr, arg1, arg2, arg3)
+  #define ev_syscall4(nr,arg1,arg2,arg3,arg4)           syscall (nr, arg1, arg2, arg3, arg4)
+  #define ev_syscall5(nr,arg1,arg2,arg3,arg4,arg5)      syscall (nr, arg1, arg2, arg3, arg4, arg5)
+  #define ev_syscall6(nr,arg1,arg2,arg3,arg4,arg5,arg6) syscall (nr, arg1, arg2, arg3, arg4, arg5,arg6)
+#endif
+
+#endif
+
+/*****************************************************************************/
+
 #define NUMPRI (EV_MAXPRI - EV_MINPRI + 1)
 
 #if EV_MINPRI == EV_MAXPRI
@@ -1884,7 +1899,7 @@ typedef struct
   unsigned char events; /* the events watched for */
   unsigned char reify;  /* flag set when this ANFD needs reification (EV_ANFD_REIFY, EV__IOFDSET) */
   unsigned char emask;  /* some backends store the actual kernel mask in here */
-  unsigned char unused;
+  unsigned char eflags; /* flags field for use by backends */
 #if EV_USE_EPOLL
   unsigned int egen;    /* generation counter to counter epoll bugs */
 #endif
@@ -2916,6 +2931,13 @@ ev_embeddable_backends (void) EV_NOEXCEPT
   /* epoll embeddability broken on all linux versions up to at least 2.6.23 */
   if (ev_linux_version () < 0x020620) /* disable it on linux < 2.6.32 */
     flags &= ~EVBACKEND_EPOLL;
+
+  /* EVBACKEND_LINUXAIO is theoretically embeddable, but suffers from a performance overhead */
+
+  /* EVBACKEND_IOURING is practically embeddable, but the current implementation is not
+   * because our backend_fd is the epoll fd we need as fallback.
+   * if the kernel ever is fixed, this might change...
+   */
 
   return flags;
 }

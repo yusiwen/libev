@@ -323,18 +323,17 @@ static int
 linuxaio_get_events_from_ring (EV_P)
 {
   struct aio_ring *ring = (struct aio_ring *)linuxaio_ctx;
+  unsigned head, tail;
 
   /* the kernel reads and writes both of these variables, */
   /* as a C extension, we assume that volatile use here */
   /* both makes reads atomic and once-only */
-  unsigned head = *(volatile unsigned *)&ring->head;
-  unsigned tail = *(volatile unsigned *)&ring->tail;
+  head = *(volatile unsigned *)&ring->head;
+  ECB_MEMORY_FENCE_ACQUIRE;
+  tail = *(volatile unsigned *)&ring->tail;
 
   if (head == tail)
     return 0;
-
-  /* make sure the events up to tail are visible */
-  ECB_MEMORY_FENCE_ACQUIRE;
 
   /* parse all available events, but only once, to avoid starvation */
   if (tail > head) /* normal case around */
@@ -396,9 +395,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
 
       EV_RELEASE_CB;
 
-      ts.tv_sec  = (long)timeout;
-      ts.tv_nsec = (long)((timeout - ts.tv_sec) * 1e9);
-
+      EV_TS_SET (ts, timeout);
       res = evsys_io_getevents (linuxaio_ctx, 1, want, ioev, &ts);
 
       EV_ACQUIRE_CB;
@@ -494,11 +491,16 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
             ++linuxaio_iteration;
             if (linuxaio_io_setup (EV_A) < 0)
               {
+                /* TODO: rearm all and recreate epoll backend from scratch */
+                /* TODO: might be more prudent? */
+
                 /* to bad, we can't get a new aio context, go 100% epoll */
                 linuxaio_free_iocbp (EV_A);
                 ev_io_stop (EV_A_ &linuxaio_epoll_w);
                 ev_ref (EV_A);
                 linuxaio_ctx = 0;
+
+                backend        = EVBACKEND_EPOLL;
                 backend_modify = epoll_modify;
                 backend_poll   = epoll_poll;
               }
@@ -517,7 +519,10 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
         else if (errno == EINTR) /* not seen in reality, not documented */
           res = 0; /* silently ignore and retry */
         else
-          ev_syserr ("(libev) linuxaio io_submit");
+          {
+            ev_syserr ("(libev) linuxaio io_submit");
+            res = 0;
+          }
 
       submitted += res;
     }
@@ -555,8 +560,8 @@ linuxaio_init (EV_P_ int flags)
   ev_io_start (EV_A_ &linuxaio_epoll_w);
   ev_unref (EV_A); /* watcher should not keep loop alive */
 
-  backend_modify  = linuxaio_modify;
-  backend_poll    = linuxaio_poll;
+  backend_modify = linuxaio_modify;
+  backend_poll   = linuxaio_poll;
 
   linuxaio_iocbpmax = 0;
   linuxaio_iocbps = 0;
@@ -577,8 +582,8 @@ linuxaio_destroy (EV_P)
   evsys_io_destroy (linuxaio_ctx); /* fails in child, aio context is destroyed */
 }
 
-inline_size
-void
+ecb_cold
+static void
 linuxaio_fork (EV_P)
 {
   /* this frees all iocbs, which is very heavy-handed */
@@ -592,12 +597,11 @@ linuxaio_fork (EV_P)
 
   /* forking epoll should also effectively unregister all fds from the backend */
   epoll_fork (EV_A);
+  /* epoll_fork already did this. hopefully */
+  /*fd_rearm_all (EV_A);*/
 
   ev_io_stop  (EV_A_ &linuxaio_epoll_w);
   ev_io_set   (EV_A_ &linuxaio_epoll_w, backend_fd, EV_READ);
   ev_io_start (EV_A_ &linuxaio_epoll_w);
-
-  /* epoll_fork already did this. hopefully */
-  /*fd_rearm_all (EV_A);*/
 }
 
