@@ -459,7 +459,7 @@
 
 #if EV_USE_IOURING
 # include <sys/syscall.h>
-# if !__alpha && !SYS_io_uring_setup
+# if !SYS_io_uring_setup && __linux && !__alpha
 #  define SYS_io_uring_setup     425
 #  define SYS_io_uring_enter     426
 #  define SYS_io_uring_wregister 427
