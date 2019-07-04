@@ -336,7 +336,7 @@ linuxaio_get_events_from_ring (EV_P)
     return 0;
 
   /* parse all available events, but only once, to avoid starvation */
-  if (tail > head) /* normal case around */
+  if (ecb_expect_true (tail > head)) /* normal case around */
     linuxaio_parse_events (EV_A_ ring->io_events + head, tail - head);
   else /* wrapped around */
     {
