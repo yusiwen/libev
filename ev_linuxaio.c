@@ -245,8 +245,7 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
       anfds [fd].emask = 0;
       iocb->io.aio_reqprio = 0;
     }
-
-  if (ecb_expect_false (iocb->io.aio_buf))
+  else if (ecb_expect_false (iocb->io.aio_buf))
     {
       /* iocb active, so cancel it first before resubmit */
       for (;;)
@@ -259,7 +258,11 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
             break;
 
           /* the EINPROGRESS test is for nicer error message. clumsy. */
-          assert (("libev: linuxaio unexpected io_cancel failed", errno != EINPROGRESS && errno != EINTR));
+          if (errno != EINTR)
+            {
+              assert (("libev: linuxaio unexpected io_cancel failed", errno != EINTR && errno != EINPROGRESS));
+              break;
+            }
        }
     }
 
