@@ -154,7 +154,7 @@ port_init (EV_P_ int flags)
 
   /* if my reading of the opensolaris kernel sources are correct, then
    * opensolaris does something very stupid: it checks if the time has already
-   * elapsed and doesn't round up if that is the case,m otherwise it DOES round
+   * elapsed and doesn't round up if that is the case, otherwise it DOES round
    * up. Since we can't know what the case is, we need to guess by using a
    * "large enough" timeout. Normally, 1e-9 would be correct.
    */

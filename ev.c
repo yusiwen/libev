@@ -1728,24 +1728,24 @@ ev_floor (ev_tstamp v)
   const ev_tstamp shift = sizeof (unsigned long) >= 8 ? 18446744073709551616. : 4294967296.;
 #endif
 
-  /* argument too large for an unsigned long? */
-  if (ecb_expect_false (v >= shift))
-    {
-      ev_tstamp f;
-
-      if (v == v - 1.)
-        return v; /* very large number */
-
-      f = shift * ev_floor (v * (1. / shift));
-      return f + ev_floor (v - f);
-    }
-
-  /* special treatment for negative args? */
+  /* special treatment for negative arguments */
   if (ecb_expect_false (v < 0.))
     {
       ev_tstamp f = -ev_floor (-v);
 
       return f - (f == v ? 0 : 1);
+    }
+
+  /* argument too large for an unsigned long? then reduce it */
+  if (ecb_expect_false (v >= shift))
+    {
+      ev_tstamp f;
+
+      if (v == v - 1.)
+        return v; /* very large numbers are assumed to be integer */
+
+      f = shift * ev_floor (v * (1. / shift));
+      return f + ev_floor (v - f);
     }
 
   /* fits into an unsigned long */
