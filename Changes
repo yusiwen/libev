@@ -11,6 +11,7 @@ TODO: maybe use timerfd to detect time jumps on linux
           libecb counterparts.
         - move syscall infrastructure from ev_linuxaio.c to ev.c.
         - prepare io_uring integration.
+        - tweak ev_floor.
 
 4.27 Thu Jun 27 22:43:44 CEST 2019
 	- linux aio backend almost completely rewritten to work around its
@@ -35,7 +36,7 @@ TODO: maybe use timerfd to detect time jumps on linux
 4.25 Fri Dec 21 07:49:20 CET 2018
         - INCOMPATIBLE CHANGE: EV_THROW was renamed to EV_NOEXCEPT
           (EV_THROW still provided) and now uses noexcept on C++11 or newer.
-	- move the darwin select workaround highe rin ev.c, as newer versions of
+	- move the darwin select workaround higher in ev.c, as newer versions of
           darwin managed to break their broken select even more.
 	- ANDROID => __ANDROID__ (reported by enh@google.com).
         - disable epoll_create1 on android because it has broken header files
