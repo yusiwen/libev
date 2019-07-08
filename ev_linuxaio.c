@@ -590,7 +590,7 @@ static void
 linuxaio_fork (EV_P)
 {
   linuxaio_submitcnt = 0; /* all pointers were invalidated */
-  linuxaio_free_iocp (EV_A); /* this frees all iocbs, which is very heavy-handed */
+  linuxaio_free_iocbp (EV_A); /* this frees all iocbs, which is very heavy-handed */
   evsys_io_destroy (linuxaio_ctx); /* fails in child, aio context is destroyed */
 
   linuxaio_iteration = 0; /* we start over in the child */
