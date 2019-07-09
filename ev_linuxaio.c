@@ -214,7 +214,6 @@ linuxaio_array_needsize_iocbp (ANIOCBP *base, int offset, int count)
       memset (iocb, 0, sizeof (*iocb));
 
       iocb->io.aio_lio_opcode = IOCB_CMD_POLL;
-      iocb->io.aio_data       = offset;
       iocb->io.aio_fildes     = offset;
 
       base [offset++] = iocb;
@@ -236,18 +235,20 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
 {
   array_needsize (ANIOCBP, linuxaio_iocbps, linuxaio_iocbpmax, fd + 1, linuxaio_array_needsize_iocbp);
   ANIOCBP iocb = linuxaio_iocbps [fd];
+  ANFD *anfd = &anfds [fd];
 
   if (ecb_expect_false (iocb->io.aio_reqprio < 0))
     {
       /* we handed this fd over to epoll, so undo this first */
       /* we do it manually because the optimisations on epoll_modify won't do us any good */
       epoll_ctl (backend_fd, EPOLL_CTL_DEL, fd, 0);
-      anfds [fd].emask = 0;
+      anfd->emask = 0;
       iocb->io.aio_reqprio = 0;
     }
   else if (ecb_expect_false (iocb->io.aio_buf))
     {
       /* iocb active, so cancel it first before resubmit */
+      /* this assumes we only ever get one call per fd per loop iteration */
       for (;;)
         {
           /* on all relevant kernels, io_cancel fails with EINPROGRESS on "success" */
@@ -264,6 +265,9 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
               break;
             }
        }
+
+      /* increment generation counter to avoid handling old events */
+      ++anfd->egen;
     }
 
   iocb->io.aio_buf =
@@ -272,6 +276,8 @@ linuxaio_modify (EV_P_ int fd, int oev, int nev)
 
   if (nev)
     {
+      iocb->io.aio_data = (uint32_t)fd | ((__u64)(uint32_t)anfd->egen << 32);
+
       /* queue iocb up for io_submit */
       /* this assumes we only ever get one call per fd per loop iteration */
       ++linuxaio_submitcnt;
@@ -300,10 +306,15 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
 {
   while (nr)
     {
-      int fd  = ev->data;
-      int res = ev->res;
+      int fd       = ev->data & 0xffffffff;
+      uint32_t gen = ev->data >> 32;
+      int res      = ev->res;
 
       assert (("libev: iocb fd must be in-bounds", fd >= 0 && fd < anfdmax));
+
+      /* ignore event if generation doesn't match */
+      if (ecb_expect_false (gen != (uint32_t)anfds [fd].egen))
+        continue;
 
       /* feed events, we do not expect or handle POLLNVAL */
       fd_event (

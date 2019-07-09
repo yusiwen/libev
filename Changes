@@ -1,14 +1,16 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
-TODO: revisit 59.x timer in the light of mdoenr powersaving
+TODO: revisit 59.x timer in the light of modern powersaving
 TODO: maybe use timerfd to detect time jumps on linux
 	- linuxaio backend resulted in random memory corruption
           when loop is forked.
         - linuxaio backend might have tried to cancel an iocb
           multiple times (was unable to trigger this).
+        - linuxaio backend now employs a generation counter to
+          avoid handlign spurious events from cancelled requests.
 	- io_cancel can return EINTR, deal with it. also, assume
-          io_asubmit also retursn EINTR.
-        - fix some othe rminor bugs in linuxaio backend.
+          io_submit also returns EINTR.
+        - fix some other minor bugs in linuxaio backend.
         - cleanup: replace expect_true/false and noinline by their
           libecb counterparts.
         - move syscall infrastructure from ev_linuxaio.c to ev.c.

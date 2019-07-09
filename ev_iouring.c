@@ -381,17 +381,17 @@ iouring_modify (EV_P_ int fd, int oev, int nev)
       sqe->fd        = fd;
       sqe->user_data = -1;
       iouring_sqe_submit (EV_A_ sqe);
-    }
 
-  /* increment generation counter to avoid handling old events */
-  ++anfds [fd].egen;
+      /* increment generation counter to avoid handling old events */
+      ++anfds [fd].egen;
+    }
 
   if (nev)
     {
       struct io_uring_sqe *sqe = iouring_sqe_get (EV_A);
       sqe->opcode      = IORING_OP_POLL_ADD;
       sqe->fd          = fd;
-      sqe->user_data   = (uint32_t)fd | ((__u64)anfds [fd].egen << 32);
+      sqe->user_data   = (uint32_t)fd | ((__u64)(uint32_t)anfds [fd].egen << 32);
       sqe->poll_events =
         (nev & EV_READ ? POLLIN : 0)
         | (nev & EV_WRITE ? POLLOUT : 0);
@@ -444,7 +444,7 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
 
   /* ignore event if generation doesn't match */
   /* this should actually be very rare */
-  if (ecb_expect_false ((uint32_t)anfds [fd].egen != gen))
+  if (ecb_expect_false (gen != (uint32_t)anfds [fd].egen))
     return;
 
   if (ecb_expect_false (res < 0))
