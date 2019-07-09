@@ -312,20 +312,20 @@ linuxaio_parse_events (EV_P_ struct io_event *ev, int nr)
 
       assert (("libev: iocb fd must be in-bounds", fd >= 0 && fd < anfdmax));
 
-      /* ignore event if generation doesn't match */
-      if (ecb_expect_false (gen != (uint32_t)anfds [fd].egen))
-        continue;
+      /* only accept events if generation counter matches */
+      if (ecb_expect_true (gen == (uint32_t)anfds [fd].egen))
+        {
+          /* feed events, we do not expect or handle POLLNVAL */
+          fd_event (
+            EV_A_
+            fd,
+            (res & (POLLOUT | POLLERR | POLLHUP) ? EV_WRITE : 0)
+            | (res & (POLLIN | POLLERR | POLLHUP) ? EV_READ : 0)
+          );
 
-      /* feed events, we do not expect or handle POLLNVAL */
-      fd_event (
-        EV_A_
-        fd,
-        (res & (POLLOUT | POLLERR | POLLHUP) ? EV_WRITE : 0)
-        | (res & (POLLIN | POLLERR | POLLHUP) ? EV_READ : 0)
-      );
-
-      /* linux aio is oneshot: rearm fd. TODO: this does more work than strictly needed */
-      linuxaio_fd_rearm (EV_A_ fd);
+          /* linux aio is oneshot: rearm fd. TODO: this does more work than strictly needed */
+          linuxaio_fd_rearm (EV_A_ fd);
+        }
 
       --nr;
       ++ev;
