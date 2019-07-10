@@ -538,9 +538,9 @@ struct signalfd_siginfo
 #define MIN_TIMEJUMP   1. /* minimum timejump that gets detected (if monotonic clock available) */
 #define MAX_BLOCKTIME  59.743 /* never wait longer than this time (to detect time jumps) */
 
-/* find a portable timestamp that is "alawys" in the future but fits into time_t.
+/* find a portable timestamp that is "always" in the future but fits into time_t.
  * this is quite hard, and we are mostly guessing - we handle 32 bit signed/unsigned time_t,
- * and sizes large than 32 bit, but and maybe the unlikely loating point time_t */
+ * and sizes larger than 32 bit, and maybe the unlikely floating point time_t */
 #define EV_TSTAMP_HUGE \
   (sizeof (time_t) >= 8     ? 10000000000000.  \
    : 0 < (time_t)4294967295 ?     4294967295.  \
@@ -548,6 +548,8 @@ struct signalfd_siginfo
 
 #define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
 #define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
+#define EV_TV_GET(tv) ((tv).tv_sec + (tv).tv_usec * 1e6)
+#define EV_TS_GET(ts) ((ts).tv_sec + (ts).tv_nsec * 1e9)
 
 /* the following is ecb.h embedded into libev - use update_ev_c to update from an external copy */
 /* ECB.H BEGIN */
@@ -1995,13 +1997,13 @@ ev_time (void) EV_NOEXCEPT
     {
       struct timespec ts;
       clock_gettime (CLOCK_REALTIME, &ts);
-      return ts.tv_sec + ts.tv_nsec * 1e-9;
+      return EV_TS_GET (ts);
     }
 #endif
 
   struct timeval tv;
   gettimeofday (&tv, 0);
-  return tv.tv_sec + tv.tv_usec * 1e-6;
+  return EV_TV_GET (tv);
 }
 #endif
 
@@ -2013,7 +2015,7 @@ get_clock (void)
     {
       struct timespec ts;
       clock_gettime (CLOCK_MONOTONIC, &ts);
-      return ts.tv_sec + ts.tv_nsec * 1e-9;
+      return EV_TS_GET (ts);
     }
 #endif
 
