@@ -546,7 +546,7 @@ struct signalfd_siginfo
    : 0 < (time_t)4294967295 ?     4294967295.  \
    :                              2147483647.) \
 
-#define EV_TS_TO_MS(a) a * 1e3 + 0.9999
+#define EV_TS_TO_MSEC(a) a * 1e3 + 0.9999
 #define EV_TS_FROM_USEC(us) us * 1e-6
 #define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
 #define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
@@ -2045,7 +2045,7 @@ ev_sleep (ev_tstamp delay) EV_NOEXCEPT
 #elif defined _WIN32
       /* maybe this should round up, as ms is very low resolution */
       /* compared to select (µs) or nanosleep (ns) */
-      Sleep ((unsigned long)(EV_TS_TO_MS (delay)));
+      Sleep ((unsigned long)(EV_TS_TO_MSEC (delay)));
 #else
       struct timeval tv;
 
