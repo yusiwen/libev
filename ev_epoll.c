@@ -152,7 +152,7 @@ epoll_poll (EV_P_ ev_tstamp timeout)
   /* epoll wait times cannot be larger than (LONG_MAX - 999UL) / HZ msecs, which is below */
   /* the default libev max wait time, however. */
   EV_RELEASE_CB;
-  eventcnt = epoll_wait (backend_fd, epoll_events, epoll_eventmax, timeout * 1e3 + 0.9999);
+  eventcnt = epoll_wait (backend_fd, epoll_events, epoll_eventmax, EV_TS_TO_MS (timeout));
   EV_ACQUIRE_CB;
 
   if (ecb_expect_false (eventcnt < 0))
