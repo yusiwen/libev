@@ -151,7 +151,10 @@ EV_CPP(extern "C" {)
 
 /*****************************************************************************/
 
-typedef double ev_tstamp;
+#ifndef EV_TSTAMP_T
+# define EV_TSTAMP_T double
+#endif
+typedef EV_TSTAMP_T ev_tstamp;
 
 #include <string.h> /* for memmove */
 
