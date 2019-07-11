@@ -546,10 +546,12 @@ struct signalfd_siginfo
    : 0 < (time_t)4294967295 ?     4294967295.  \
    :                              2147483647.) \
 
+#define EV_TS_TO_MS(a) a * 1e3 + 0.9999
+#define EV_TS_FROM_US(us) us * 1e-6
 #define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
 #define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
-#define EV_TV_GET(tv) ((tv).tv_sec + (tv).tv_usec * 1e6)
-#define EV_TS_GET(ts) ((ts).tv_sec + (ts).tv_nsec * 1e9)
+#define EV_TV_GET(tv) ((tv).tv_sec + (tv).tv_usec * 1e-6)
+#define EV_TS_GET(ts) ((ts).tv_sec + (ts).tv_nsec * 1e-9)
 
 /* the following is ecb.h embedded into libev - use update_ev_c to update from an external copy */
 /* ECB.H BEGIN */
@@ -2043,7 +2045,7 @@ ev_sleep (ev_tstamp delay) EV_NOEXCEPT
 #elif defined _WIN32
       /* maybe this should round up, as ms is very low resolution */
       /* compared to select (µs) or nanosleep (ns) */
-      Sleep ((unsigned long)(delay * 1e3));
+      Sleep ((unsigned long)(EV_TS_TO_MS (delay)));
 #else
       struct timeval tv;
 
@@ -2403,16 +2405,16 @@ downheap (ANHE *heap, int N, int k)
       if (ecb_expect_true (pos + DHEAP - 1 < E))
         {
           /* fast path */                               (minpos = pos + 0), (minat = ANHE_at (*minpos));
-          if (               ANHE_at (pos [1]) < minat) (minpos = pos + 1), (minat = ANHE_at (*minpos));
-          if (               ANHE_at (pos [2]) < minat) (minpos = pos + 2), (minat = ANHE_at (*minpos));
-          if (               ANHE_at (pos [3]) < minat) (minpos = pos + 3), (minat = ANHE_at (*minpos));
+          if (               minat > ANHE_at (pos [1])) (minpos = pos + 1), (minat = ANHE_at (*minpos));
+          if (               minat > ANHE_at (pos [2])) (minpos = pos + 2), (minat = ANHE_at (*minpos));
+          if (               minat > ANHE_at (pos [3])) (minpos = pos + 3), (minat = ANHE_at (*minpos));
         }
       else if (pos < E)
         {
           /* slow path */                               (minpos = pos + 0), (minat = ANHE_at (*minpos));
-          if (pos + 1 < E && ANHE_at (pos [1]) < minat) (minpos = pos + 1), (minat = ANHE_at (*minpos));
-          if (pos + 2 < E && ANHE_at (pos [2]) < minat) (minpos = pos + 2), (minat = ANHE_at (*minpos));
-          if (pos + 3 < E && ANHE_at (pos [3]) < minat) (minpos = pos + 3), (minat = ANHE_at (*minpos));
+          if (pos + 1 < E && minat > ANHE_at (pos [1])) (minpos = pos + 1), (minat = ANHE_at (*minpos));
+          if (pos + 2 < E && minat > ANHE_at (pos [2])) (minpos = pos + 2), (minat = ANHE_at (*minpos));
+          if (pos + 3 < E && minat > ANHE_at (pos [3])) (minpos = pos + 3), (minat = ANHE_at (*minpos));
         }
       else
         break;
@@ -2430,7 +2432,7 @@ downheap (ANHE *heap, int N, int k)
   ev_active (ANHE_w (he)) = k;
 }
 
-#else /* 4HEAP */
+#else /* not 4HEAP */
 
 #define HEAP0 1
 #define HPARENT(k) ((k) >> 1)
