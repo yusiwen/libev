@@ -547,7 +547,7 @@ struct signalfd_siginfo
    :                              2147483647.) \
 
 #define EV_TS_TO_MS(a) a * 1e3 + 0.9999
-#define EV_TS_FROM_US(us) us * 1e-6
+#define EV_TS_FROM_USEC(us) us * 1e-6
 #define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
 #define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
 #define EV_TV_GET(tv) ((tv).tv_sec + (tv).tv_usec * 1e-6)
