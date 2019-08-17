@@ -20,6 +20,8 @@ TODO: document EV_TSTAMP_T
         - tweak ev_floor.
         - epoll, poll, win32 Sleep and other places that use millisecond
           reslution now all try to round up times.
+        - solaris port backend didn't compile.
+        - abstract time constants into their macros, for more flexibility.
 
 4.27 Thu Jun 27 22:43:44 CEST 2019
 	- linux aio backend almost completely rewritten to work around its

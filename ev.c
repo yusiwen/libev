@@ -546,12 +546,15 @@ struct signalfd_siginfo
    : 0 < (time_t)4294967295 ?     4294967295.  \
    :                              2147483647.) \
 
-#define EV_TS_TO_MSEC(a) a * 1e3 + 0.9999
-#define EV_TS_FROM_USEC(us) us * 1e-6
-#define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
-#define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
-#define EV_TV_GET(tv) ((tv).tv_sec + (tv).tv_usec * 1e-6)
-#define EV_TS_GET(ts) ((ts).tv_sec + (ts).tv_nsec * 1e-9)
+#ifndef EV_TS_CONST
+# define EV_TS_CONST(nv) nv
+# define EV_TS_TO_MSEC(a) a * 1e3 + 0.9999
+# define EV_TS_FROM_USEC(us) us * 1e-6
+# define EV_TV_SET(tv,t) do { tv.tv_sec = (long)t; tv.tv_usec = (long)((t - tv.tv_sec) * 1e6); } while (0)
+# define EV_TS_SET(ts,t) do { ts.tv_sec = (long)t; ts.tv_nsec = (long)((t - ts.tv_sec) * 1e9); } while (0)
+# define EV_TV_GET(tv) ((tv).tv_sec + (tv).tv_usec * 1e-6)
+# define EV_TS_GET(ts) ((ts).tv_sec + (ts).tv_nsec * 1e-9)
+#endif
 
 /* the following is ecb.h embedded into libev - use update_ev_c to update from an external copy */
 /* ECB.H BEGIN */
@@ -1967,7 +1970,7 @@ typedef struct
 
 #else
 
-  EV_API_DECL ev_tstamp ev_rt_now = 0; /* needs to be initialised to make it a definition despite extern */
+  EV_API_DECL ev_tstamp ev_rt_now = EV_TS_CONST (0.); /* needs to be initialised to make it a definition despite extern */
   #define VAR(name,decl) static decl;
     #include "ev_vars.h"
   #undef VAR
@@ -2035,7 +2038,7 @@ ev_now (EV_P) EV_NOEXCEPT
 void
 ev_sleep (ev_tstamp delay) EV_NOEXCEPT
 {
-  if (delay > 0.)
+  if (delay > EV_TS_CONST (0.))
     {
 #if EV_USE_NANOSLEEP
       struct timespec ts;
@@ -3546,7 +3549,7 @@ timers_reify (EV_P)
               if (ev_at (w) < mn_now)
                 ev_at (w) = mn_now;
 
-              assert (("libev: negative ev_timer repeat value found while processing timers", w->repeat > 0.));
+              assert (("libev: negative ev_timer repeat value found while processing timers", w->repeat > EV_TS_CONST (0.)));
 
               ANHE_at_cache (timers [HEAP0]);
               downheap (timers, timercnt, HEAP0);
@@ -3687,7 +3690,7 @@ time_update (EV_P_ ev_tstamp max_block)
 
       /* only fetch the realtime clock every 0.5*MIN_TIMEJUMP seconds */
       /* interpolate in the meantime */
-      if (ecb_expect_true (mn_now - now_floor < MIN_TIMEJUMP * .5))
+      if (ecb_expect_true (mn_now - now_floor < EV_TS_CONST (MIN_TIMEJUMP * .5)))
         {
           ev_rt_now = rtmn_diff + mn_now;
           return;
@@ -3711,7 +3714,7 @@ time_update (EV_P_ ev_tstamp max_block)
 
           diff = odiff - rtmn_diff;
 
-          if (ecb_expect_true ((diff < 0. ? -diff : diff) < MIN_TIMEJUMP))
+          if (ecb_expect_true ((diff < EV_TS_CONST (0.) ? -diff : diff) < EV_TS_CONST (MIN_TIMEJUMP)))
             return; /* all is well */
 
           ev_rt_now = ev_time ();
@@ -3730,7 +3733,7 @@ time_update (EV_P_ ev_tstamp max_block)
     {
       ev_rt_now = ev_time ();
 
-      if (ecb_expect_false (mn_now > ev_rt_now || ev_rt_now > mn_now + max_block + MIN_TIMEJUMP))
+      if (ecb_expect_false (mn_now > ev_rt_now || ev_rt_now > mn_now + max_block + EV_TS_CONST (MIN_TIMEJUMP)))
         {
           /* adjust timers. this is easy, as the offset is the same for all of them */
           timers_reschedule (EV_A_ ev_rt_now - mn_now);
@@ -3809,7 +3812,7 @@ ev_run (EV_P_ int flags)
         ev_tstamp prev_mn_now = mn_now;
 
         /* update time to cancel out callback processing overhead */
-        time_update (EV_A_ 1e100);
+        time_update (EV_A_ EV_TS_CONST (EV_TSTAMP_HUGE));
 
         /* from now on, we want a pipe-wake-up */
         pipe_write_wanted = 1;
@@ -3818,7 +3821,7 @@ ev_run (EV_P_ int flags)
 
         if (ecb_expect_true (!(flags & EVRUN_NOWAIT || idleall || !activecnt || pipe_write_skipped)))
           {
-            waittime = MAX_BLOCKTIME;
+            waittime = EV_TS_CONST (MAX_BLOCKTIME);
 
             if (timercnt)
               {
@@ -3851,7 +3854,7 @@ ev_run (EV_P_ int flags)
                 if (sleeptime > waittime - backend_mintime)
                   sleeptime = waittime - backend_mintime;
 
-                if (ecb_expect_true (sleeptime > 0.))
+                if (ecb_expect_true (sleeptime > EV_TS_CONST (0.)))
                   {
                     ev_sleep (sleeptime);
                     waittime -= sleeptime;
@@ -3935,7 +3938,7 @@ ev_unref (EV_P) EV_NOEXCEPT
 void
 ev_now_update (EV_P) EV_NOEXCEPT
 {
-  time_update (EV_A_ 1e100);
+  time_update (EV_A_ EV_TSTAMP_HUGE);
 }
 
 void
@@ -4176,7 +4179,7 @@ ev_timer_again (EV_P_ ev_timer *w) EV_NOEXCEPT
 ev_tstamp
 ev_timer_remaining (EV_P_ ev_timer *w) EV_NOEXCEPT
 {
-  return ev_at (w) - (ev_is_active (w) ? mn_now : 0.);
+  return ev_at (w) - (ev_is_active (w) ? mn_now : EV_TS_CONST (0.));
 }
 
 #if EV_PERIODIC_ENABLE
