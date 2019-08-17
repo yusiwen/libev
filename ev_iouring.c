@@ -576,7 +576,7 @@ iouring_poll (EV_P_ ev_tstamp timeout)
 {
   /* if we have events, no need for extra syscalls, but we might have to queue events */
   if (iouring_handle_cq (EV_A))
-    timeout = 0.;
+    timeout = EV_TS_CONST (0.);
   else
     /* no events, so maybe wait for some */
     iouring_tfd_update (EV_A_ timeout);
@@ -589,7 +589,7 @@ iouring_poll (EV_P_ ev_tstamp timeout)
       EV_RELEASE_CB;
 
       res = evsys_io_uring_enter (iouring_fd, iouring_to_submit, 1,
-                                  timeout ? IORING_ENTER_GETEVENTS : 0, 0, 0);
+                                  timeout > EV_TS_CONST (0.) ? IORING_ENTER_GETEVENTS : 0, 0, 0);
       iouring_to_submit = 0;
 
       EV_ACQUIRE_CB;

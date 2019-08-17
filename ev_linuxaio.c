@@ -439,7 +439,7 @@ linuxaio_get_events (EV_P_ ev_tstamp timeout)
       else
         break; /* no events from the kernel, we are done */
 
-      timeout = 0; /* only wait in the first iteration */
+      timeout = EV_TS_CONST (0.); /* only wait in the first iteration */
     }
 }
 
@@ -519,7 +519,7 @@ linuxaio_poll (EV_P_ ev_tstamp timeout)
                 backend_poll   = epoll_poll;
               }
 
-            timeout = 0;
+            timeout = EV_TS_CONST (0.);
             /* it's easiest to handle this mess in another iteration */
             return;
           }
