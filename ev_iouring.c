@@ -611,7 +611,7 @@ iouring_init (EV_P_ int flags)
   if (!epoll_init (EV_A_ 0))
     return 0;
 
-  ev_io_init  (EV_A_ &iouring_epoll_w, iouring_epoll_cb, backend_fd, EV_READ);
+  ev_io_init  (&iouring_epoll_w, iouring_epoll_cb, backend_fd, EV_READ);
   ev_set_priority (&iouring_epoll_w, EV_MAXPRI);
 
   ev_io_init  (&iouring_tfd_w, iouring_tfd_cb, iouring_tfd, EV_READ);

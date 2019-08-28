@@ -569,7 +569,7 @@ linuxaio_init (EV_P_ int flags)
       return 0;
     }
 
-  ev_io_init  (EV_A_ &linuxaio_epoll_w, linuxaio_epoll_cb, backend_fd, EV_READ);
+  ev_io_init  (&linuxaio_epoll_w, linuxaio_epoll_cb, backend_fd, EV_READ);
   ev_set_priority (&linuxaio_epoll_w, EV_MAXPRI);
   ev_io_start (EV_A_ &linuxaio_epoll_w);
   ev_unref (EV_A); /* watcher should not keep loop alive */
