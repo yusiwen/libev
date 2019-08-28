@@ -2006,9 +2006,11 @@ ev_time (void) EV_NOEXCEPT
     }
 #endif
 
-  struct timeval tv;
-  gettimeofday (&tv, 0);
-  return EV_TV_GET (tv);
+  {
+    struct timeval tv;
+    gettimeofday (&tv, 0);
+    return EV_TV_GET (tv);
+  }
 }
 #endif
 
