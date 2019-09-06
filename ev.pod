@@ -1537,7 +1537,7 @@ Many event loops support I<watcher priorities>, which are usually small
 integers that influence the ordering of event callback invocation
 between watchers in some way, all else being equal.
 
-In libev, Watcher priorities can be set using C<ev_set_priority>. See its
+In libev, watcher priorities can be set using C<ev_set_priority>. See its
 description for the more technical details such as the actual priority
 range.
 
