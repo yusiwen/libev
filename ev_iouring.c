@@ -363,7 +363,6 @@ iouring_fork (EV_P)
 static void
 iouring_modify (EV_P_ int fd, int oev, int nev)
 {
-  fprintf (stderr,"modify %d (%d, %d) %d\n", fd, oev,nev, anfds[fd].eflags);//D
   if (ecb_expect_false (anfds [fd].eflags))
     {
       /* we handed this fd over to epoll, so undo this first */
@@ -472,8 +471,6 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
 
       return;
     }
-
-  fprintf (stderr, "fd %d event, rearm\n", fd);//D
 
   /* feed events, we do not expect or handle POLLNVAL */
   fd_event (
