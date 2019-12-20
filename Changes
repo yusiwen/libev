@@ -5,9 +5,13 @@ TODO: maybe use timerfd to detect time jumps on linux
 TODO: document EV_TSTAMP_T
 
 4.31
+TODO: use TFD_TIMER_CANCEL_ON_SET to call periodics_reschedule, maybe? (must)
 	- handle backends with minimum wait time a bit better by not
           waiting in the presence of already-expired timers
-          (behaviour reported by Felipe Gsper).
+          (behaviour reported by Felipe Gasper).
+        - new feature: use timerfd to detect timejumps quickly,
+          can be disabled with the new EVFLAG_NOTIMERFD loop flag.
+        - document EV_USE_SIGNALFD feature macro.
 
 4.30 (EV only)
 	- change non-autoconf test for __kernel_rwf_t by testing
