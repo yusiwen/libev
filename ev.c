@@ -3860,10 +3860,15 @@ ev_run (EV_P_ int flags)
             if (ecb_expect_false (waittime < timeout_blocktime))
               waittime = timeout_blocktime;
 
-            /* at this point, we NEED to wait, so we have to ensure */
-            /* to pass a minimum nonzero value to the backend */
+            /* now there are two more special cases left, either we have
+             * already-expired timers, so we should not sleep, or we have timers
+             * that expire very soon, in which case we need to weait for a minimum
+             * amount of time for some event loop backends
+             */
             if (ecb_expect_false (waittime < backend_mintime))
-              waittime = backend_mintime;
+              waittime = waittime <= EV_TS_CONST (0.)
+                 ? EV_TS_CONST (0.)
+                 : backend_mintime;
 
             /* extra check because io_blocktime is commonly 0 */
             if (ecb_expect_false (io_blocktime))
