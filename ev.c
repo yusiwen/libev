@@ -3862,8 +3862,8 @@ ev_run (EV_P_ int flags)
 
             /* now there are two more special cases left, either we have
              * already-expired timers, so we should not sleep, or we have timers
-             * that expire very soon, in which case we need to weait for a minimum
-             * amount of time for some event loop backends
+             * that expire very soon, in which case we need to wait for a minimum
+             * amount of time for some event loop backends.
              */
             if (ecb_expect_false (waittime < backend_mintime))
               waittime = waittime <= EV_TS_CONST (0.)
