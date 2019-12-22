@@ -49,8 +49,9 @@
  * e) why 3 mmaps instead of one? one would be more space-efficient,
  *    and I can't see what benefit three would have (other than being
  *    somehow resizable/relocatable, but that's apparently not possible).
+ *    (FIXME: newer kernels can use 2 mmaps only, need to look into this).
  * f) hmm, it's practiclaly undebuggable (gdb can't access the memory, and
-      the bizarre way structure offsets are commuinicated makes it hard to
+ *    the bizarre way structure offsets are communicated makes it hard to
  *    just print the ring buffer heads, even *iff* the memory were visible
  *    in gdb. but then, that's also ok, really.
  * g) well, you cannot specify a timeout when waiting for events. no,
@@ -60,8 +61,10 @@
  *    like a µ-optimisation by the io_uring author for his personal
  *    applications, to the detriment of everybody else who just wants
  *    an event loop. but, umm, ok, if that's all, it could be worse.
+ *    (FIXME: jens mentioned timeout commands, need to investigate)
  * h) there is a hardcoded limit of 4096 outstanding events. okay,
  *    at least there is no arbitrary low system-wide limit...
+ *    (FIXME: apparently, this was increased to 32768 in later kernels(
  * i) unlike linux aio, you *can* register more then the limit
  *    of fd events, and the kernel will "gracefully" signal an
  *    overflow, after which you could destroy and recreate the kernel
@@ -69,6 +72,7 @@
  *    totally insane, but kind of questions the point a high
  *    performance I/O framework when it doesn't really work
  *    under stress.
+ *    (FIXME: iouring should no longer drop events, need to investigate)
  * j) but, oh my! is has exactly the same bugs as the linux aio backend,
  *    where some undocumented poll combinations just fail.
  *    so we need epoll AGAIN as a fallback. AGAIN! epoll!! and of course,
