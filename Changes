@@ -6,6 +6,8 @@ TODO: document EV_TSTAMP_T
 	- the new timerfd code wrongly changed the priority of ther signal
           fd watcher, which is usuallys harmless unless signal fds are
           also used (found via cpan tester service).
+        - support a lot more "uncommon" compile time configurations,
+          such as ev_embed enabled but ev_timer disabled.
 
 4.31 Fri Dec 20 21:58:29 CET 2019
 	- handle backends with minimum wait time a bit better by not
