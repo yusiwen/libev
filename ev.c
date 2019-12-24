@@ -2915,7 +2915,7 @@ evtimerfd_init (EV_P)
           fd_intern (timerfd); /* just to be sure */
 
           ev_io_init (&timerfd_w, timerfdcb, timerfd, EV_READ);
-          ev_set_priority (&sigfd_w, EV_MINPRI);
+          ev_set_priority (&timerfd_w, EV_MINPRI);
           ev_io_start (EV_A_ &timerfd_w);
           ev_unref (EV_A); /* watcher should not keep loop alive */
 
