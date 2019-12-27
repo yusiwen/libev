@@ -82,6 +82,10 @@
  *    or might not get fixed (do I hold my breath?).
  */
 
+/* TODO: use internal TIMEOUT */
+/* TODO: take advantage of single mmap, NODROP etc. */
+/* TODO: resize cq/sq size independently */
+
 #include <sys/timerfd.h>
 #include <sys/mman.h>
 #include <poll.h>
