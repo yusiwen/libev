@@ -119,7 +119,7 @@
    
 # if HAVE_LINUX_AIO_ABI_H
 #  ifndef EV_USE_LINUXAIO
-#   define EV_USE_LINUXAIO EV_FEATURE_BACKENDS
+#   define EV_USE_LINUXAIO 0 /* was: EV_FEATURE_BACKENDS, always off by default */
 #  endif
 # else
 #  undef EV_USE_LINUXAIO
@@ -346,7 +346,7 @@
 
 #ifndef EV_USE_LINUXAIO
 # if __linux /* libev currently assumes linux/aio_abi.h is always available on linux */
-#  define EV_USE_LINUXAIO 1
+#  define EV_USE_LINUXAIO 0 /* was: 1, always off by default */
 # else
 #  define EV_USE_LINUXAIO 0
 # endif
