@@ -301,6 +301,11 @@ iouring_internal_init (EV_P)
       if (errno != EINVAL)
         return -1; /* we failed */
 
+#if TODO
+      if ((~params.features) & (IORING_FEAT_NODROP | IORING_FEATURE_SINGLE_MMAP))
+        return -1; /* we require the above features */
+#endif
+
       /* EINVAL: lots of possible reasons, but maybe
        * it is because we hit the unqueryable hardcoded size limit
        */
@@ -451,8 +456,8 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
 
   if (ecb_expect_false (res < 0))
     {
-      //TODO: EINVAL handling (was something failed with this fd)
-      //TODO: EBUSY happens when?
+      /*TODO: EINVAL handling (was something failed with this fd)*/
+      /*TODO: EBUSY happens when?*/
 
       if (res == -EBADF)
         {
