@@ -432,8 +432,9 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
   int      res = cqe->res;
 
   /* ignore fd removal events, if there are any. TODO: verify */
+  /* TODO: yes, this triggers */
   if (cqe->user_data == (__u64)-1)
-    abort ();//D
+    return;
 
   assert (("libev: io_uring fd must be in-bounds", fd >= 0 && fd < anfdmax));
 
@@ -489,7 +490,7 @@ iouring_overflow (EV_P)
   /* we have two options, resize the queue (by tearing down
    * everything and recreating it, or living with it
    * and polling.
-   * we implement this by resizing tghe queue, and, if that fails,
+   * we implement this by resizing the queue, and, if that fails,
    * we just recreate the state on every failure, which
    * kind of is a very inefficient poll.
    * one danger is, due to the bios toward lower fds,
@@ -511,12 +512,12 @@ iouring_overflow (EV_P)
       /* we hit the kernel limit, we should fall back to something else.
        * we can either poll() a few times and hope for the best,
        * poll always, or switch to epoll.
-       * since we use epoll anyways, go epoll.
+       * TODO: is this necessary with newer kernels?
        */
 
       iouring_internal_destroy (EV_A);
 
-      /* this should make it so that on return, we don'T call any uring functions */
+      /* this should make it so that on return, we don't call any uring functions */
       iouring_to_submit = 0;
 
       for (;;)
