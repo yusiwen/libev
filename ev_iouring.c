@@ -102,7 +102,10 @@ struct io_uring_sqe
   __u8 flags;
   __u16 ioprio;
   __s32 fd;
-  __u64 off;
+  union {
+    __u64 off;
+    __u64 addr2;
+  };
   __u64 addr;
   __u32 len;
   union {
@@ -111,6 +114,11 @@ struct io_uring_sqe
     __u16 poll_events;
     __u32 sync_range_flags;
     __u32 msg_flags;
+    __u32 timeout_flags;
+    __u32 accept_flags;
+    __u32 cancel_flags;
+    __u32 open_flags;
+    __u32 statx_flags;
   };
   __u64 user_data;
   union {
@@ -157,7 +165,8 @@ struct io_uring_params
   __u32 flags;
   __u32 sq_thread_cpu;
   __u32 sq_thread_idle;
-  __u32 resv[5];
+  __u32 features;
+  __u32 resv[4];
   struct io_sqring_offsets sq_off;
   struct io_cqring_offsets cq_off;
 };
@@ -170,6 +179,10 @@ struct io_uring_params
 #define IORING_OFF_SQ_RING 0x00000000ULL
 #define IORING_OFF_CQ_RING 0x08000000ULL
 #define IORING_OFF_SQES	   0x10000000ULL
+
+#define IORING_FEAT_SINGLE_MMAP   0x1
+#define IORING_FEAT_NODROP        0x2
+#define IORING_FEAT_SUBMIT_STABLE 0x4
 
 inline_size
 int
@@ -242,12 +255,6 @@ iouring_tfd_cb (EV_P_ struct ev_io *w, int revents)
   iouring_tfd_to = EV_TSTAMP_HUGE;
 }
 
-static void
-iouring_epoll_cb (EV_P_ struct ev_io *w, int revents)
-{
-  epoll_poll (EV_A_ 0);
-}
-
 /* called for full and partial cleanup */
 ecb_cold
 static int
@@ -260,8 +267,11 @@ iouring_internal_destroy (EV_P)
   if (iouring_cq_ring != MAP_FAILED) munmap (iouring_cq_ring, iouring_cq_ring_size);
   if (iouring_sqes    != MAP_FAILED) munmap (iouring_sqes   , iouring_sqes_size   );
 
-  if (ev_is_active (&iouring_epoll_w)) ev_ref (EV_A); ev_io_stop (EV_A_ &iouring_epoll_w);
-  if (ev_is_active (&iouring_tfd_w  )) ev_ref (EV_A); ev_io_stop (EV_A_ &iouring_tfd_w  );
+  if (ev_is_active (&iouring_tfd_w))
+    {
+      ev_ref (EV_A);
+      ev_io_stop (EV_A_ &iouring_tfd_w);
+    }
 }
 
 ecb_cold
@@ -348,14 +358,7 @@ iouring_fork (EV_P)
   while (iouring_internal_init (EV_A) < 0)
     ev_syserr ("(libev) io_uring_setup");
 
-  /* forking epoll should also effectively unregister all fds from the backend */
-  epoll_fork (EV_A);
-  /* epoll_fork already did this. hopefully */
-  /*fd_rearm_all (EV_A);*/
-
-  ev_io_stop  (EV_A_ &iouring_epoll_w);
-  ev_io_set   (EV_A_ &iouring_epoll_w, backend_fd, EV_READ);
-  ev_io_start (EV_A_ &iouring_epoll_w);
+  fd_rearm_all (EV_A);
 
   ev_io_stop  (EV_A_ &iouring_tfd_w);
   ev_io_set   (EV_A_ &iouring_tfd_w, iouring_tfd, EV_READ);
@@ -367,15 +370,6 @@ iouring_fork (EV_P)
 static void
 iouring_modify (EV_P_ int fd, int oev, int nev)
 {
-  if (ecb_expect_false (anfds [fd].eflags))
-    {
-      /* we handed this fd over to epoll, so undo this first */
-      /* we do it manually because the optimisations on epoll_modify won't do us any good */
-      epoll_ctl (iouring_fd, EPOLL_CTL_DEL, fd, 0);
-      anfds [fd].eflags = 0;
-      oev = 0;
-    }
-
   if (oev)
     {
       /* we assume the sqe's are all "properly" initialised */
@@ -452,17 +446,10 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
 
   if (ecb_expect_false (res < 0))
     {
-      if (res == -EINVAL)
-        {
-          /* we assume this error code means the fd/poll combination is buggy
-           * and fall back to epoll.
-           * this error code might also indicate a bug, but the kernel doesn't
-           * distinguish between those two conditions, so... sigh...
-           */
+      //TODO: EINVAL handling (was something failed with this fd)
+      //TODO: EBUSY happens when?
 
-          epoll_modify (EV_A_ fd, 0, anfds [fd].events);
-        }
-      else if (res == -EBADF)
+      if (res == -EBADF)
         {
           assert (("libev: event loop rejected bad fd", res != -EBADF));
           fd_kill (EV_A_ fd);
@@ -609,9 +596,6 @@ inline_size
 int
 iouring_init (EV_P_ int flags)
 {
-  if (!epoll_init (EV_A_ 0))
-    return 0;
-
   iouring_entries     = IOURING_INIT_ENTRIES;
   iouring_max_entries = 0;
 
@@ -621,15 +605,8 @@ iouring_init (EV_P_ int flags)
       return 0;
     }
 
-  ev_io_init  (&iouring_epoll_w, iouring_epoll_cb, backend_fd, EV_READ);
-  ev_set_priority (&iouring_epoll_w, EV_MAXPRI);
-
   ev_io_init  (&iouring_tfd_w, iouring_tfd_cb, iouring_tfd, EV_READ);
-  ev_set_priority (&iouring_tfd_w, EV_MAXPRI);
-
-  ev_io_start (EV_A_ &iouring_epoll_w);
-  ev_unref (EV_A); /* watcher should not keep loop alive */
-
+  ev_set_priority (&iouring_tfd_w, EV_MINPRI);
   ev_io_start (EV_A_ &iouring_tfd_w);
   ev_unref (EV_A); /* watcher should not keep loop alive */
 
@@ -644,6 +621,5 @@ void
 iouring_destroy (EV_P)
 {
   iouring_internal_destroy (EV_A);
-  epoll_destroy (EV_A);
 }
 
