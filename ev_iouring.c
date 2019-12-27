@@ -89,6 +89,7 @@
 #include <sys/timerfd.h>
 #include <sys/mman.h>
 #include <poll.h>
+#include <stdint.h>
 
 #define IOURING_INIT_ENTRIES 32
 
@@ -175,8 +176,21 @@ struct io_uring_params
   struct io_cqring_offsets cq_off;
 };
 
-#define IORING_OP_POLL_ADD    6
-#define IORING_OP_POLL_REMOVE 7
+#define IORING_SETUP_CQSIZE 0x00000008
+
+#define IORING_OP_POLL_ADD        6
+#define IORING_OP_POLL_REMOVE     7
+#define IORING_OP_TIMEOUT        11
+#define IORING_OP_TIMEOUT_REMOVE 12
+
+/* relative or absolute, reference clock is CLOCK_MONOTONIC */
+struct iouring_kernel_timespec
+{
+  int64_t tv_sec;
+  long long tv_nsec;
+};
+
+#define IORING_TIMEOUT_ABS 0x00000001
 
 #define IORING_ENTER_GETEVENTS 0x01
 
@@ -184,9 +198,9 @@ struct io_uring_params
 #define IORING_OFF_CQ_RING 0x08000000ULL
 #define IORING_OFF_SQES	   0x10000000ULL
 
-#define IORING_FEAT_SINGLE_MMAP   0x1
-#define IORING_FEAT_NODROP        0x2
-#define IORING_FEAT_SUBMIT_STABLE 0x4
+#define IORING_FEAT_SINGLE_MMAP   0x00000001
+#define IORING_FEAT_NODROP        0x00000002
+#define IORING_FEAT_SUBMIT_STABLE 0x00000004
 
 inline_size
 int
@@ -290,6 +304,9 @@ iouring_internal_init (EV_P)
   iouring_sq_ring = MAP_FAILED;
   iouring_cq_ring = MAP_FAILED;
   iouring_sqes    = MAP_FAILED;
+
+  if (!have_monotonic) /* cannot really happen, but what if11 */
+    return -1;
 
   for (;;)
     {
