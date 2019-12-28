@@ -230,20 +230,53 @@ evsys_io_uring_enter (int fd, unsigned to_submit, unsigned min_complete, unsigne
 #define EV_SQES         ((struct io_uring_sqe *)         iouring_sqes)
 #define EV_CQES         ((struct io_uring_cqe *)((char *)iouring_cq_ring + iouring_cq_cqes))
 
+/* TODO: this is not enough, we might have to reap events */
+/* TODO: but we can't, as that will re-arm events, causing */
+/* TODO: an endless loop in fd_reify */
+static int
+iouring_enter (EV_P_ ev_tstamp timeout)
+{
+  int res;
+
+  EV_RELEASE_CB;
+
+  res = evsys_io_uring_enter (iouring_fd, iouring_to_submit, 1,
+                              timeout > EV_TS_CONST (0.) ? IORING_ENTER_GETEVENTS : 0, 0, 0);
+
+  assert (("libev: io_uring_enter did not consume all sqes", (res < 0 || res == iouring_to_submit)));
+
+  iouring_to_submit = 0;
+
+  EV_ACQUIRE_CB;
+
+  return res;
+}
+
 static
 struct io_uring_sqe *
 iouring_sqe_get (EV_P)
 {
   unsigned tail = EV_SQ_VAR (tail);
 
-  if (tail + 1 - EV_SQ_VAR (head) > EV_SQ_VAR (ring_entries))
+  while (ecb_expect_false (tail + 1 - EV_SQ_VAR (head) > EV_SQ_VAR (ring_entries)))
     {
-      /* queue full, flush */
-      evsys_io_uring_enter (iouring_fd, iouring_to_submit, 0, 0, 0, 0);
-      iouring_to_submit = 0;
+      /* queue full, need to flush */
+
+      int res = iouring_enter (EV_A_ EV_TS_CONST (0.));
+
+      /* io_uring_enter might fail with EBUSY and won't submit anything */
+      /* unfortunately, we can't handle this at the moment */
+
+      if (res < 0 && errno == EBUSY)
+        //TODO
+        ev_syserr ("(libev) io_uring_enter could not clear sq");
+      else
+        break;
+        
+      /* iouring_poll should have done ECB_MEMORY_FENCE_ACQUIRE */
     }
 
-  assert (("libev: io_uring queue full after flush", tail + 1 - EV_SQ_VAR (head) <= EV_SQ_VAR (ring_entries)));
+  /*assert (("libev: io_uring queue full after flush", tail + 1 - EV_SQ_VAR (head) <= EV_SQ_VAR (ring_entries)));*/
 
   return EV_SQES + (tail & EV_SQ_VAR (ring_mask));
 }
@@ -600,19 +633,13 @@ iouring_poll (EV_P_ ev_tstamp timeout)
   /* only enter the kernel if we have something to submit, or we need to wait */
   if (timeout || iouring_to_submit)
     {
-      int res;
-
-      EV_RELEASE_CB;
-
-      res = evsys_io_uring_enter (iouring_fd, iouring_to_submit, 1,
-                                  timeout > EV_TS_CONST (0.) ? IORING_ENTER_GETEVENTS : 0, 0, 0);
-      iouring_to_submit = 0;
-
-      EV_ACQUIRE_CB;
+      int res = iouring_enter (EV_A_ timeout);
 
       if (ecb_expect_false (res < 0))
         if (errno == EINTR)
           /* ignore */;
+        else if (errno == EBUSY)
+          /* cq full, cannot submit - should be rare because we flush the cq first, so simply ignore */;
         else
           ev_syserr ("(libev) iouring setup");
       else
