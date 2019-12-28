@@ -268,6 +268,7 @@ iouring_sqe_get (EV_P)
       /* unfortunately, we can't handle this at the moment */
 
       if (res < 0 && errno == EBUSY)
+        /* the sane thing might be to resize, but we can't */
         //TODO
         ev_syserr ("(libev) io_uring_enter could not clear sq");
       else
@@ -440,7 +441,8 @@ iouring_modify (EV_P_ int fd, int oev, int nev)
        * be removed. Since we don't *really* have that, we pass in the old
        * generation counter - if that fails, too bad, it will hopefully be removed
        * at close time and then be ignored. */
-      sqe->user_data = (uint32_t)fd | ((__u64)(uint32_t)anfds [fd].egen << 32);
+      sqe->addr      = (uint32_t)fd | ((__u64)(uint32_t)anfds [fd].egen << 32);
+      sqe->user_data = (uint64_t)-1;
       iouring_sqe_submit (EV_A_ sqe);
 
       /* increment generation counter to avoid handling old events */
@@ -490,6 +492,10 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
   int      fd  = cqe->user_data & 0xffffffffU;
   uint32_t gen = cqe->user_data >> 32;
   int      res = cqe->res;
+
+  /* user_data -1 is a remove that we are not atm. interested in */
+  if (cqe->user_data == (uint64_t)-1)
+    return;
 
   assert (("libev: io_uring fd must be in-bounds", fd >= 0 && fd < anfdmax));
 
