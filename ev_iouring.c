@@ -230,10 +230,8 @@ evsys_io_uring_enter (int fd, unsigned to_submit, unsigned min_complete, unsigne
 #define EV_SQES         ((struct io_uring_sqe *)         iouring_sqes)
 #define EV_CQES         ((struct io_uring_cqe *)((char *)iouring_cq_ring + iouring_cq_cqes))
 
-/* TODO: this is not enough, we might have to reap events */
-/* TODO: but we can't, as that will re-arm events, causing */
-/* TODO: an endless loop in fd_reify */
-static int
+inline_speed
+int
 iouring_enter (EV_P_ ev_tstamp timeout)
 {
   int res;
@@ -252,29 +250,39 @@ iouring_enter (EV_P_ ev_tstamp timeout)
   return res;
 }
 
+/* TODO: can we move things around so we don't need this forward-reference? */
+static void
+iouring_poll (EV_P_ ev_tstamp timeout);
+
 static
 struct io_uring_sqe *
 iouring_sqe_get (EV_P)
 {
-  unsigned tail = EV_SQ_VAR (tail);
-
-  while (ecb_expect_false (tail + 1 - EV_SQ_VAR (head) > EV_SQ_VAR (ring_entries)))
+  unsigned tail;
+  
+  for (;;)
     {
-      /* queue full, need to flush */
+      tail = EV_SQ_VAR (tail);
 
+      if (ecb_expect_true (tail + 1 - EV_SQ_VAR (head) <= EV_SQ_VAR (ring_entries)))
+        break; /* whats the problem, we have free sqes */
+
+      /* queue full, need to flush and possibly handle some events */
+
+#if EV_FEATURE_CODE
+      /* first we ask the kernel nicely, most often this frees up some sqes */
       int res = iouring_enter (EV_A_ EV_TS_CONST (0.));
 
-      /* io_uring_enter might fail with EBUSY and won't submit anything */
-      /* unfortunately, we can't handle this at the moment */
+      ECB_MEMORY_FENCE_ACQUIRE; /* better safe than sorry */
 
-      if (res < 0 && errno == EBUSY)
-        /* the sane thing might be to resize, but we can't */
-        //TODO
-        ev_syserr ("(libev) io_uring_enter could not clear sq");
-      else
-        break;
-        
-      /* iouring_poll should have done ECB_MEMORY_FENCE_ACQUIRE */
+      if (res >= 0)
+        continue; /* yes, it worked, try again */
+#endif
+
+      /* some problem, possibly EBUSY - do the full poll and let it handle any issues */
+
+      iouring_poll (EV_A_ EV_TS_CONST (0.));
+      /* iouring_poll should have done ECB_MEMORY_FENCE_ACQUIRE for us */
     }
 
   /*assert (("libev: io_uring queue full after flush", tail + 1 - EV_SQ_VAR (head) <= EV_SQ_VAR (ring_entries)));*/
@@ -630,7 +638,11 @@ static void
 iouring_poll (EV_P_ ev_tstamp timeout)
 {
   /* if we have events, no need for extra syscalls, but we might have to queue events */
-  if (iouring_handle_cq (EV_A))
+  /* we also clar the timeout if there are outstanding fdchanges */
+  /* the latter should only happen if both the sq and cq are full, most likely */
+  /* because we have a lot of event sources that immediately complete */
+  /* TODO: fdchacngecnt is always 0 because fd_reify does not have two buffers yet */
+  if (iouring_handle_cq (EV_A) || fdchangecnt)
     timeout = EV_TS_CONST (0.);
   else
     /* no events, so maybe wait for some */
