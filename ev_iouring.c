@@ -361,7 +361,7 @@ iouring_internal_init (EV_P)
         return -1; /* we failed */
 
 #if TODO
-      if ((~params.features) & (IORING_FEAT_NODROP | IORING_FEATURE_SINGLE_MMAP))
+      if ((~params.features) & (IORING_FEAT_NODROP | IORING_FEATURE_SINGLE_MMAP | IORING_FEAT_SUBMIT_STABLE))
         return -1; /* we require the above features */
 #endif
 

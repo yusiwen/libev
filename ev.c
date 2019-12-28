@@ -1660,7 +1660,7 @@ ecb_binary32_to_binary16 (uint32_t x)
  * TODO: arm is also common nowadays, maybe even mips and x86
  * TODO: after implementing this, it suddenly looks like overkill, but its hard to remove...
  */
-#if __GNUC__ && __linux && ECB_AMD64 && !defined __OPTIMIZE_SIZE__
+#if __GNUC__ && __linux && ECB_AMD64 && !EV_FEATURE_CODE
   /* the costly errno access probably kills this for size optimisation */
 
   #define ev_syscall(nr,narg,arg1,arg2,arg3,arg4,arg5,arg6)            \
@@ -2264,8 +2264,20 @@ fd_reify (EV_P)
 {
   int i;
 
+  /* most backends do not modify the fdchanges list in backend_modfiy.
+   * except io_uring, which has fixed-size buffers which might force us
+   * to handle events in backend_modify, causing fdchangesd to be amended,
+   * which could result in an endless loop.
+   * to avoid this, we do not dynamically handle fds that were added
+   * during fd_reify. that menas thast for those backends, fdchangecnt
+   * might be non-zero during poll, which must cause them to not block.
+   * to not put too much of a burden on other backends, this detail
+   * needs to be handled in the backend.
+   */
+  int changecnt = fdchangecnt;
+
 #if EV_SELECT_IS_WINSOCKET || EV_USE_IOCP
-  for (i = 0; i < fdchangecnt; ++i)
+  for (i = 0; i < changecnt; ++i)
     {
       int fd = fdchanges [i];
       ANFD *anfd = anfds + fd;
@@ -2289,7 +2301,7 @@ fd_reify (EV_P)
     }
 #endif
 
-  for (i = 0; i < fdchangecnt; ++i)
+  for (i = 0; i < changecnt; ++i)
     {
       int fd = fdchanges [i];
       ANFD *anfd = anfds + fd;
@@ -2315,7 +2327,14 @@ fd_reify (EV_P)
         backend_modify (EV_A_ fd, o_events, anfd->events);
     }
 
-  fdchangecnt = 0;
+  /* normally, fdchangecnt hasn't changed. if it has, then new fds have been added.
+   * this is a rare case (see beginning comment in this function), so we copy them to the
+   * front and hope the backend handles this case.
+   */
+  if (ecb_expect_false (fdchangecnt != changecnt))
+    memmove (fdchanges, fdchanges + changecnt, (fdchangecnt - changecnt) * sizeof (*fdchanges));
+
+  fdchangecnt -= changecnt;
 }
 
 /* something about the given fd changed */
