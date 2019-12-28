@@ -60,11 +60,11 @@
  *    like a µ-optimisation by the io_uring author for his personal
  *    applications, to the detriment of everybody else who just wants
  *    an event loop. but, umm, ok, if that's all, it could be worse.
- *    (from what I gather form Jens Axboe, it simply didn't occur to him,
- *    and he made good on it by adding an unlimited nuber of timeouts
- *    later :).
+ *    (from what I gather from the author Jens Axboe, it simply didn't
+ *    occur to him, and he made good on it by adding an unlimited nuber
+ *    of timeouts later :).
  * h) initially there was a hardcoded limit of 4096 outstanding events.
- *    later versions not onlyx bump this to 32k, but also can handle
+ *    later versions not only bump this to 32k, but also can handle
  *    an unlimited amount of events, so this only affects the batch size.
  * i) unlike linux aio, you *can* register more then the limit
  *    of fd events. while early verisons of io_uring signalled an overflow
