@@ -402,7 +402,12 @@ iouring_modify (EV_P_ int fd, int oev, int nev)
       struct io_uring_sqe *sqe = iouring_sqe_get (EV_A);
       sqe->opcode    = IORING_OP_POLL_REMOVE;
       sqe->fd        = fd;
-      sqe->user_data = -1;
+      /* Jens Axboe notified me that user_data is not what is documented, but is
+       * some kind of unique ID that has to match, otherwise the request cannot
+       * be removed. Since we don't *really* have that, we pass in the old
+       * generation counter - if that fails, too bad, it will hopefully be removed
+       * at close time and then be ignored. */
+      sqe->user_data = (uint32_t)fd | ((__u64)(uint32_t)anfds [fd].egen << 32);
       iouring_sqe_submit (EV_A_ sqe);
 
       /* increment generation counter to avoid handling old events */
@@ -453,11 +458,6 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
   uint32_t gen = cqe->user_data >> 32;
   int      res = cqe->res;
 
-  /* ignore fd removal events, if there are any. TODO: verify */
-  /* TODO: yes, this triggers */
-  if (cqe->user_data == (__u64)-1)
-    return;
-
   assert (("libev: io_uring fd must be in-bounds", fd >= 0 && fd < anfdmax));
 
   /* documentation lies, of course. the result value is NOT like
@@ -467,6 +467,7 @@ iouring_process_cqe (EV_P_ struct io_uring_cqe *cqe)
    */
 
   /* ignore event if generation doesn't match */
+  /* other than skipping removal events, */
   /* this should actually be very rare */
   if (ecb_expect_false (gen != (uint32_t)anfds [fd].egen))
     return;
