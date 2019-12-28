@@ -3050,18 +3050,13 @@ ecb_cold
 unsigned int
 ev_embeddable_backends (void) EV_NOEXCEPT
 {
-  int flags = EVBACKEND_EPOLL | EVBACKEND_KQUEUE | EVBACKEND_PORT;
+  int flags = EVBACKEND_EPOLL | EVBACKEND_KQUEUE | EVBACKEND_PORT | EVBACKEND_IOURING;
 
   /* epoll embeddability broken on all linux versions up to at least 2.6.23 */
   if (ev_linux_version () < 0x020620) /* disable it on linux < 2.6.32 */
     flags &= ~EVBACKEND_EPOLL;
 
   /* EVBACKEND_LINUXAIO is theoretically embeddable, but suffers from a performance overhead */
-
-  /* EVBACKEND_IOURING is practically embeddable, but the current implementation is not
-   * because our backend_fd is the epoll fd we need as fallback.
-   * if the kernel ever is fixed, this might change...
-   */
 
   return flags;
 }
