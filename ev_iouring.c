@@ -46,11 +46,10 @@
  *    of linux aio or epoll and so on and so on. and you could do event stuff
  *    without any syscalls. what's not to like?
  * d) ok, it's vastly more complex, but that's ok, really.
- * e) why 3 mmaps instead of one? one would be more space-efficient,
- *    and I can't see what benefit three would have (other than being
+ * e) why two mmaps instead of one? one would be more space-efficient,
+ *    and I can't see what benefit two would have (other than being
  *    somehow resizable/relocatable, but that's apparently not possible).
- *    (FIXME: newer kernels can use 2 mmaps only, need to look into this).
- * f) hmm, it's practiclaly undebuggable (gdb can't access the memory, and
+ * f) hmm, it's practically undebuggable (gdb can't access the memory, and
  *    the bizarre way structure offsets are communicated makes it hard to
  *    just print the ring buffer heads, even *iff* the memory were visible
  *    in gdb. but then, that's also ok, really.
@@ -61,25 +60,22 @@
  *    like a µ-optimisation by the io_uring author for his personal
  *    applications, to the detriment of everybody else who just wants
  *    an event loop. but, umm, ok, if that's all, it could be worse.
- *    (FIXME: jens mentioned timeout commands, need to investigate)
- * h) there is a hardcoded limit of 4096 outstanding events. okay,
- *    at least there is no arbitrary low system-wide limit...
- *    (FIXME: apparently, this was increased to 32768 in later kernels(
+ *    (from what I gather form Jens Axboe, it simply didn't occur to him,
+ *    and he made good on it by adding an unlimited nuber of timeouts
+ *    later :).
+ * h) initially there was a hardcoded limit of 4096 outstanding events.
+ *    later versions not onlyx bump this to 32k, but also can handle
+ *    an unlimited amount of events, so this only affects the batch size.
  * i) unlike linux aio, you *can* register more then the limit
- *    of fd events, and the kernel will "gracefully" signal an
- *    overflow, after which you could destroy and recreate the kernel
- *    state, a bit bigger, or fall back to e.g. poll. thats not
- *    totally insane, but kind of questions the point a high
- *    performance I/O framework when it doesn't really work
- *    under stress.
- *    (FIXME: iouring should no longer drop events, need to investigate)
- * j) but, oh my! is has exactly the same bugs as the linux aio backend,
- *    where some undocumented poll combinations just fail.
- *    so we need epoll AGAIN as a fallback. AGAIN! epoll!! and of course,
- *    this is completely undocumented, have I mantioned this already?
+ *    of fd events. while early verisons of io_uring signalled an overflow
+ *    and you ended up getting wet. 5.5+ does not do this anymore.
+ * j) but, oh my! it had exactly the same bugs as the linux aio backend,
+ *    where some undocumented poll combinations just fail. fortunately,
+ *    after finally reaching the author, he was more than willing to fix
+ *    this probably in 5.6+.
  * k) overall, the *API* itself is, I dare to say, not a total trainwreck.
- *    the big isuess with it are the bugs requiring epoll, which might
- *    or might not get fixed (do I hold my breath?).
+ *    once the bugs ae fixed (probably in 5.6+), it will be without
+ *    competition.
  */
 
 /* TODO: use internal TIMEOUT */
