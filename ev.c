@@ -2582,7 +2582,7 @@ reheap (ANHE *heap, int N)
 
 /*****************************************************************************/
 
-/* associate signal watchers to a signal signal */
+/* associate signal watchers to a signal */
 typedef struct
 {
   EV_ATOMIC_T pending;
