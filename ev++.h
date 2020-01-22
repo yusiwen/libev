@@ -421,6 +421,24 @@ namespace ev {
   template<class ev_watcher, class watcher>
   struct base : ev_watcher
   {
+    // scoped pause/unpause of a watcher
+    struct freeze_guard
+    {
+      watcher &w;
+      bool active;
+
+      freeze_guard (watcher *self) EV_NOEXCEPT
+      : w (*self), active (w.is_active ())
+      {
+        if (active) w.stop ();
+      }
+
+      ~freeze_guard ()
+      {
+        if (active) w.start ();
+      }
+    };
+
     #if EV_MULTIPLICITY
       EV_PX;
 
@@ -614,18 +632,14 @@ namespace ev {
   EV_BEGIN_WATCHER (io, io)
     void set (int fd, int events) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_io_set (static_cast<ev_io *>(this), fd, events);
-      if (active) start ();
     }
 
     void set (int events) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_io_modify (static_cast<ev_io *>(this), events);
-      if (active) start ();
     }
 
     void start (int fd, int events) EV_NOEXCEPT
@@ -638,10 +652,8 @@ namespace ev {
   EV_BEGIN_WATCHER (timer, timer)
     void set (ev_tstamp after, ev_tstamp repeat = 0.) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_timer_set (static_cast<ev_timer *>(this), after, repeat);
-      if (active) start ();
     }
 
     void start (ev_tstamp after, ev_tstamp repeat = 0.) EV_NOEXCEPT
@@ -665,10 +677,8 @@ namespace ev {
   EV_BEGIN_WATCHER (periodic, periodic)
     void set (ev_tstamp at, ev_tstamp interval = 0.) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_periodic_set (static_cast<ev_periodic *>(this), at, interval, 0);
-      if (active) start ();
     }
 
     void start (ev_tstamp at, ev_tstamp interval = 0.) EV_NOEXCEPT
@@ -688,10 +698,8 @@ namespace ev {
   EV_BEGIN_WATCHER (sig, signal)
     void set (int signum) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_signal_set (static_cast<ev_signal *>(this), signum);
-      if (active) start ();
     }
 
     void start (int signum) EV_NOEXCEPT
@@ -706,10 +714,8 @@ namespace ev {
   EV_BEGIN_WATCHER (child, child)
     void set (int pid, int trace = 0) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_child_set (static_cast<ev_child *>(this), pid, trace);
-      if (active) start ();
     }
 
     void start (int pid, int trace = 0) EV_NOEXCEPT
@@ -724,10 +730,8 @@ namespace ev {
   EV_BEGIN_WATCHER (stat, stat)
     void set (const char *path, ev_tstamp interval = 0.) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_stat_set (static_cast<ev_stat *>(this), path, interval);
-      if (active) start ();
     }
 
     void start (const char *path, ev_tstamp interval = 0.) EV_NOEXCEPT
@@ -766,10 +770,8 @@ namespace ev {
   EV_BEGIN_WATCHER (embed, embed)
     void set_embed (struct ev_loop *embedded_loop) EV_NOEXCEPT
     {
-      int active = is_active ();
-      if (active) stop ();
+      freeze_guard freeze (this);
       ev_embed_set (static_cast<ev_embed *>(this), embedded_loop);
-      if (active) start ();
     }
 
     void start (struct ev_loop *embedded_loop) EV_NOEXCEPT
