@@ -1,9 +1,7 @@
 Revision history for libev, a high-performance and full-featured event loop.
 
-TODO: revisit 59.x timer in the light of modern powersaving
-TODO: ^ maybe just increase it when timerfd, modern linux only thing that counts?
-TODO: document EV_TSTAMP_T
 TODO: for next ABI/API change, consider moving EV__IOFDSSET into io->fd instead and provide a getter.
+TODO: document EV_TSTAMP_T
 
 TODO: maybe allow events = 0 for io watchers
 	- the 4.31 timerfd code wrongly changes the priority of the signal
@@ -13,7 +11,7 @@ TODO: maybe allow events = 0 for io watchers
           members in io watchers when the wqatcher was stopped
           (found by b_jonas).
         - new ev_io_modify mutator which changes only the events member,
-          which cna be faster.
+          which can be faster.
         - do not wake up every minute when timerfd is used to detect timejumps.
         - support a lot more "uncommon" compile time configurations,
           such as ev_embed enabled but ev_timer disabled.

@@ -4262,6 +4262,9 @@ method.
 For C<ev::embed> watchers this method is called C<set_embed>, to avoid
 clashing with the C<set (loop)> method.
 
+For C<ev::io> watchers there is an additional C<set> method that acepts a
+new event mask only, and internally calls C<ev_io_modfify>.
+
 =item w->start ()
 
 Starts the watcher. Note that there is no C<loop> argument, as the
