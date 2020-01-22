@@ -1655,8 +1655,9 @@ Most members are additionally marked with either I<[read-only]>, meaning
 that, while the watcher is active, you can look at the member and expect
 some sensible content, but you must not modify it (you can modify it while
 the watcher is stopped to your hearts content), or I<[read-write]>, which
-means you can expect it to have some sensible content while the watcher
-is active, but you can also modify it. Modifying it may not do something
+means you can expect it to have some sensible content while the watcher is
+active, but you can also modify it (within the same thread as the event
+loop, i.e. without creating data races). Modifying it may not do something
 sensible or take immediate effect (or do anything at all), but libev will
 not crash or malfunction in any way.
 

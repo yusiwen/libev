@@ -3045,7 +3045,9 @@ timerfdcb (EV_P_ ev_io *iow, int revents)
   now_floor = EV_TS_CONST (0.);
   time_update (EV_A_ EV_TSTAMP_HUGE);
   */
+#if EV_PERIODIC_ENABLE
   periodics_reschedule (EV_A);
+#endif
 }
 
 ecb_noinline ecb_cold
@@ -4095,6 +4097,12 @@ ev_run (EV_P_ int flags)
 #if EV_USE_TIMERFD
             /* sleep a lot longer when we can reliably detect timejumps */
             if (ecb_expect_true (timerfd >= 0))
+              waittime = EV_TS_CONST (MAX_BLOCKTIME2);
+#endif
+#if !EV_PERIODIC_ENABLE
+            /* without periodics but with monotonic clock there is no need */
+            /* for any time jump detection, so sleep longer */
+            if (ecb_expect_true (have_monotonic))
               waittime = EV_TS_CONST (MAX_BLOCKTIME2);
 #endif
 

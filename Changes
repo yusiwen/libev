@@ -17,6 +17,8 @@ TODO: maybe allow events = 0 for io watchers
           work with older libev versions as well but was not officially
           allowed before.
         - do not wake up every minute when timerfd is used to detect timejumps.
+        - do not wake up every minute when periodics are disabled and we have
+          a monotonic clock.
         - support a lot more "uncommon" compile time configurations,
           such as ev_embed enabled but ev_timer disabled.
         - use a start/stop wrapper class to reduce code duplication in
