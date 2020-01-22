@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2019-12-21" "libev-4.31" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2020-01-22" "libev-4.31" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -1769,14 +1769,17 @@ This section describes each watcher in detail, but will not repeat
 information given in the last section. Any initialisation/set macros,
 functions and members specific to the watcher type are explained.
 .PP
-Members are additionally marked with either \fI[read\-only]\fR, meaning that,
-while the watcher is active, you can look at the member and expect some
-sensible content, but you must not modify it (you can modify it while the
-watcher is stopped to your hearts content), or \fI[read\-write]\fR, which
+Most members are additionally marked with either \fI[read\-only]\fR, meaning
+that, while the watcher is active, you can look at the member and expect
+some sensible content, but you must not modify it (you can modify it while
+the watcher is stopped to your hearts content), or \fI[read\-write]\fR, which
 means you can expect it to have some sensible content while the watcher
 is active, but you can also modify it. Modifying it may not do something
 sensible or take immediate effect (or do anything at all), but libev will
 not crash or malfunction in any way.
+.PP
+In any case, the documentation for each member will explain what the
+effects are, and if there are any additional access restrictions.
 .ie n .SS """ev_io"" \- is this file descriptor readable or writable?"
 .el .SS "\f(CWev_io\fP \- is this file descriptor readable or writable?"
 .IX Subsection "ev_io - is this file descriptor readable or writable?"
@@ -1954,12 +1957,25 @@ opportunity for a DoS attack.
 Configures an \f(CW\*(C`ev_io\*(C'\fR watcher. The \f(CW\*(C`fd\*(C'\fR is the file descriptor to
 receive events for and \f(CW\*(C`events\*(C'\fR is either \f(CW\*(C`EV_READ\*(C'\fR, \f(CW\*(C`EV_WRITE\*(C'\fR or
 \&\f(CW\*(C`EV_READ | EV_WRITE\*(C'\fR, to express the desire to receive the given events.
-.IP "int fd [read\-only]" 4
-.IX Item "int fd [read-only]"
-The file descriptor being watched.
-.IP "int events [read\-only]" 4
-.IX Item "int events [read-only]"
-The events being watched.
+.IP "ev_io_modify (ev_io *, int events)" 4
+.IX Item "ev_io_modify (ev_io *, int events)"
+Similar to \f(CW\*(C`ev_io_set\*(C'\fR, but only changes the event mask. Using this might
+be faster with some backends, as libev can assume that the \f(CW\*(C`fd\*(C'\fR still
+refers to the same underlying file description, something it cannot do
+when using \f(CW\*(C`ev_io_set\*(C'\fR.
+.IP "int fd [no\-modify]" 4
+.IX Item "int fd [no-modify]"
+The file descriptor being watched. While it can be read at any time, you
+must not modify this member even when the watcher is stopped \- always use
+\&\f(CW\*(C`ev_io_set\*(C'\fR for that.
+.IP "int events [no\-modify]" 4
+.IX Item "int events [no-modify]"
+The set of events being watched, among other flags. This field is a
+bit set \- to test for \f(CW\*(C`EV_READ\*(C'\fR, use \f(CW\*(C`w\->events & EV_READ\*(C'\fR, and
+similarly for \f(CW\*(C`EV_WRITE\*(C'\fR.
+.Sp
+As with \f(CW\*(C`fd\*(C'\fR, you must not modify this member even when the watcher is
+stopped, always use \f(CW\*(C`ev_io_set\*(C'\fR or \f(CW\*(C`ev_io_modify\*(C'\fR for that.
 .PP
 \fIExamples\fR
 .IX Subsection "Examples"

@@ -694,7 +694,7 @@ EV_API_DECL void ev_resume  (EV_P) EV_NOEXCEPT;
   ev_set_cb ((ev), cb_);			\
 } while (0)
 
-#define ev_io_modify(ev,events_)             do { (ev)->events = (ev)->events & EV__IOMASK | (events_); } while (0)
+#define ev_io_modify(ev,events_)             do { (ev)->events = (ev)->events & EV__IOFDSET | (events_); } while (0)
 #define ev_io_set(ev,fd_,events_)            do { (ev)->fd = (fd_); (ev)->events = (events_) | EV__IOFDSET; } while (0)
 #define ev_timer_set(ev,after_,repeat_)      do { ((ev_watcher_time *)(ev))->at = (after_); (ev)->repeat = (repeat_); } while (0)
 #define ev_periodic_set(ev,ofs_,ival_,rcb_)  do { (ev)->offset = (ofs_); (ev)->interval = (ival_); (ev)->reschedule_cb = (rcb_); } while (0)
@@ -740,6 +740,7 @@ EV_API_DECL void ev_resume  (EV_P) EV_NOEXCEPT;
 #define ev_periodic_at(ev)                   (+((ev_watcher_time *)(ev))->at)
 
 #ifndef ev_set_cb
+/* memmove is used here to avoid strict aliasing violations, and hopefully is optimized out by any reasonable compiler */
 # define ev_set_cb(ev,cb_)                   (ev_cb_ (ev) = (cb_), memmove (&((ev_watcher *)(ev))->cb, &ev_cb_ (ev), sizeof (ev_cb_ (ev))))
 #endif
 

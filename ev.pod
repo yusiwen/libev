@@ -1220,8 +1220,9 @@ with a watcher-specific start function (C<< ev_TYPE_start (loop, watcher
 corresponding stop function (C<< ev_TYPE_stop (loop, watcher *) >>.
 
 As long as your watcher is active (has been started but not stopped) you
-must not touch the values stored in it. Most specifically you must never
-reinitialise it or call its C<ev_TYPE_set> macro.
+must not touch the values stored in it except when explicitly documented
+otherwise. Most specifically you must never reinitialise it or call its
+C<ev_TYPE_set> macro.
 
 Each and every callback receives the event loop pointer as first, the
 registered watcher structure as second, and a bitset of received events as
@@ -1848,9 +1849,9 @@ C<ev_io_set> for that.
 
 =item int events [no-modify]
 
-The set of events being watched, among other flags. This field is a
-bit set - to test for C<EV_READ>, use C<< w->events & EV_READ >>, and
-similarly for C<EV_WRITE>.
+The set of events the fd is being watched for, among other flags. Remember
+that this is a bit set - to test for C<EV_READ>, use C<< w->events &
+EV_READ >>, and similarly for C<EV_WRITE>.
 
 As with C<fd>, you must not modify this member even when the watcher is
 stopped, always use C<ev_io_set> or C<ev_io_modify> for that.
