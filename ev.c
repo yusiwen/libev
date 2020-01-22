@@ -2396,10 +2396,10 @@ fd_reify (EV_P)
 
   /* most backends do not modify the fdchanges list in backend_modfiy.
    * except io_uring, which has fixed-size buffers which might force us
-   * to handle events in backend_modify, causing fdchangesd to be amended,
+   * to handle events in backend_modify, causing fdchanges to be amended,
    * which could result in an endless loop.
    * to avoid this, we do not dynamically handle fds that were added
-   * during fd_reify. that menas thast for those backends, fdchangecnt
+   * during fd_reify. that means that for those backends, fdchangecnt
    * might be non-zero during poll, which must cause them to not block.
    * to not put too much of a burden on other backends, this detail
    * needs to be handled in the backend.

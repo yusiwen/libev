@@ -1,7 +1,7 @@
 /*
  * libev linux io_uring fd activity backend
  *
- * Copyright (c) 2019 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2019-2020 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
