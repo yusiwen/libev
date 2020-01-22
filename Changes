@@ -7,7 +7,7 @@ TODO: document EV_TSTAMP_T
           fd watcher, which is usually harmless unless signal fds are
           also used (found via cpan tester service).
         - the documentation wrongly claimed that user may modify fd and events
-          members in io watchers when the wqatcher was stopped
+          members in io watchers when the watcher was stopped
           (found by b_jonas).
         - new ev_io_modify mutator which changes only the events member,
           which can be faster. also added ev::io::set (int events) method

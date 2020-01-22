@@ -606,7 +606,7 @@ struct signalfd_siginfo
 /*
  * libecb - http://software.schmorp.de/pkg/libecb
  *
- * Copyright (©) 2009-2015 Marc Alexander Lehmann <libecb@schmorp.de>
+ * Copyright (©) 2009-2015,2018-2020 Marc Alexander Lehmann <libecb@schmorp.de>
  * Copyright (©) 2011 Emanuele Giaquinta
  * All rights reserved.
  *
