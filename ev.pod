@@ -1831,8 +1831,14 @@ opportunity for a DoS attack.
 =item ev_io_set (ev_io *, int fd, int events)
 
 Configures an C<ev_io> watcher. The C<fd> is the file descriptor to
-receive events for and C<events> is either C<EV_READ>, C<EV_WRITE> or
-C<EV_READ | EV_WRITE>, to express the desire to receive the given events.
+receive events for and C<events> is either C<EV_READ>, C<EV_WRITE>, both
+C<EV_READ | EV_WRITE> or C<0>, to express the desire to receive the given
+events.
+
+Note that setting the C<events> to C<0> and starting the watcher is
+supported, but not specially optimized - if your program sometimes happens
+to generate this combination this is fine, but if it is easy to avoid
+starting an io watcher watching for no events you should do so.
 
 =item ev_io_modify (ev_io *, int events)
 

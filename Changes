@@ -12,6 +12,9 @@ TODO: maybe allow events = 0 for io watchers
           (found by b_jonas).
         - new ev_io_modify mutator which changes only the events member,
           which can be faster.
+        - officially allow a zero events mask for io watchers. this should
+          work with older libev versions as well but was not officially
+          allowed before.
         - do not wake up every minute when timerfd is used to detect timejumps.
         - support a lot more "uncommon" compile time configurations,
           such as ev_embed enabled but ev_timer disabled.
