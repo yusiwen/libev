@@ -564,13 +564,13 @@ namespace ev {
 
   #if EV_MULTIPLICITY
     #define EV_CONSTRUCT(cppstem,cstem)	                                                \
-      (EV_PX = get_default_loop ()) EV_NOEXCEPT                                            \
+      (EV_PX = get_default_loop ()) EV_NOEXCEPT                                         \
         : base<ev_ ## cstem, cppstem> (EV_A)                                            \
       {                                                                                 \
       }
   #else
     #define EV_CONSTRUCT(cppstem,cstem)                                                 \
-      () EV_NOEXCEPT                                                                       \
+      () EV_NOEXCEPT                                                                    \
       {                                                                                 \
       }
   #endif
@@ -581,19 +581,19 @@ namespace ev {
                                                                                         \
   struct cppstem : base<ev_ ## cstem, cppstem>                                          \
   {                                                                                     \
-    void start () EV_NOEXCEPT                                                              \
+    void start () EV_NOEXCEPT                                                           \
     {                                                                                   \
       ev_ ## cstem ## _start (EV_A_ static_cast<ev_ ## cstem *>(this));                 \
     }                                                                                   \
                                                                                         \
-    void stop () EV_NOEXCEPT                                                               \
+    void stop () EV_NOEXCEPT                                                            \
     {                                                                                   \
       ev_ ## cstem ## _stop (EV_A_ static_cast<ev_ ## cstem *>(this));                  \
     }                                                                                   \
                                                                                         \
     cppstem EV_CONSTRUCT(cppstem,cstem)                                                 \
                                                                                         \
-    ~cppstem () EV_NOEXCEPT                                                                \
+    ~cppstem () EV_NOEXCEPT                                                             \
     {                                                                                   \
       stop ();                                                                          \
     }                                                                                   \
@@ -624,7 +624,7 @@ namespace ev {
     {
       int active = is_active ();
       if (active) stop ();
-      ev_io_set (static_cast<ev_io *>(this), fd, events);
+      ev_io_modify (static_cast<ev_io *>(this), events);
       if (active) start ();
     }
 

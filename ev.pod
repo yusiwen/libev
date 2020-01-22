@@ -1650,15 +1650,17 @@ This section describes each watcher in detail, but will not repeat
 information given in the last section. Any initialisation/set macros,
 functions and members specific to the watcher type are explained.
 
-Members are additionally marked with either I<[read-only]>, meaning that,
-while the watcher is active, you can look at the member and expect some
-sensible content, but you must not modify it (you can modify it while the
-watcher is stopped to your hearts content), or I<[read-write]>, which
+Most members are additionally marked with either I<[read-only]>, meaning
+that, while the watcher is active, you can look at the member and expect
+some sensible content, but you must not modify it (you can modify it while
+the watcher is stopped to your hearts content), or I<[read-write]>, which
 means you can expect it to have some sensible content while the watcher
 is active, but you can also modify it. Modifying it may not do something
 sensible or take immediate effect (or do anything at all), but libev will
 not crash or malfunction in any way.
 
+In any case, the documentation for each member will explain what the
+effects are, and if there are any additional access restrictions.
 
 =head2 C<ev_io> - is this file descriptor readable or writable?
 
@@ -1831,13 +1833,27 @@ Configures an C<ev_io> watcher. The C<fd> is the file descriptor to
 receive events for and C<events> is either C<EV_READ>, C<EV_WRITE> or
 C<EV_READ | EV_WRITE>, to express the desire to receive the given events.
 
-=item int fd [read-only]
+=item ev_io_modify (ev_io *, int events)
 
-The file descriptor being watched.
+Similar to C<ev_io_set>, but only changes the event mask. Using this might
+be faster with some backends, as libev can assume that the C<fd> still
+refers to the same underlying file description, something it cannot do
+when using C<ev_io_set>.
 
-=item int events [read-only]
+=item int fd [no-modify]
 
-The events being watched.
+The file descriptor being watched. While it can be read at any time, you
+must not modify this member even when the watcher is stopped - always use
+C<ev_io_set> for that.
+
+=item int events [no-modify]
+
+The set of events being watched, among other flags. This field is a
+bit set - to test for C<EV_READ>, use C<< w->events & EV_READ >>, and
+similarly for C<EV_WRITE>.
+
+As with C<fd>, you must not modify this member even when the watcher is
+stopped, always use C<ev_io_set> or C<ev_io_modify> for that.
 
 =back
 
