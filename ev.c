@@ -2473,7 +2473,7 @@ void
 fd_change (EV_P_ int fd, int flags)
 {
   unsigned char reify = anfds [fd].reify;
-  anfds [fd].reify |= flags;
+  anfds [fd].reify = reify | flags;
 
   if (ecb_expect_true (!reify))
     {
