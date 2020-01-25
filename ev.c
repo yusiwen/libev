@@ -651,7 +651,7 @@ struct signalfd_siginfo
 
 #include <string.h> /* for memcpy */
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (__MINGW32__)
   typedef   signed char   int8_t;
   typedef unsigned char  uint8_t;
   typedef   signed char   int_fast8_t;
