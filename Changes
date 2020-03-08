@@ -4,7 +4,7 @@ TODO: for next ABI/API change, consider moving EV__IOFDSSET into io->fd instead 
 TODO: document EV_TSTAMP_T
 
 4.32 (EV only)
-	- the 4.31 timerfd code wrongly changes the priority of the signal
+	- the 4.31 timerfd code wrongly changed the priority of the signal
           fd watcher, which is usually harmless unless signal fds are
           also used (found via cpan tester service).
         - the documentation wrongly claimed that user may modify fd and events
