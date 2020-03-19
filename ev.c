@@ -1,7 +1,7 @@
 /*
  * libev event processing core, watcher management
  *
- * Copyright (c) 2007-2019 Marc Alexander Lehmann <libev@schmorp.de>
+ * Copyright (c) 2007-2020 Marc Alexander Lehmann <libev@schmorp.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modifica-
@@ -3167,7 +3167,7 @@ ev_recommended_backends (void) EV_NOEXCEPT
 #if !EV_RECOMMEND_LINUXAIO
   flags &= ~EVBACKEND_LINUXAIO;
 #endif
-  /* TODO: linuxaio is super experimental */
+  /* TODO: iouring is super experimental */
 #if !EV_RECOMMEND_IOURING
   flags &= ~EVBACKEND_IOURING;
 #endif
