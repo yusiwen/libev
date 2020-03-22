@@ -1398,7 +1398,7 @@ therefore a good idea to always call its C<ev_TYPE_stop> function.
 
 Returns a true value iff the watcher is active (i.e. it has been started
 and not yet been stopped). As long as a watcher is active you must not modify
-it.
+it unless documented otherwise.
 
 =item bool ev_is_pending (ev_TYPE *watcher)
 
