@@ -493,10 +493,10 @@
 
 #if EV_USE_IOURING
 # include <sys/syscall.h>
-# if !SYS_io_uring_setup && __linux && !__alpha
-#  define SYS_io_uring_setup     425
-#  define SYS_io_uring_enter     426
-#  define SYS_io_uring_wregister 427
+# if !SYS_io_uring_register && __linux && !__alpha
+#  define SYS_io_uring_setup    425
+#  define SYS_io_uring_enter    426
+#  define SYS_io_uring_register 427
 # endif
 # if SYS_io_uring_setup && EV_USE_EPOLL /* iouring backend requires epoll backend */
 #  define EV_NEED_SYSCALL 1
