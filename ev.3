@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LIBEV 3"
-.TH LIBEV 3 "2020-04-19" "libev-4.33" "libev - high performance full featured event loop"
+.TH LIBEV 3 "2020-07-12" "libev-4.33" "libev - high performance full featured event loop"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -4004,10 +4004,10 @@ First, you need to associate some data with the event loop:
 .PP
 .Vb 6
 \&   typedef struct {
-\&     mutex_t lock; /* global loop lock */
+\&     pthread_mutex_t lock; /* global loop lock */
+\&     pthread_t tid;
+\&     pthread_cond_t invoke_cv;
 \&     ev_async async_w;
-\&     thread_t tid;
-\&     cond_t invoke_cv;
 \&   } userdata;
 \&
 \&   void prepare_loop (EV_P)
@@ -4015,19 +4015,19 @@ First, you need to associate some data with the event loop:
 \&      // for simplicity, we use a static userdata struct.
 \&      static userdata u;
 \&
-\&      ev_async_init (&u\->async_w, async_cb);
-\&      ev_async_start (EV_A_ &u\->async_w);
+\&      ev_async_init (&u.async_w, async_cb);
+\&      ev_async_start (EV_A_ &u.async_w);
 \&
-\&      pthread_mutex_init (&u\->lock, 0);
-\&      pthread_cond_init (&u\->invoke_cv, 0);
+\&      pthread_mutex_init (&u.lock, 0);
+\&      pthread_cond_init (&u.invoke_cv, 0);
 \&
 \&      // now associate this with the loop
-\&      ev_set_userdata (EV_A_ u);
+\&      ev_set_userdata (EV_A_ &u);
 \&      ev_set_invoke_pending_cb (EV_A_ l_invoke);
 \&      ev_set_loop_release_cb (EV_A_ l_release, l_acquire);
 \&
 \&      // then create the thread running ev_run
-\&      pthread_create (&u\->tid, 0, l_run, EV_A);
+\&      pthread_create (&u.tid, 0, l_run, EV_A);
 \&   }
 .Ve
 .PP
