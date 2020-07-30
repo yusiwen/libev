@@ -4094,17 +4094,19 @@ ev_run (EV_P_ int flags)
           {
             waittime = EV_TS_CONST (MAX_BLOCKTIME);
 
+            if (ecb_expect_true (have_monotonic))
+              {
 #if EV_USE_TIMERFD
-            /* sleep a lot longer when we can reliably detect timejumps */
-            if (ecb_expect_true (timerfd >= 0))
-              waittime = EV_TS_CONST (MAX_BLOCKTIME2);
+                /* sleep a lot longer when we can reliably detect timejumps */
+                if (ecb_expect_true (timerfd != -1))
+                  waittime = EV_TS_CONST (MAX_BLOCKTIME2);
 #endif
 #if !EV_PERIODIC_ENABLE
-            /* without periodics but with monotonic clock there is no need */
-            /* for any time jump detection, so sleep longer */
-            if (ecb_expect_true (have_monotonic))
-              waittime = EV_TS_CONST (MAX_BLOCKTIME2);
+                /* without periodics but with monotonic clock there is no need */
+                /* for any time jump detection, so sleep longer */
+                waittime = EV_TS_CONST (MAX_BLOCKTIME2);
 #endif
+              }
 
             if (timercnt)
               {
