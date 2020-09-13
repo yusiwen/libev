@@ -961,8 +961,8 @@ future versions):
    - Queue all idle watchers with priority higher than that of pending events.
    - Queue all check watchers.
    - Call all queued watchers in reverse order (i.e. check watchers first).
-     Signals and child watchers are implemented as I/O watchers, and will
-     be handled here by queueing them when their watcher gets executed.
+     Signals, async and child watchers are implemented as I/O watchers, and
+     will be handled here by queueing them when their watcher gets executed.
    - If ev_break has been called, or EVRUN_ONCE or EVRUN_NOWAIT
      were used, or there are no active watchers, goto FINISH, otherwise
      continue with step LOOP.
