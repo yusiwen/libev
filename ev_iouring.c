@@ -327,8 +327,6 @@ iouring_sqe_submit (EV_P_ struct io_uring_sqe *sqe)
 {
   unsigned idx = sqe - EV_SQES;
 
-  printf ("submit idx %d, op %d, fd %d, us5r %p, poll %d\n", idx, sqe->opcode, sqe->fd, sqe->user_data, sqe->poll_events);
-
   EV_SQ_ARRAY [idx] = idx;
   ECB_MEMORY_FENCE_RELEASE;
   ++EV_SQ_VAR (tail);
