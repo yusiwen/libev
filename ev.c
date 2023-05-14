@@ -2398,7 +2398,7 @@ fd_reify (EV_P)
 {
   int i;
 
-  /* most backends do not modify the fdchanges list in backend_modfiy.
+  /* most backends do not modify the fdchanges list in backend_modify.
    * except io_uring, which has fixed-size buffers which might force us
    * to handle events in backend_modify, causing fdchanges to be amended,
    * which could result in an endless loop.
@@ -3510,7 +3510,7 @@ loop_fork (EV_P)
   if (postfork != 2)
     {
       #if EV_USE_SIGNALFD
-        /* surprisingly, nothing needs to be done for signalfd, accoridng to docs, it does the right thing on fork */
+        /* surprisingly, nothing needs to be done for signalfd, according to docs, it does the right thing on fork */
       #endif
       
       #if EV_USE_TIMERFD

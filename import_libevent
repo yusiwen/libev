@@ -3,7 +3,7 @@
 LE=../libevent-1.4.3-stable
 
 if ! [ -e evbuffer.c ]; then
-   echo do not run this programm unless you know what you are doing
+   echo do not run this program unless you know what you are doing
    exit 1
 fi
 
