@@ -67,7 +67,7 @@
  *    later versions not only bump this to 32k, but also can handle
  *    an unlimited amount of events, so this only affects the batch size.
  * i) unlike linux aio, you *can* register more then the limit
- *    of fd events. while early verisons of io_uring signalled an overflow
+ *    of fd events. while early versions of io_uring signalled an overflow
  *    and you ended up getting wet. 5.5+ does not do this anymore.
  * j) but, oh my! it had exactly the same bugs as the linux aio backend,
  *    where some undocumented poll combinations just fail. fortunately,
