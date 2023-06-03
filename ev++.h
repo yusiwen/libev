@@ -628,6 +628,7 @@ namespace ev {
 
   #define EV_END_WATCHER(cppstem,cstem)	                                                \
   };
+  //TODO: https://paste.debian.net/1268417/
 
   EV_BEGIN_WATCHER (io, io)
     void set (int fd, int events) EV_NOEXCEPT
