@@ -4,6 +4,8 @@ TODO: for next ABI/API change, consider moving EV__IOFDSSET into io->fd instead 
 TODO: document EV_TSTAMP_T
 TODO: https://paste.debian.net/1268417/, stdfun
 
+	- the behaviour of EV_NOSIGMASK was reversed.
+
 4.34 (EV only)
 	- libev did not compile on systems lacking clock_gettime.
 	- due to a logic bug, timerfd availability did not always translate
