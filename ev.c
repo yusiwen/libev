@@ -4633,7 +4633,7 @@ ev_signal_start (EV_P_ ev_signal *w) EV_NOEXCEPT
         sa.sa_flags = SA_RESTART; /* if restarting works we save one iteration */
         sigaction (w->signum, &sa, 0);
 
-        if (origflags & EVFLAG_NOSIGMASK)
+        if (!(origflags & EVFLAG_NOSIGMASK))
           {
             sigemptyset (&sa.sa_mask);
             sigaddset (&sa.sa_mask, w->signum);
